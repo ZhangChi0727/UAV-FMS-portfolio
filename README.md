@@ -150,7 +150,7 @@ cd build && ctest --output-on-failure
 
 ## Author
 
-**Chi Zhang (张弛)**
+**Chi Zhang (张驰)**
 Master of Engineering, Aviation System Engineering
 Shanghai Jiao Tong University
 
