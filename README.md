@@ -27,6 +27,11 @@ The simulation pipeline generates parametric synthetic datasets for DL training,
 runs integrated software-in-the-loop (SIL) scenarios, and produces Monte Carlo
 benchmarks comparing EKF vs UKF under parameterized GPS outage conditions.
 
+Development is governed by the lightweight
+[Development Baseline v0.1](07_docs/development_baseline.md). The first vertical
+slice is a deterministic Python truth/sensor fixture, a Python error-state EKF,
+and reproducible navigation evidence.
+
 ---
 
 ## Repository Structure
