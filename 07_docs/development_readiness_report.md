@@ -11,6 +11,7 @@
 | WSL 连通性 | Ubuntu 用户 `chi`；`github.com` DNS 可解析，`https://github.com` 返回 HTTP 200 | 通过 |
 | WSL 文件系统 | `/mnt/e/Project/uav-fms-portfolio` 可访问；Linux 工作区策略见 `development_environment.md` | 通过 |
 | Windows IDE 盘点 | CLion 2023.3.4、PyCharm Professional 2023.3.3、CLion bundled CMake 3.27.8 已发现 | 通过 |
+| 配置静态检查 | CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法均已解析；Ruff 通过 | 通过 |
 | MCP | 未启用；CLI 覆盖当前工作单需求 | 通过（不需要） |
 
 ## 受限可用 / 待执行
@@ -52,6 +53,15 @@ pybind11/pytest 两项测试。根构建不再默认使用 `-march=native`，以
 `--force-with-lease` 删除；本地只用 `git branch -d`。如需恢复，可运行
 `git branch <name> <tip-sha>`，并在确认后推送该明确分支。删除结果会在执行后
 追加到本报告；不删除 `main`、标签或当前就绪分支。
+
+### 删除结果
+
+重新读取的两个远程 tip SHA 与上表完全一致后，已删除远程
+`codex/development-baseline-v0.1` 和
+`codex/modular-platform-baseline`，并以 `git branch -d` 删除三个对应的本地候选。
+随后 `git fetch --prune origin` 的结果只保留 `origin/main`；当前本地只保留
+`main` 与活跃的 `codex/development-readiness`。没有删除 `main`、标签、工作树或
+运行中的就绪分支。上表的 SHA 仍可用于恢复明确的本地分支。
 
 ## 非目标
 
