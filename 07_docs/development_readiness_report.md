@@ -17,6 +17,7 @@
 | C++17 / CTest | 最终源码修订 `92f2c117cc93ab7a3177972e96d1d7b3f13eb607` 上，Debug clean-rebuild 与 Release 均为 2/2 CTest 通过；含 Catch2 C++17 测试 | 通过 |
 | pybind11 / pytest | 同一构建目录中的 pybind11 扩展由 pytest 成功加载；`add_for_probe(20, 22) == 42`，CTest Python binding 测试通过 | 通过 |
 | GDB CLI 断点 | 在 `probe.cpp` 的 `return left + right;` 停止时，GDB 显示 `left = 20`、`right = 22`，并与寄存器参数一致 | 通过 |
+| CLion 2023.3.4 WSL UI 调试 | `development_readiness_cpp_tests` 的真实 Debug 会话停在 `development_readiness::add_for_probe`；IDE Variables 显示 `left = 20`、`right = 22`，调用栈包含 Catch2 测试帧 | 通过 |
 | 配置静态检查 | Windows CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法已解析，Ruff 通过 | 通过 |
 | MCP | 未启用；终端、Git、CMake、CTest、pytest 与 `gh` 覆盖本工作单需求 | 通过（不需要） |
 
@@ -40,11 +41,14 @@ Ubuntu 登录时仍会提示与 localhost 代理有关的 WSL 警告；它没有
 
 | 项目 | 当前状态 | 需要的明确操作 |
 |---|---|---|
-| CLion 2023.3.4 | 已盘点，尚未在 IDE UI 中实际构建/调试 | 按 `development_environment.md` 配置 Ubuntu WSL toolchain 与 `development-readiness-debug` profile；在 `probe.cpp` 的 `return left + right;` 设断点，运行 `development_readiness_cpp_tests`，确认变量 `left=20`、`right=22`。 |
 | PyCharm Professional 2023.3.3 | 已盘点，尚未在 IDE UI 中实际运行/断点 | 添加 Linux checkout 的 `.venv-b0/bin/python` 为 WSL interpreter；以 pytest 调试 `tools/development_readiness/python/test_binding.py`，在断言行确认停止且模块 `probe` 可见。 |
 
-这两项只阻塞“已在相应 IDE 图形界面实际调试”的结论，不阻塞已通过的 Linux CLI
-开发工具链。个人 `.idea/` 配置不提交。
+此次 CLion UI 测试从 Windows checkout 启动，因此 WSL 的生成目录是
+`/mnt/e/Project/uav-fms-portfolio/cmake-build-debug-wsl`。它证明 CLion↔WSL
+构建和调试链路可用，但不替代“Linux 活跃 checkout 的 build/venv 不写入 `/mnt/e`”
+这一工作区策略；该生成目录为未提交的本地兼容性产物。仍待完成的 PyCharm 验收只阻塞
+“Python IDE 图形界面已实际调试”的结论，不阻塞已通过的 Linux CLI 开发工具链。个人
+`.idea/` 配置不提交。
 
 ## 构建配置交付
 
