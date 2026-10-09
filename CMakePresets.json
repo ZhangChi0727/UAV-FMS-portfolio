@@ -1,0 +1,65 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "development-readiness-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "BUILD_LEGACY_NAVIGATION": "OFF",
+        "BUILD_DEVELOPMENT_READINESS_SMOKE": "ON",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "development-readiness-debug",
+      "displayName": "Development readiness (Debug)",
+      "inherits": "development-readiness-base",
+      "binaryDir": "${sourceDir}/build/development-readiness/debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "development-readiness-release",
+      "displayName": "Development readiness (Release)",
+      "inherits": "development-readiness-base",
+      "binaryDir": "${sourceDir}/build/development-readiness/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "development-readiness-debug",
+      "configurePreset": "development-readiness-debug"
+    },
+    {
+      "name": "development-readiness-release",
+      "configurePreset": "development-readiness-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "development-readiness-debug",
+      "configurePreset": "development-readiness-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "development-readiness-release",
+      "configurePreset": "development-readiness-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
