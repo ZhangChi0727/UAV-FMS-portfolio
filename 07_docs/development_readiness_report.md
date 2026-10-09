@@ -20,7 +20,7 @@
 | CLion 2023.3.4 WSL UI 调试 | `development_readiness_cpp_tests` 的真实 Debug 会话停在 `development_readiness::add_for_probe`；IDE Variables 显示 `left = 20`、`right = 22`，调用栈包含 Catch2 测试帧 | 通过 |
 | PyCharm Professional 2023.3.3 WSL pytest UI 调试 | `development_readiness_pytest_wsl` 的真实 pytest Debug 会话停在 `test_python_calls_the_linux_or_native_cxx_extension`；Variables 中可见从已构建 Linux pybind11 扩展加载的 `probe`，调用栈包含 pytest 帧 | 通过 |
 | 配置静态检查 | Windows CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法已解析，Ruff 通过 | 通过 |
-| 结束时清洁审计 | Windows checkout 与 WSL 活跃 checkout 的 `git status --short` 均为空，Windows 无未跟踪的非忽略文件；`.idea/`、venv 与本地 CMake 构建目录由 `.gitignore` 隔离，未删除刚验收所需的本机工具产物 | 通过 |
+| 结束时清洁审计 | Windows checkout 与 WSL 活跃 checkout 的 `git status --short` 均为空，Windows 无未跟踪的非忽略文件；可再生的 pytest/Ruff/`__pycache__` 已清除，`.idea/`、venv 与本地 CMake 构建目录由 `.gitignore` 隔离，未删除刚验收所需的本机工具产物 | 通过 |
 | MCP | 未启用；终端、Git、CMake、CTest、pytest 与 `gh` 覆盖本工作单需求 | 通过（不需要） |
 
 原先的 localhost-proxy 启动警告会干扰 PyCharm 2023.3 的 WSL 文件夹检查。经用户授权，
