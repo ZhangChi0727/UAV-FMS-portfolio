@@ -2,7 +2,7 @@
 
 namespace development_readiness {
 
-int add_for_probe(const int left, const int right) noexcept {
+int add_for_probe(int left, int right) noexcept {
     return left + right;
 }
 
