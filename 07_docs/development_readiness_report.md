@@ -1,32 +1,50 @@
 # B0 开发就绪报告
 
-状态日期：2026-10-09。此报告仅记录环境证据；不实现或宣称完成 B0。
+状态日期：2026-10-09。此报告只记录开发环境与工具链证据；不实现或宣称完成 B0
+姿态估计、级联控制、SIL/HIL 或飞行验证。
 
 ## 已验证通过
 
 | 项目 | 证据 | 状态 |
 |---|---|---|
 | 工作现场保护 | 原有 `roadmap.md` 修改与 `work_orders/` 未跟踪输入保留在 `codex/development-readiness` | 通过 |
-| Windows 研究环境 | 已有 Windows Python 3.11.5、JupyterLab 4.2.5 与 `literature/`；未被此工作单修改 | 通过 |
-| WSL 连通性 | Ubuntu 用户 `chi`；`github.com` DNS 可解析，`https://github.com` 返回 HTTP 200 | 通过 |
-| WSL 文件系统 | `/mnt/e/Project/uav-fms-portfolio` 可访问；Linux 工作区策略见 `development_environment.md` | 通过 |
-| Windows IDE 盘点 | CLion 2023.3.4、PyCharm Professional 2023.3.3、CLion bundled CMake 3.27.8 已发现 | 通过 |
-| 配置静态检查 | CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法均已解析；Ruff 通过 | 通过 |
-| MCP | 未启用；CLI 覆盖当前工作单需求 | 通过（不需要） |
+| Windows 研究环境 | 既有 Windows Python 3.11.5、JupyterLab 4.2.5 与 `literature/` 未被此工作单修改 | 通过 |
+| Ubuntu 20.04 工具链 | Ubuntu 20.04.6；GCC 9.4.0、GDB 9.2、Git 2.25.1 已安装。保留既有发行版，未新增或升级 Ubuntu | 通过 |
+| 用户态 Python | `/home/chi/.local/opt/cpython-3.11.17/bin/python3.11` 为 CPython 3.11.17；源码 SHA-256 与说明中的 Python.org 校验值一致 | 通过 |
+| Linux B0 venv | `/home/chi/src/uav-fms-portfolio/.venv-b0` 已安装 `requirements/b0-dev.txt`；CMake 3.30.5、Ninja 1.11.1、pytest 8.3.5、pybind11 2.13.6；`pip check` 无损坏依赖 | 通过 |
+| WSL 网络与 Git | `github.com` DNS 可解析、HTTPS 返回 HTTP 200；APT 与 GitHub clone/push 已实际成功 | 通过 |
+| Linux 工作区策略 | 活跃 checkout 位于 `/home/chi/src/uav-fms-portfolio`；Windows 挂载路径只作查看/诊断，不把 Linux build 或 venv 写入 `/mnt/e` | 通过 |
+| C++17 / CTest | 最终源码修订 `92f2c117cc93ab7a3177972e96d1d7b3f13eb607` 上，Debug clean-rebuild 与 Release 均为 2/2 CTest 通过；含 Catch2 C++17 测试 | 通过 |
+| pybind11 / pytest | 同一构建目录中的 pybind11 扩展由 pytest 成功加载；`add_for_probe(20, 22) == 42`，CTest Python binding 测试通过 | 通过 |
+| GDB CLI 断点 | 在 `probe.cpp` 的 `return left + right;` 停止时，GDB 显示 `left = 20`、`right = 22`，并与寄存器参数一致 | 通过 |
+| 配置静态检查 | Windows CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法已解析，Ruff 通过 | 通过 |
+| MCP | 未启用；终端、Git、CMake、CTest、pytest 与 `gh` 覆盖本工作单需求 | 通过（不需要） |
 
-## 受限可用 / 待执行
+Ubuntu 登录时仍会提示与 localhost 代理有关的 WSL 警告；它没有阻断 DNS、HTTPS、APT
+或 Git，故本工作单不修改该系统级设置。
 
-| 项目 | 实际发现 | 下一步 |
+## 已执行的构建矩阵
+
+探针只构建 `tools/development_readiness/`，并关闭遗留导航 EKF；它不能作为任何 B0
+算法或飞行证据。最终修订上的实测结果如下：
+
+| 配置 | CTest 结果 | 覆盖范围 |
 |---|---|---|
-| Ubuntu 20.04 | Python 3.8.10、Git 2.25.1；CMake、Ninja、G++、GDB 当前未安装 | 按 `development_environment.md` 安装最小工具并创建独立 CPython 3.11.17 venv。 |
-| Linux C++17/CTest | 未执行；不得以 Windows IDE 的存在替代 Linux 构建证据 | 在 Linux checkout 运行 Debug、Release、clean-rebuild 三组 presets。 |
-| pybind11 | 未执行；没有 Linux ABI 通过证据 | 在同一 `.venv-b0` 中运行 CTest 的 Python binding 测试。 |
-| CLion | 已核对 WSL toolchain 与 GDB 支持文档；尚未进行 UI 构建/运行/断点 | 完成文档中的 CLion 三步手工验收。 |
-| PyCharm | 已确认安装为 Professional 模块；尚未配置 WSL interpreter 或执行断点 | 完成文档中的 PyCharm 三步手工验收。 |
+| `development-readiness-debug`（clean-rebuild） | 2/2 通过，0.12 s | Catch2 C++17 与 pytest/pybind11 |
+| `development-readiness-release` | 2/2 通过，0.12 s | Catch2 C++17 与 pytest/pybind11 |
 
-Ubuntu 20.04 发行版按用户决定保留使用，未新增或升级发行版。其系统版本低于
-Python 3.11+ 与 CMake 3.20 基线，因此采用用户态、可删除的 CPython 3.11.17 与
-`.venv-b0` 兼容路径；该路径尚待实际安装和测试。
+遗留 `02_estimation/python` 的现状为 9 个 xfailed、1 个 skipped、0 个 passed；这些
+跳过/预期失败不构成实现或环境验收证据，未将其计入通过项。
+
+## 待完成的人工 IDE 验收
+
+| 项目 | 当前状态 | 需要的明确操作 |
+|---|---|---|
+| CLion 2023.3.4 | 已盘点，尚未在 IDE UI 中实际构建/调试 | 按 `development_environment.md` 配置 Ubuntu WSL toolchain 与 `development-readiness-debug` profile；在 `probe.cpp` 的 `return left + right;` 设断点，运行 `development_readiness_cpp_tests`，确认变量 `left=20`、`right=22`。 |
+| PyCharm Professional 2023.3.3 | 已盘点，尚未在 IDE UI 中实际运行/断点 | 添加 Linux checkout 的 `.venv-b0/bin/python` 为 WSL interpreter；以 pytest 调试 `tools/development_readiness/python/test_binding.py`，在断言行确认停止且模块 `probe` 可见。 |
+
+这两项只阻塞“已在相应 IDE 图形界面实际调试”的结论，不阻塞已通过的 Linux CLI
+开发工具链。个人 `.idea/` 配置不提交。
 
 ## 构建配置交付
 
