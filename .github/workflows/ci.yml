@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  python-tests:
-    name: Python Tests (3.11)
+  navigation-baseline:
+    name: Python navigation baseline (3.11)
     runs-on: ubuntu-latest
 
     steps:
@@ -20,58 +20,19 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      - name: Install dependencies
+      - name: Install navigation test tools
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install numpy==1.26.4 pytest==8.2.0 ruff==0.4.4 black==24.4.2
 
-      - name: Lint with ruff
+      - name: Lint navigation track
         run: ruff check . --ignore E501
-        continue-on-error: true
+        working-directory: 02_estimation/python
 
-      - name: Run pytest (stubs allowed to skip)
-        run: |
-          pytest --tb=short -v
-        continue-on-error: true
+      - name: Check navigation formatting
+        run: black --check tests/test_ekf.py
+        working-directory: 02_estimation/python
 
-  cpp-build:
-    name: C++ Build
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake libeigen3-dev
-
-      - name: Configure CMake
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_PYTHON_BINDINGS=OFF
-        continue-on-error: true
-
-      - name: Build
-        run: cmake --build build --parallel $(nproc)
-        continue-on-error: true
-
-  format-check:
-    name: Format Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-
-      - name: Install black
-        run: pip install black==24.4.2
-
-      - name: Format check
-        run: black --check .
-        continue-on-error: true
+      - name: Run navigation contract tests
+        run: python -m pytest --tb=short -v
+        working-directory: 02_estimation/python

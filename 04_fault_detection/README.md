@@ -1,20 +1,7 @@
-# 04 — Fault Detection
+# Health and recovery
 
-## Contents
-- `pipeline/` — Data preprocessing and PyTorch Dataset
-- `models/` — TCN architecture and ablation variants
-- `train.py` — Training script with W&B logging
-- `evaluate.py` — Confusion matrix, ROC curve, detection latency
+Optional EXT-HEALTH / EXT-LEARN capability. TCN, preprocessing, training and evaluation files are scaffolds. Begin with a residual/threshold baseline when activated. Learning requires data provenance, leakage controls and ablations. No classification performance is established.
 
-## Fault Types Detected
-| Label | Description |
-|---|---|
-| 0 | Nominal (no fault) |
-| 1 | Accelerometer bias |
-| 2 | Gyroscope drift |
-| 3 | Sensor noise spike |
-| 4 | GPS position dropout |
-| 5 | GPS position spoof |
+See [baseline](../07_docs/development_baseline.md), [architecture](../07_docs/architecture.md) and [extension registry](../07_docs/roadmap.md).
 
-## Status
-🔲 Planned — Phase 3C
+Status: planned; existing scaffold paths are retained for compatibility.

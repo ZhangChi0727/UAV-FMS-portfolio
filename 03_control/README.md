@@ -1,14 +1,7 @@
-# 03 — Control
+# Control
 
-## Contents
-- `python/` — Geometric SO(3) controller and LQR baseline in Python
-- `simulink/` — Closed-loop control simulation with plant model
+B0 requires a C++17 cascaded attitude/rate controller with limits and anti-windup. Existing geometric_control.py and lqr_baseline.py are optional advanced-control scaffolds, not B0 implementation. Add unit checks and scenario evidence with implementation.
 
-## Algorithms
-- **Geometric control on SO(3)**: Avoids Euler angle singularities.
-  Reference: T. Lee, M. Leok, N. H. McClamroch, "Geometric Tracking
-  Control of a Quadrotor UAV on SE(3)", CDC 2010.
-- **LQR baseline**: Linear quadratic regulator around hover equilibrium.
+See [baseline](../07_docs/development_baseline.md), [architecture](../07_docs/architecture.md) and [extension registry](../07_docs/roadmap.md).
 
-## Status
-🔲 Planned — Phase 3B
+Status: planned; existing scaffold paths are retained for compatibility.

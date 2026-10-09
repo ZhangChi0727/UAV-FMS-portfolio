@@ -1,44 +1,36 @@
-# AGENTS.md
+# Repository working rules
 
-## Cursor Cloud specific instructions
+Read README.md and 07_docs/project_charter.md, development_baseline.md,
+architecture.md and roadmap.md before implementation.
+B0 v0.2 is the active planning baseline: attitude estimation and cascaded control.
+Navigation, geometric-control and TCN files remain legacy scaffolds.
+Research candidates do not automatically expand B0.
 
-This repo is a **UAV Flight Management System algorithm portfolio** (Python 3.11+ and
-C++17). It is currently a **Phase 0 scaffold**: most source functions are placeholders
-that `raise NotImplementedError("Phase 3X")` and many tests `pytest.skip(...)`. There
-are no long-running services, databases, or web servers — it is a local scientific
-computing codebase. Standard commands live in `README.md` and `.github/workflows/ci.yml`.
+## Hard rules
 
-### Python environment
-- Dependencies are installed into a virtualenv at `.venv/` (created by the update
-  script). Activate it before running anything: `source .venv/bin/activate`.
-- `python3` is 3.12 (satisfies the 3.11+ requirement); there is no bare `python` binary
-  outside the venv.
+- Do not invent or renumber NAV-REQ-*, CTL-REQ-* or FDI-REQ-* identifiers.
+- Run pytest inside each track; root collection is unsupported.
+- Do not invent numerical/SIL/HIL/Monte Carlo results; cite retained artifacts.
+- Keep truth out of estimator/controller inputs except explicit initialization.
+- Preserve NED/body, SI and scalar-first Hamilton quaternion conventions.
+- Preserve user changes and module paths unless a scoped migration needs them.
+- Completed checks are mandatory; skips/xfails are not implementation evidence.
+- Distinguish replay, board execution, real-time closed-loop HIL and flight.
+- Keep documentation technical and research-focused.
 
-### Running Python tests (non-obvious)
-- Track directories start with digits (e.g. `02_estimation/`) and each test imports its
-  **track-local** module (e.g. `from ekf import EKF`, `from models.tcn import TCN`).
-  Running `pytest` from the repo root **fails collection** with `ModuleNotFoundError`.
-- Run tests from **within each track directory** instead, e.g.:
-  - `cd 02_estimation/python && python -m pytest -v`
-  - `cd 03_control/python && python -m pytest -v`
-  - `cd 04_fault_detection && python -m pytest -v`
-- Failures like `NotImplementedError: Phase 3A/3C` and `pytest.skip` are **expected**
-  scaffold behavior, not environment problems. CI runs pytest/ruff/black from root with
-  `continue-on-error: true`, so it tolerates these.
+## Environment
 
-### C++ build (02_estimation)
-- System deps (`libeigen3-dev`, `catch2`, `pybind11-dev`, and the clang/`libstdc++-14-dev`
-  toolchain that `/usr/bin/c++` resolves to) are preinstalled in the VM snapshot; the
-  update script does not reinstall them.
-- Configure + build: `cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build`.
-- Targets `ekf_lib` (static lib) and `ekf_cpp` (pybind11 module) build cleanly. The
-  `ekf_tests` target currently **fails to compile** because `test_ekf.cpp` uses unqualified
-  `Approx(...)` which Catch2 v3 exposes only as `Catch::Approx` — this is a pre-existing
-  source bug, not a setup issue. Build only the good targets with
-  `cmake --build build --target ekf_lib ekf_cpp` if you need to avoid it.
-- The compiled binding is `build/ekf_cpp.cpython-3XX-*.so`; import it by adding `build/`
-  to `sys.path` (it is built against system Python 3.12, ABI-compatible with the venv).
+Python 3.11+ and C++17 are intended. Detect installed tools; do not assume a
+specific cloud image. Use a virtual environment. Root CMake targets the legacy
+EXT-NAV EKF, not B0 control. Eigen3/Catch2 and optional pybind11 are dependencies.
+The legacy Catch2 Approx qualification issue remains pending; report only
+actually executed build results. MATLAB/PyTorch are extension-specific.
 
-### Out of scope
-- `README.md` lists MATLAB R2023b + Simulink as a prerequisite for the plant model, but it
-  is proprietary/unavailable in this environment and current code does not call it.
+## Research and management
+
+Use literature/protocol.md; preserve historical pilot records. Do not commit
+credentials, copyrighted full texts, private notes, generated exports or notebook
+outputs. Claim-critical evidence needs source locators. Activate research through
+research/package_template.md. Keep one primary engineering increment and at most
+one active exploration. Issues own execution state; roadmap owns scope;
+RESULTS.md owns verified outcomes. Each PR records actual validation.
