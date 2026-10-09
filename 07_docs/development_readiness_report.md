@@ -13,16 +13,19 @@
 | 用户态 Python | `/home/chi/.local/opt/cpython-3.11.17/bin/python3.11` 为 CPython 3.11.17；源码 SHA-256 与说明中的 Python.org 校验值一致 | 通过 |
 | Linux B0 venv | `/home/chi/src/uav-fms-portfolio/.venv-b0` 已安装 `requirements/b0-dev.txt`；CMake 3.30.5、Ninja 1.11.1、pytest 8.3.5、pybind11 2.13.6；`pip check` 无损坏依赖 | 通过 |
 | WSL 网络与 Git | `github.com` DNS 可解析、HTTPS 返回 HTTP 200；APT 与 GitHub clone/push 已实际成功 | 通过 |
-| Linux 工作区策略 | 活跃 checkout 位于 `/home/chi/src/uav-fms-portfolio`；Windows 挂载路径只作查看/诊断，不把 Linux build 或 venv 写入 `/mnt/e` | 通过 |
-| C++17 / CTest | 最终源码修订 `92f2c117cc93ab7a3177972e96d1d7b3f13eb607` 上，Debug clean-rebuild 与 Release 均为 2/2 CTest 通过；含 Catch2 C++17 测试 | 通过 |
+| Linux 工作区策略 | 主开发 checkout 与 venv 位于 `/home/chi/src/uav-fms-portfolio`；正常 Linux build/venv 不写入 `/mnt/e`。仅为验证 Windows IDE↔WSL 而保留一个已忽略的兼容性 build 目录 | 通过 |
+| C++17 / CTest | 最终源码修订 `92f2c117cc93ab7a3177972e96d1d7b3f13eb607` 上，Debug clean-rebuild 与 Release 均为 2/2 CTest 通过；结束前复验的 Debug/Release 也均为 2/2 通过，含 Catch2 C++17 测试 | 通过 |
 | pybind11 / pytest | 同一构建目录中的 pybind11 扩展由 pytest 成功加载；`add_for_probe(20, 22) == 42`，CTest Python binding 测试通过 | 通过 |
 | GDB CLI 断点 | 在 `probe.cpp` 的 `return left + right;` 停止时，GDB 显示 `left = 20`、`right = 22`，并与寄存器参数一致 | 通过 |
 | CLion 2023.3.4 WSL UI 调试 | `development_readiness_cpp_tests` 的真实 Debug 会话停在 `development_readiness::add_for_probe`；IDE Variables 显示 `left = 20`、`right = 22`，调用栈包含 Catch2 测试帧 | 通过 |
+| PyCharm Professional 2023.3.3 WSL pytest UI 调试 | `development_readiness_pytest_wsl` 的真实 pytest Debug 会话停在 `test_python_calls_the_linux_or_native_cxx_extension`；Variables 中可见从已构建 Linux pybind11 扩展加载的 `probe`，调用栈包含 pytest 帧 | 通过 |
 | 配置静态检查 | Windows CMake 3.27.8 可列出两个就绪 presets；`CMakePresets.json`、CI YAML、Python 探针语法已解析，Ruff 通过 | 通过 |
+| 结束时清洁审计 | Windows checkout 与 WSL 活跃 checkout 的 `git status --short` 均为空，Windows 无未跟踪的非忽略文件；`.idea/`、venv 与本地 CMake 构建目录由 `.gitignore` 隔离，未删除刚验收所需的本机工具产物 | 通过 |
 | MCP | 未启用；终端、Git、CMake、CTest、pytest 与 `gh` 覆盖本工作单需求 | 通过（不需要） |
 
-Ubuntu 登录时仍会提示与 localhost 代理有关的 WSL 警告；它没有阻断 DNS、HTTPS、APT
-或 Git，故本工作单不修改该系统级设置。
+原先的 localhost-proxy 启动警告会干扰 PyCharm 2023.3 的 WSL 文件夹检查。经用户授权，
+在用户全局 `.wslconfig` 的 `[wsl2]` 段设置 `autoProxy=false` 并重启 WSL 后，该警告消失，
+CPython 3.11.17 仍可启动。这是未提交、可逆的本机 WSL 设置，不属于仓库配置。
 
 ## 已执行的构建矩阵
 
@@ -31,24 +34,19 @@ Ubuntu 登录时仍会提示与 localhost 代理有关的 WSL 警告；它没有
 
 | 配置 | CTest 结果 | 覆盖范围 |
 |---|---|---|
-| `development-readiness-debug`（clean-rebuild） | 2/2 通过，0.12 s | Catch2 C++17 与 pytest/pybind11 |
-| `development-readiness-release` | 2/2 通过，0.12 s | Catch2 C++17 与 pytest/pybind11 |
+| `development-readiness-debug`（clean-rebuild；结束前复验） | 2/2 通过，0.22 s | Catch2 C++17 与 pytest/pybind11 |
+| `development-readiness-release`（结束前复验） | 2/2 通过，0.20 s | Catch2 C++17 与 pytest/pybind11 |
 
 遗留 `02_estimation/python` 的现状为 9 个 xfailed、1 个 skipped、0 个 passed；这些
 跳过/预期失败不构成实现或环境验收证据，未将其计入通过项。
 
-## 待完成的人工 IDE 验收
+## IDE 人工验收范围说明
 
-| 项目 | 当前状态 | 需要的明确操作 |
-|---|---|---|
-| PyCharm Professional 2023.3.3 | 已盘点，尚未在 IDE UI 中实际运行/断点 | 添加 Linux checkout 的 `.venv-b0/bin/python` 为 WSL interpreter；以 pytest 调试 `tools/development_readiness/python/test_binding.py`，在断言行确认停止且模块 `probe` 可见。 |
-
-此次 CLion UI 测试从 Windows checkout 启动，因此 WSL 的生成目录是
-`/mnt/e/Project/uav-fms-portfolio/cmake-build-debug-wsl`。它证明 CLion↔WSL
-构建和调试链路可用，但不替代“Linux 活跃 checkout 的 build/venv 不写入 `/mnt/e`”
-这一工作区策略；该生成目录为未提交的本地兼容性产物。仍待完成的 PyCharm 验收只阻塞
-“Python IDE 图形界面已实际调试”的结论，不阻塞已通过的 Linux CLI 开发工具链。个人
-`.idea/` 配置不提交。
+CLion 与 PyCharm 的 UI 测试均从 Windows checkout 启动，因此 WSL 的生成目录是
+`/mnt/e/Project/uav-fms-portfolio/cmake-build-debug-wsl`。它们证明 CLion/PyCharm↔WSL
+的构建、C++ GDB 和 pytest/pybind11 调试链路可用，但不替代“Linux 活跃 checkout 的 build/
+venv 不写入 `/mnt/e`”这一工作区策略；该生成目录是未提交的本地兼容性产物。两项 IDE
+图形界面验收均已实际完成；个人 `.idea/` 配置不提交。
 
 ## 构建配置交付
 
