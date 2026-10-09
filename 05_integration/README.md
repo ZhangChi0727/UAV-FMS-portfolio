@@ -1,9 +1,7 @@
-# 05 — Integration and Benchmarking
+# Execution and integration
 
-## Contents
-- `integrated_sim.py` — Full SIL: EKF + control + TCN running together
-- `fault_scenarios/` — Parameterized fault injection test scripts
-- `monte_carlo/` — EKF vs UKF statistical comparison (N=500)
+B0 connects plant, IMU, estimation and control. Existing full-SIL, fault and Monte Carlo files are legacy scaffolds. PX4, board, HIL and generic verification-suite adapters are separately gated. No fixed Monte Carlo trial count is committed.
 
-## Status
-🔲 Planned — Phase 4C–4E
+See [baseline](../07_docs/development_baseline.md), [architecture](../07_docs/architecture.md) and [extension registry](../07_docs/roadmap.md).
+
+Status: planned; existing scaffold paths are retained for compatibility.

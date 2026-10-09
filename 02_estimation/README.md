@@ -1,13 +1,7 @@
-# 02 — State Estimation
+# Estimation
 
-## Contents
-- `python/` — EKF and UKF implementations in Python
-- `cpp/` — EKF reimplemented in C++17 with pybind11 Python bindings
-- `benchmarks/` — Python vs C++ runtime comparison
+B0 requires basic quaternion attitude fusion. Existing Python EKF/UKF and C++ EKF files remain EXT-NAV scaffolds. The 16-element nominal / 15-element error-state contract remains in architecture.md; placeholder code does not satisfy it. VO is optional. Run navigation pytest inside python/.
 
-## Algorithm: Extended Kalman Filter (EKF)
-State vector: [position (3), velocity (3), attitude quaternion (4), IMU biases (6)]
-Measurement sources: GPS position + velocity, Monocular VO relative pose
+See [baseline](../07_docs/development_baseline.md), [architecture](../07_docs/architecture.md) and [extension registry](../07_docs/roadmap.md).
 
-## Status
-🔲 Planned — Phase 3A (Python), Phase 3D (C++)
+Status: planned; existing scaffold paths are retained for compatibility.
