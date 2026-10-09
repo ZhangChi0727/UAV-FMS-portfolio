@@ -6,6 +6,9 @@ No calendar duration or numerical result is implied.
 
 ## B0 backlog
 
+Execution detail: [B0 work order](work_orders/B0_work_order.md).
+Environment handoff: [development readiness work order](work_orders/development_readiness.md).
+
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
 through [#8](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/8)
