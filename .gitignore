@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 .venv/
+.venv-b0/
 venv/
 env/
 *.egg-info/
@@ -72,5 +73,6 @@ Thumbs.db
 # === IDE ===
 .vscode/
 .idea/
+CMakeUserPresets.json
 *.suo
 *.user
