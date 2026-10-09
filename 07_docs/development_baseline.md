@@ -1,187 +1,66 @@
-# Development Baseline v0.1
+# Development baseline B0 v0.2
 
-## Purpose
+Adopted 2026-10-09. This is a planning baseline, not an implementation release.
+It supersedes v0.1 as the project-level priority. The previous navigation contract
+is retained in [architecture](architecture.md) and assigned to EXT-NAV.
 
-This baseline converts the Phase 0 scaffold into a controlled starting point for
-implementation. It fixes the minimum technical contract, verification approach,
-and delivery gates needed to develop without creating a speculative project plan.
+## Single objective
 
-The first vertical slice is:
+Implement and verify a minimal multirotor attitude-estimation and control loop:
 
-```text
-deterministic truth trajectory
-    -> synthetic IMU and GPS
-    -> Python error-state EKF
-    -> automated verification evidence
-```
+command -> attitude controller -> rate controller -> bounded actuator model
+-> rotational dynamics -> IMU -> attitude estimator -> controller.
 
-## Scope
+Truth is available only to sensor generation and independent evaluation.
 
-### Included in v0.1
+## Included
 
-- Navigation frames, units, quaternion convention, state definition, and interfaces.
-- Verification conditions for the existing navigation requirements.
-- Deterministic in-memory truth, IMU, and GPS fixtures.
-- Python EKF prediction and GPS correction.
-- Unit, analytical, and deterministic scenario tests.
-- A reproducible runtime benchmark for `NAV-REQ-002`.
-- Track-local CI for the completed navigation scope.
-- Initial evidence recorded in `RESULTS.md` and the V&V report.
+- Rigid-body rotational dynamics with positive-definite inertia and quaternion state.
+- Explicit actuator limits and a simple documented actuator response model.
+- Gyroscope and accelerometer models consistent with the stated motion assumptions.
+- Quaternion propagation and basic complementary attitude fusion.
+- Cascaded attitude/rate control with saturation and anti-windup.
+- C++17 control core with unit tests; Python simulation and analysis.
+- Deterministic configuration, reset, seed, timestamps, and repeatable evidence.
+- Nominal, initial-offset, step, disturbance, noise, saturation, and recovery cases.
 
-### Deferred
+Gyroscope/accelerometer fusion alone does not make absolute yaw observable.
+Report roll/pitch correction and yaw drift separately. Translational acceleration
+must not be silently interpreted as gravity; B0 must declare its bounded-motion
+assumptions and test the behavior when they are violated.
 
-- Visual odometry and navigation mode management.
-- UKF comparison and the full Monte Carlo campaign.
-- C++ EKF and Python bindings.
-- Geometric control and LQR.
-- TCN training and fault-classification evidence.
-- MATLAB/Simulink integration.
-- Safety conclusions and final portfolio presentation.
+## Excluded from B0
 
-Deferred work is sequenced after the navigation slice; it is not removed from
-the portfolio scope.
+Position/velocity loops, waypoint flight, full INS/GNSS EKF, UKF comparisons,
+geometric/LQR/MPC control, TCN, VO/SLAM, PX4, embedded targets, fixed-wing models,
+HIL, generic verification-suite integration, and papers.
 
-## Governing Technical Decisions
+## Delivery gates
 
-The navigation conventions and interface definitions in
-[`architecture.md`](architecture.md) are normative for the v0.1 slice.
+| Gate | Deliverable | Exit condition |
+|---|---|---|
+| G0 | Executable contracts and scenario definitions | Frames, signs, time, inertia, actuator limits, estimator assumptions and metric definitions reviewed |
+| G1 | Plant and sensors | Analytical rotation cases, specific-force signs, sampling and seed tests pass independently |
+| G2 | Estimator and controller components | Quaternion, feedback sign, anti-windup, reset and invalid-input tests pass |
+| G3 | Estimated-state closed loop | Required scenario suite runs; truth cannot enter controller inputs; bounded cases recover |
+| G4 | Reproducible release evidence | Clean-checkout command, raw artifacts, plots, manifest, report and defect-detection demonstration retained |
 
-The EKF shall use:
+G0 must define settling band/dwell, overshoot interpretation, rate/torque limits,
+simulation horizon, tolerances, and comparison procedures before tuning.
+Existing CTL thresholds are legacy candidates; their applicability must be reviewed
+under [requirements](requirements.md). No new performance value is invented here.
 
-- a 16-element nominal state containing position, velocity, a unit quaternion,
-  accelerometer bias, and gyroscope bias;
-- a 15-element local error state containing position, velocity, attitude, and
-  the two bias errors;
-- a 15 by 15 error covariance;
-- multiplicative quaternion correction and normalization; and
-- a Joseph-form measurement covariance update.
+## Definition of ready
 
-The current Python and C++ placeholder implementations use a 16 by 16
-covariance. Migrating that scaffold is planned implementation work, not evidence
-that the v0.1 contract has already been met.
+An increment has bounded inputs/outputs, units, frames, assumptions, acceptance
+checks, dependency status, and identified evidence. Hardware is not needed for B0.
 
-## Planned Delivery Increments
+## Definition of done
 
-### Increment 1: baseline contract
+Scoped behavior is implemented without unexplained skips or placeholders; mandatory
+checks pass; nominal, boundary and invalid inputs are covered; configuration and
+software revision are recorded; results reproduce; limitations and traceability
+are updated. G4 additionally proves selected tests detect intentionally introduced
+sign, unit, or anti-windup defects in isolated test variants.
 
-- Approve this baseline.
-- Freeze the navigation and sensor interfaces.
-- Make pending EKF behavior visible through strict expected-failure tests.
-- Run tests from the track directory in CI.
-
-Exit condition: reviewers agree that the first implementation slice is
-unambiguous enough to start.
-
-### Increment 2: deterministic sensor fixture
-
-- Generate stationary, constant-velocity, constant-acceleration,
-  constant-yaw-rate, and GPS-outage scenarios.
-- Require an explicit random seed for stochastic scenarios.
-- Verify timestamps, sample rates, shapes, validity flags, and reproducibility.
-- Keep tests in memory; persistence is optional until a shared dataset schema is
-  needed.
-
-Exit condition: analytical truth and sensor cases pass without the EKF.
-
-### Increment 3: EKF prediction
-
-- Implement initialization and input validation.
-- Propagate position, velocity, quaternion, and biases.
-- Propagate the 15 by 15 covariance.
-- Compare the analytical transition Jacobian with a numerical reference.
-- Check quaternion norm, covariance symmetry, and covariance eigenvalues.
-
-Exit condition: prediction tests pass and their expected-failure markers are
-removed.
-
-### Increment 4: GPS correction
-
-- Implement position and velocity innovation.
-- Apply multiplicative error-state correction.
-- Use a Joseph-form covariance update.
-- Expose innovation information needed for later consistency analysis.
-
-Exit condition: correction tests pass and uncertainty decreases in the observed
-state components.
-
-### Increment 5: navigation evidence
-
-- Execute deterministic end-to-end navigation scenarios.
-- Define and execute the `NAV-REQ-002` benchmark protocol.
-- Record configuration, environment, raw artifacts, summary, and pass/fail.
-- Do not claim `NAV-REQ-001` compliance until its sensor and aiding assumptions
-  are approved and the required statistical campaign has been run.
-
-Exit condition: results are reproducible from a clean checkout and traceable to
-the applicable requirement.
-
-## Lightweight Backlog
-
-Use one milestone named `Baseline v0.1 - Python navigation vertical slice`.
-Create implementation issues in this order:
-
-1. Approve navigation conventions and EKF architecture.
-2. Approve verification conditions for `NAV-REQ-001` and `NAV-REQ-002`.
-3. Add the deterministic truth and IMU/GPS fixture.
-4. Implement EKF initialization and input validation.
-5. Implement EKF prediction and covariance propagation.
-6. Implement GPS correction.
-7. Add analytical and numerical-Jacobian verification.
-8. Add deterministic navigation scenario evaluation.
-9. Benchmark the EKF update cycle.
-10. Record navigation evidence in `RESULTS.md` and the V&V report.
-
-These items are a dependency-ordered backlog, not a fixed-duration schedule.
-
-## Definition of Ready
-
-An implementation issue is ready when:
-
-- its scope is bounded;
-- input and output interfaces are defined;
-- frames, units, signs, and array shapes are known;
-- acceptance checks are written before implementation;
-- dependencies and deferred behavior are explicit;
-- required evidence is identified;
-- it does not require unavailable MATLAB functionality; and
-- it does not introduce a new requirement identifier without requirements review.
-
-## Definition of Done
-
-An implementation issue is done when:
-
-- production code implements the approved scope;
-- nominal, boundary, and invalid-input tests pass;
-- no unexplained skip or `NotImplementedError` remains in that scope;
-- numerical invariants are checked where applicable;
-- formatting and static checks pass;
-- public interfaces document units and shapes;
-- relevant artifacts can be reproduced;
-- requirement traceability is updated where applicable;
-- limitations and deferred behavior are recorded; and
-- CI reports failures rather than suppressing them for the completed scope.
-
-Execution without an exception is not sufficient evidence for a numerical
-algorithm.
-
-## Pull Request Policy
-
-- Keep each pull request to one coherent increment.
-- Activate strict expected-failure tests by removing their marker as behavior is
-  implemented.
-- Include the requirement or technical contract being verified.
-- Report exact commands and environments used for validation.
-- Do not add generated results to `RESULTS.md` unless the underlying artifact is
-  reproducible and retained.
-- Default implementation pull requests to draft until their exit condition is
-  met.
-
-## Baseline Change Control
-
-Changes to frames, quaternion convention, state ordering, covariance dimension,
-sensor semantics, or requirement verification conditions affect downstream
-tracks. Such changes require an architecture or requirements update in the same
-pull request and an explanation of migration impact.
-
-Algorithm tuning, fixture configuration, and benchmark configuration are
-version-controlled inputs. They are not new system requirements.
+A baseline is complete when G0-G4 pass, regardless of extension or paper status.

@@ -2,10 +2,13 @@
 
 ## Status
 
-Baseline v0.1 defines the development and verification interpretation of the
-existing requirements. Thresholds are unchanged. A requirement is not
-compliance-ready until its operating conditions and evidence procedure below
-are approved.
+B0 v0.2 preserves all existing IDs and thresholds as legacy candidate requirements.
+They are not automatically B0 release criteria. NAV requirements belong to EXT-NAV;
+CTL-REQ-001/002 require B0 applicability review; CTL-REQ-003 belongs to EXT-FLIGHT
+or EXT-FW; FDI requirements belong to EXT-HEALTH. No compliance is claimed.
+B0 process/component gates are defined in development_baseline.md and are not
+new system requirement IDs. Performance applicability and operating conditions
+must be approved before compliance testing.
 
 ## Navigation Requirements
 
@@ -56,7 +59,7 @@ unrecorded developer environment is informative only.
 | CTL-REQ-003 | Cross-track error at cruise | < 1.2 m | Test |
 
 Control operating conditions, plant parameters, command definition, and metric
-calculation shall be frozen before Phase 3B compliance evidence is generated.
+calculation shall be frozen before applicable control compliance evidence is generated.
 
 ## Fault Detection Requirements
 
@@ -67,7 +70,7 @@ calculation shall be frozen before Phase 3B compliance evidence is generated.
 | FDI-REQ-003 | GPS spoof detection latency | < 3 s | Test |
 
 Fault magnitude, onset definition, dataset split, detection threshold, latency
-calculation, and random-seed policy shall be frozen before Phase 3C compliance
+calculation, and random-seed policy shall be frozen before EXT-HEALTH compliance
 evidence is generated.
 
 ## Traceability Rule

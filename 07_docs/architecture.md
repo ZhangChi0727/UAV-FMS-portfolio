@@ -2,11 +2,35 @@
 
 ## Status
 
-Baseline v0.1 freezes the navigation conventions and interfaces required for the
-first Python navigation vertical slice. Control, fault-detection, visual-odometry,
-and deployment details remain planned.
+B0 v0.2 prioritizes the attitude closed loop. Shared frame, unit and quaternion
+conventions below remain applicable. The detailed EKF state, numerical contract,
+interface rates and deterministic navigation fixture are retained for EXT-NAV;
+they do not prescribe B0 state dimensions or sample rates.
 
-## Component Overview
+## Modular boundaries
+
+| Module | Produces | Consumes | Boundary |
+|---|---|---|---|
+| Plant/sensors | Truth and timestamped IMU | Bounded actuator output, environment | Truth only to sensors/evaluation |
+| Estimation | Quaternion, rate, validity/status | IMU and explicit initial conditions | No live truth access |
+| Control | Body torque demand | Setpoint, estimated attitude/rate, dt | Platform-independent C++ core |
+| Actuation | Applied torque and saturation status | Requested torque | Limits/dynamics explicit |
+| Health/recovery | Health and mode decisions | Declared observations | Optional; no hidden controller mutations |
+| Execution adapter | Ordered samples and logs | Scenario and component contracts | Owns clock/reset/platform mapping |
+| Verification | Metrics and outcomes | Truth, observations, commands, configuration | Independent of tested algorithm |
+
+B0 G0 defines concrete structures, reset semantics, sample rates, saturation
+feedback, invalid/stale-sample behavior and deterministic update order. Shared
+messages carry timestamps, SI units and validity. Do not route optional camera,
+GNSS or TCN dependencies into B0. Start with explicit functions and structures;
+generalize an adapter only when a second concrete implementation needs it.
+
+The attitude-only plant must declare translational-acceleration assumptions.
+Accelerometer tilt correction is conditional on those assumptions; absolute yaw
+is not observable from gravity alone. C++ and Python use double precision unless
+a versioned extension explicitly evaluates another representation.
+
+## Retained EXT-NAV component overview
 
 ```text
 Truth trajectory
@@ -14,7 +38,7 @@ Truth trajectory
     -> GPS model -------^
 ```
 
-The deterministic Python fixture is the initial source of truth and sensor data.
+The deterministic Python navigation fixture is the source of truth and sensor data.
 MATLAB/Simulink may replace or supplement it later without changing the
 interfaces below.
 

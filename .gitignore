@@ -22,6 +22,7 @@ htmlcov/
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb
+!literature/notebooks/*.ipynb
 
 # === C++ / CMake ===
 build/
@@ -58,6 +59,9 @@ wandb/
 lightning_logs/
 runs/
 outputs/
+literature/full_text/
+literature/exports/
+literature/*.inspect.ndjson
 
 # === OS ===
 .DS_Store
