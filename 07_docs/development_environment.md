@@ -7,9 +7,9 @@
 
 | 用途 | 位置 | 规则 |
 |---|---|---|
-| Windows 文献工作 | `E:\\Project\\uav-fms-portfolio\\.venv` | 仅用于既有文献、notebook 与审计；不安装 B0 依赖。 |
+| Windows 文献工作 | `<Windows checkout>/.venv` | 仅用于既有文献、notebook 与审计；不安装 B0 依赖。 |
 | Linux B0 开发 | `~/src/uav-fms-portfolio` | 此路径是唯一的 Linux 活跃 checkout；通过 Git 同步，而不是复制 Windows 文件夹。 |
-| Windows 兼容查看 | `/mnt/e/Project/uav-fms-portfolio` | 可只读查看或临时诊断；不要与 Linux checkout 同时修改同一分支。 |
+| Windows 兼容查看 | `/mnt/<drive>/<project-root>` | 可只读查看或临时诊断；不要与 Linux checkout 同时修改同一分支。 |
 
 WSL 在 Linux 文件系统中使用源码和 build 目录的性能及权限语义更可靠；不要
 将 Linux build 或 venv 写入 `/mnt/e` 的 Windows checkout。Microsoft 也建议在
@@ -62,9 +62,8 @@ cmake --version
 ninja --version
 ```
 
-在上述分支尚未推送前，不要执行 clone/switch；应在本工作单 PR 已推送后按其
-提交 SHA 或分支同步。Windows `.venv`、Linux `.venv-b0` 与各自 `build/` 都不
-进入 Git。
+应仅在需要此开发环境的 Linux checkout 中执行 clone/switch，并按经核实的提交
+SHA 或分支同步。Windows `.venv`、Linux `.venv-b0` 与各自 `build/` 都不进入 Git。
 
 ## 可复现的工具链探针
 
@@ -100,9 +99,10 @@ ctest --preset development-readiness-debug
    新建/选择 WSL toolchain，发行版为 Ubuntu，工具使用 Linux 的 GCC、GDB、
    `.venv-b0/bin/cmake`（或其解析到的 CMake）和 Ninja。选择
    `development-readiness-debug` CMake Profile。
-2. 在 `tools/development_readiness/src/probe.cpp` 的 `add_for_probe` 设断点，启动
-   `development_readiness_cpp_tests` 的 Debug。确认停在 WSL 二进制、源码路径正确，
-   并能观察 `left` 和 `right`。
+2. 在 `tools/development_readiness/src/probe.cpp` 的
+   `return left + right;` 这一行设断点，启动 `development_readiness_cpp_tests` 的
+   Debug。该行位于函数序言之后，确认停在 WSL 二进制、源码路径正确，并能观察
+   `left` 和 `right`。
 3. 在 PyCharm Professional 2023.3.3 添加 WSL interpreter，路径选择 Linux checkout
    的 `.venv-b0/bin/python`。以 pytest 运行
    `tools/development_readiness/python/test_binding.py`，在断言行设断点，确认能停止
