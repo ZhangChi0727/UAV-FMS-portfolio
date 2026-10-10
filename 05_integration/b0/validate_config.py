@@ -180,6 +180,77 @@ METRIC_SPECS: dict[str, dict[str, Any]] = {
     },
 }
 
+METRIC_ALLOWED_OPERATORS: dict[str, set[str]] = {
+    "attitude_error_rad": {"<="},
+    "attitude_settling_time_s": {"<="},
+    "body_rate_error_rad_s": {"<="},
+    "quaternion_norm_error": {"<="},
+    "tracking_settling_time_s": {"<="},
+    "tracking_overshoot_percent": {"<="},
+    "cross_axis_attitude_error_rad": {"<="},
+    "actuator_saturation_time_s": {"<=", ">="},
+    "roll_pitch_estimation_error_rad": {"<="},
+    "yaw_drift_rad_s": {"<="},
+    "controller_integral_Nm": {"<="},
+    "invalid_input_rejection_count": {">="},
+}
+
+METRIC_DEFINITION_SEMANTICS: dict[str, tuple[str, str]] = {
+    "attitude_error_rad": (
+        "2*acos(clamp(abs(dot(q_nb_command,q_nb_truth)),0,1))",
+        "not_applicable",
+    ),
+    "attitude_settling_time_s": (
+        "settling_policy_angle_error_with_subject_specific_time_origin",
+        "per_subject_then_criterion_reducer",
+    ),
+    "body_rate_error_rad_s": (
+        "componentwise_truth_minus_estimate_body_rate",
+        "componentwise_before_reducer",
+    ),
+    "quaternion_norm_error": ("abs(norm(q_nb_estimate)-1)", "not_applicable"),
+    "tracking_settling_time_s": (
+        "settling_policy_angle_error_from_command_step_start",
+        "per_command_step",
+    ),
+    "tracking_overshoot_percent": (
+        "100*maximum_positive_signed_tracking_excursion/abs(signed_command_delta)",
+        "per_command_step",
+    ),
+    "cross_axis_attitude_error_rad": (
+        "maximum_abs_uncommanded_axis_error_relative_to_commanded_step_axis",
+        "max_over_noncommanded_axes",
+    ),
+    "actuator_saturation_time_s": (
+        "sum_dt_where_saturation_trigger_definition_is_true",
+        "sum_over_axes_per_tick_then_time",
+    ),
+    "roll_pitch_estimation_error_rad": (
+        "roll_pitch_components_of_sign_equivalent_truth_to_estimate_error",
+        "rms_over_roll_and_pitch_reported_per_axis",
+    ),
+    "yaw_drift_rad_s": (
+        "time_derivative_of_relative_yaw_error_with_initial_yaw_reference",
+        "signed_yaw_axis",
+    ),
+    "controller_integral_Nm": (
+        "componentwise_integral_torque_contribution",
+        "max_abs_over_axes",
+    ),
+    "limitation_event_recorded": (
+        "all_samples_record_additive_specific_force_event_and_limitation_status",
+        "all_over_event_window",
+    ),
+    "invalid_input_rejection_count": (
+        "count_declared_invalid_events_with_explicit_rejection_reason",
+        "count_over_scenario",
+    ),
+    "reset_replay_match": (
+        "post_reset_trace_matches_same_seed_and_explicit_initialization_replay",
+        "all_over_post_reset_window",
+    ),
+}
+
 EVENT_COMMON_FIELDS = {"id", "type", "start_tick", "end_tick"}
 EVENT_FIELDS: dict[str, set[str]] = {
     "command_step": {"axis", "value_rad", "post_event_action"},
@@ -1538,8 +1609,11 @@ def _validate_acceptance_policy(
             _fail(f"{path}.source_signals", "must contain signal names")
         if set(signals) != spec["observations"] or len(signals) != len(set(signals)):
             _fail(f"{path}.source_signals", "must match the metric signal dependency set")
-        _string(definition["formula"], f"{path}.formula")
-        _string(definition["axis_aggregation"], f"{path}.axis_aggregation")
+        expected_formula, expected_aggregation = METRIC_DEFINITION_SEMANTICS[metric]
+        if definition["formula"] != expected_formula:
+            _fail(f"{path}.formula", "must use the declared metric formula")
+        if definition["axis_aggregation"] != expected_aggregation:
+            _fail(f"{path}.axis_aggregation", "must use the declared axis aggregation")
         if definition["invalid_data_action"] != "execution_error_inconclusive":
             _fail(
                 f"{path}.invalid_data_action",
@@ -1696,8 +1770,11 @@ def _validate_criterion(
             _fail(path, "boolean metrics require == and a boolean limit")
     else:
         _number(record["limit"], f"{path}.limit", nonnegative=True)
-        if not isinstance(record["operator"], str) or record["operator"] not in {"<=", ">="}:
-            _fail(f"{path}.operator", "numeric metrics require <= or >=")
+        if (
+            not isinstance(record["operator"], str)
+            or record["operator"] not in METRIC_ALLOWED_OPERATORS[metric]
+        ):
+            _fail(f"{path}.operator", f"is incompatible with metric {metric}")
 
     window = _mapping(record["window"], f"{path}.window", {"start_tick", "end_tick"})
     start = _integer(window["start_tick"], f"{path}.window.start_tick", nonnegative=True)

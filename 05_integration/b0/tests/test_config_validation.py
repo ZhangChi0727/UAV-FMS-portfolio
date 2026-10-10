@@ -557,6 +557,28 @@ def test_saturation_case_requires_excitation_and_positive_trigger(
             "must match the metric signal dependency set",
         ),
         (
+            lambda config: config["acceptance_policy"]["metric_definitions"][
+                "tracking_overshoot_percent"
+            ].__setitem__("formula", "any_formula_is_not_acceptable"),
+            "must use the declared metric formula",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "tri_axis_signed_steps",
+                "step_x_positive_overshoot",
+            ).__setitem__("operator", ">="),
+            "incompatible with metric tracking_overshoot_percent",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "invalid_input_and_reset",
+                "invalid_input_rejected",
+            ).__setitem__("operator", "<="),
+            "incompatible with metric invalid_input_rejection_count",
+        ),
+        (
             lambda config: criterion(
                 config,
                 "acceleration_contamination",
