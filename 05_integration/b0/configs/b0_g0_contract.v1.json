@@ -111,12 +111,12 @@
       "controller_every_ticks": 2
     },
     "sequence": [
-      "plant_consumes_actual_torque_for_interval",
-      "actuator_advances_previous_limited_target",
+      "plant_consumes_actual_torque_for_interval_k",
+      "actuator_advances_torque_command_k_minus_1_limited_target",
       "imu_samples_interval_end_when_due",
       "estimator_consumes_imu_when_due",
       "controller_consumes_current_estimate_when_due",
-      "controller_publishes_next_limited_target"
+      "controller_publishes_torque_command_k_with_request_limit_and_saturation"
     ],
     "timestamp_policy": {
       "strictly_increasing": true,
@@ -239,24 +239,6 @@
           "validity": "must_be_true_for_controller_step"
         }
       ],
-      "torque_request": [
-        {
-          "name": "timestamp_s",
-          "type": "float64",
-          "shape": "scalar",
-          "unit": "s",
-          "frame": "scenario_clock",
-          "validity": "finite_and_strictly_increasing"
-        },
-        {
-          "name": "requested_torque_body_Nm",
-          "type": "float64",
-          "shape": "length_3",
-          "unit": "Nm",
-          "frame": "body_frd",
-          "validity": "all_finite_pre_limit"
-        }
-      ],
       "actuator_feedback": [
         {
           "name": "timestamp_s",
@@ -267,12 +249,20 @@
           "validity": "finite_and_strictly_increasing"
         },
         {
+          "name": "command_timestamp_s",
+          "type": "float64",
+          "shape": "scalar",
+          "unit": "s",
+          "frame": "scenario_clock",
+          "validity": "finite_and_not_later_than_feedback_timestamp"
+        },
+        {
           "name": "limited_torque_body_Nm",
           "type": "float64",
           "shape": "length_3",
           "unit": "Nm",
           "frame": "body_frd",
-          "validity": "componentwise_within_limit"
+          "validity": "paired_command_componentwise_within_limit"
         },
         {
           "name": "actual_torque_body_Nm",
@@ -288,7 +278,41 @@
           "shape": "length_3",
           "unit": "bool",
           "frame": "body_frd",
-          "validity": "true_when_request_exceeds_component_limit"
+          "validity": "echoes_paired_torque_command_saturation_flag"
+        }
+      ],
+      "torque_command": [
+        {
+          "name": "timestamp_s",
+          "type": "float64",
+          "shape": "scalar",
+          "unit": "s",
+          "frame": "scenario_clock",
+          "validity": "finite_and_strictly_increasing"
+        },
+        {
+          "name": "requested_torque_body_Nm",
+          "type": "float64",
+          "shape": "length_3",
+          "unit": "Nm",
+          "frame": "body_frd",
+          "validity": "all_finite_pre_limit"
+        },
+        {
+          "name": "limited_torque_body_Nm",
+          "type": "float64",
+          "shape": "length_3",
+          "unit": "Nm",
+          "frame": "body_frd",
+          "validity": "componentwise_clamp_of_requested_to_actuator_limit"
+        },
+        {
+          "name": "saturated",
+          "type": "bool",
+          "shape": "length_3",
+          "unit": "bool",
+          "frame": "body_frd",
+          "validity": "true_exactly_when_abs_requested_exceeds_component_limit"
         }
       ]
     },
@@ -299,16 +323,28 @@
       },
       "actuator": {
         "reset": "reset(ActuatorInitialState, reset_epoch) -> ActuatorFeedback; invalid input raises ContractValidationError without state change",
-        "step": "step(limited_torque_body_Nm, dt_s) -> ActuatorFeedback; advances exactly one base interval"
+        "step": "step(torque_command, dt_s) -> ActuatorFeedback; advances the previous paired limited target exactly one base interval"
       },
       "estimator": {
         "reset": "reset(EstimatorInitialState, reset_epoch, rng_seed) -> StateEstimate; no live truth argument",
         "step": "step(imu_sample) -> StateEstimate; invalid or stale sample is rejected without state change"
       },
       "controller": {
-        "reset": "reset(ControllerInitialState, reset_epoch) -> TorqueRequest; invalid input raises ContractValidationError without state change",
-        "step": "step(attitude_command, state_estimate, actuator_feedback, dt_s) -> TorqueRequest; no truth argument"
+        "reset": "reset(ControllerInitialState, reset_epoch) -> TorqueCommand; invalid input raises ContractValidationError without state change",
+        "step": "step(attitude_command, state_estimate, actuator_feedback, dt_s) -> TorqueCommand; computes request, componentwise limit, and saturation flag in the same controller tick; no truth argument"
       }
+    },
+    "torque_flow": {
+      "limit_authority": "controller_componentwise_clamp",
+      "request_producer": "controller",
+      "limited_target_producer": "controller",
+      "actual_torque_producer": "actuator",
+      "saturation_flag_producer": "controller",
+      "command_message": "torque_command",
+      "feedback_message": "actuator_feedback",
+      "actuator_consumption": "at_tick_k_actuator_advances_torque_command_k_minus_1_limited_target_only",
+      "feedback_pairing": "feedback_at_k_reports_actual_limited_and_saturation_from_command_k_minus_1",
+      "antiwindup_timing": "controller_at_k_uses_new_command_k_request_limit_and_feedback_k_actual_minus_limited_k_minus_1"
     }
   },
   "initialization_contract": {
@@ -382,7 +418,9 @@
       "owner": "plant_truth_only",
       "composition": "q_nb_initial = q_nb_base hamilton_product qx(roll) hamilton_product qy(pitch) hamilton_product qz(yaw)",
       "rotation_sequence": "body_frd_intrinsic_x_then_y_then_z",
-      "estimator_truth_rule": "estimator_reset_uses_explicit_estimator_q_nb_and_never_receives_live_truth"
+      "estimator_truth_rule": "estimator_reset_uses_explicit_estimator_q_nb_and_never_receives_live_truth",
+      "recovery_metric": "tilt_only_body_z_axis_angle_between_command_and_truth",
+      "unknown_initial_yaw_policy": "not_an_absolute_recovery_performance_target_without_declared_yaw_reference"
     }
   },
   "plant_contract": {
@@ -473,7 +511,11 @@
         0
       ]
     },
-    "parameter_rationale": "Synthetic torque limits and 0.03 s lag create a bounded abstract torque interface; their role is to exercise saturation and lag semantics, not model motors."
+    "parameter_rationale": "Synthetic torque limits and 0.03 s lag create a bounded abstract torque interface; the controller is the sole componentwise limiter and the actuator advances only the paired limited target, not a hidden recomputed clamp.",
+    "limit_authority": "controller_componentwise_clamp",
+    "request_limit_pairing": "torque_command_carries_same_tick_requested_limited_and_saturated_fields",
+    "saturation_status_definition": "controller_sets_true_when_abs_requested_exceeds_limit_and_limited_equals_componentwise_clamp",
+    "dynamics_input": "paired_torque_command_limited_target_only"
   },
   "imu_contract": {
     "source_ref": "SYNTH-IMU-001",
@@ -537,7 +579,7 @@
     "source_ref": "SYNTH-CONTROL-001",
     "implementation_status": "future_g2_contract_only",
     "input": "attitude_command_state_estimate_and_actuator_feedback_only",
-    "output": "requested_torque_body_Nm",
+    "output": "torque_command_with_requested_limited_target_and_saturation_status",
     "truth_inputs_forbidden": true,
     "attitude_error": {
       "equation": "conjugate_q_nb_est_hamilton_product_q_nb_command",
@@ -646,13 +688,13 @@
       "state_estimate",
       "actuator_feedback"
     ],
-    "output_message": "torque_request",
+    "output_message": "torque_command",
     "body_rate_target_limit_rad_s": [
       2,
       2,
       1.5
     ],
-    "parameter_rationale": "Synthetic gain candidates are bounded below the declared torque limits and are only G2 starting points; no closed-loop performance is claimed."
+    "parameter_rationale": "Synthetic gain candidates are bounded below the declared torque limits and are only G2 starting points; the controller is the unique clamp authority and publishes the paired request, limited target, and saturation flag without claiming closed-loop performance."
   },
   "seed_policy": {
     "tuning_seed": 2026100900,
@@ -680,7 +722,7 @@
     "max_initial_attitude_offset_rad": [
       0.174533,
       0.139626,
-      0.10472
+      0.0
     ],
     "max_body_rate_rad_s": [
       2,
@@ -691,7 +733,8 @@
       "translation",
       "aerodynamics",
       "navigation",
-      "hardware"
+      "hardware",
+      "absolute_initial_yaw_recovery_without_reference"
     ],
     "parameter_rationale": "The attitude, rate, and torque ranges are deliberately synthetic and mutually bounded for a rotation-only experiment; they exclude translation and real-airframe claims."
   },
@@ -731,7 +774,8 @@
     "saturation": {
       "trigger_definition": "any_axis_abs_requested_torque_exceeds_limit_and_limited_torque_equals_componentwise_clamp",
       "trigger_coverage_rule": "saturation_withdrawal_requires_positive_duration_during_its_command_event",
-      "missing_data_action": "execution_error_inconclusive"
+      "missing_data_action": "execution_error_inconclusive",
+      "time_aggregation": "wall_clock_union_over_axes_each_saturated_tick_counted_once"
     },
     "metric_definitions": {
       "attitude_error_rad": {
@@ -801,8 +845,8 @@
           "requested_torque_Nm",
           "limited_torque_Nm"
         ],
-        "formula": "sum_dt_where_saturation_trigger_definition_is_true",
-        "axis_aggregation": "sum_over_axes_per_tick_then_time",
+        "formula": "sum_dt_where_any_axis_saturation_trigger_is_true",
+        "axis_aggregation": "wall_clock_union_over_axes",
         "invalid_data_action": "execution_error_inconclusive"
       },
       "roll_pitch_estimation_error_rad": {
@@ -828,7 +872,7 @@
           "controller_integral_Nm"
         ],
         "formula": "componentwise_integral_torque_contribution",
-        "axis_aggregation": "max_abs_over_axes",
+        "axis_aggregation": "max_abs_for_declared_axis",
         "invalid_data_action": "execution_error_inconclusive"
       },
       "limitation_event_recorded": {
@@ -847,8 +891,8 @@
           "sample_validity",
           "rejection_reason"
         ],
-        "formula": "count_declared_invalid_events_with_explicit_rejection_reason",
-        "axis_aggregation": "count_over_scenario",
+        "formula": "count_each_declared_invalid_event_once_when_sample_validity_false_and_rejection_reason_matches_invalid_kind",
+        "axis_aggregation": "count_over_scenario_one_per_declared_invalid_event",
         "invalid_data_action": "execution_error_inconclusive"
       },
       "reset_replay_match": {
@@ -859,7 +903,45 @@
         "formula": "post_reset_trace_matches_same_seed_and_explicit_initialization_replay",
         "axis_aggregation": "all_over_post_reset_window",
         "invalid_data_action": "execution_error_inconclusive"
+      },
+      "tilt_error_rad": {
+        "source_signals": [
+          "q_nb_truth",
+          "q_nb_command"
+        ],
+        "formula": "acos(clamp(dot(third_column_R_nb_command,third_column_R_nb_truth),-1,1))",
+        "axis_aggregation": "not_applicable",
+        "invalid_data_action": "execution_error_inconclusive"
+      },
+      "tilt_settling_time_s": {
+        "source_signals": [
+          "q_nb_truth",
+          "q_nb_command"
+        ],
+        "formula": "settling_policy_tilt_error_from_scenario_tick_zero",
+        "axis_aggregation": "initial_offset_only",
+        "invalid_data_action": "execution_error_inconclusive"
       }
+    },
+    "initial_yaw_observability": {
+      "absolute_yaw_from_six_axis_imu": "not_observable",
+      "initial_offset_recovery_metric": "tilt_only_body_z_axis_angle_between_command_and_truth",
+      "candidate_initial_yaw_offset_rad": 0.0,
+      "unknown_initial_yaw_policy": "limitation_characterization_not_absolute_recovery_performance",
+      "relative_yaw_tracking_policy": "three_axis_command_tracking_remains_bound_to_command_events"
+    },
+    "invalid_input": {
+      "required_kinds": [
+        "negative_dt",
+        "stale_timestamp"
+      ],
+      "injection_rule": "exactly_one_declared_invalid_input_event_per_required_kind",
+      "rejection_counter_rule": "count_one_rejection_per_declared_invalid_event_when_sample_invalid_and_reason_matches_kind",
+      "visible_evidence": [
+        "sample_validity",
+        "rejection_reason"
+      ],
+      "reset_rule": "exactly_one_all_components_reset_after_invalid_input_coverage"
     }
   },
   "scenarios": [
@@ -953,7 +1035,7 @@
       "initial_attitude_offset_rad": [
         0.174533,
         -0.139626,
-        0.10472
+        0.0
       ],
       "observations": [
         "q_nb_truth",
@@ -964,11 +1046,11 @@
       "artifact_path": "artifacts/b0/initial_attitude_offset/",
       "acceptance": [
         {
-          "id": "offset_settling_time",
-          "metric": "attitude_settling_time_s",
+          "id": "offset_tilt_settling_time",
+          "metric": "tilt_settling_time_s",
           "reducer": "max",
           "operator": "<=",
-          "limit": 3,
+          "limit": 3.0,
           "unit": "s",
           "window": {
             "start_tick": 0,
@@ -977,8 +1059,8 @@
           "evidence_status": "proposed_not_executed"
         },
         {
-          "id": "offset_peak_error",
-          "metric": "attitude_error_rad",
+          "id": "offset_tilt_peak_error",
+          "metric": "tilt_error_rad",
           "reducer": "peak",
           "operator": "<=",
           "limit": 0.4,
@@ -1524,7 +1606,7 @@
       "artifact_path": "artifacts/b0/saturation_withdrawal/",
       "acceptance": [
         {
-          "id": "saturation_integral_limit",
+          "id": "saturation_integral_x_limit",
           "metric": "controller_integral_Nm",
           "reducer": "max_abs",
           "operator": "<=",
@@ -1534,6 +1616,35 @@
             "start_tick": 0,
             "end_tick": 2400
           },
+          "axis": "x",
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "saturation_integral_y_limit",
+          "metric": "controller_integral_Nm",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.15,
+          "unit": "Nm",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "axis": "y",
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "saturation_integral_z_limit",
+          "metric": "controller_integral_Nm",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.1,
+          "unit": "Nm",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "axis": "z",
           "evidence_status": "proposed_not_executed"
         },
         {

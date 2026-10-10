@@ -2,9 +2,9 @@
 
 **状态：修复待复审，仍为 proposed_pending_maintainer_approval。**
 
-本记录处理 Project Administrator 对 PR #11 基线 fd5615f 的合同评审发现。它记录
-“发现 → 合同/代码 → 反例测试”的对应关系；不构成算法、仿真、HIL、飞行或需求符合性
-证据，也不表示 G0 已冻结。
+本记录保留 Project Administrator 对 PR #11 基线 fd5615f 的首轮发现，并记录第二轮
+对 8948769 的独立复审收敛工作。“发现 → 合同/代码 → 反例测试”的对应关系不构成算法、
+仿真、HIL、飞行或需求符合性证据，也不表示 G0 已冻结。
 
 ## 已处理的阻塞发现
 
@@ -16,6 +16,20 @@
 | P1：验收项、信号或真实饱和可被静默删弱 | metric_definitions 固定信号依赖；required scenario/event metrics 校验；饱和需要 event 内正持续时间触发准则 | test_rejects_silent_weakening_of_step_acceptance；test_saturation_case_requires_excitation_and_positive_trigger |
 | P2：事件重叠、驻留窗口和 IMU/estimator 周期缺少跨字段约束 | 半开 event 语义、同信号重叠拒绝、声明式跨类型白名单、dwell 容量、IMU/estimator/controller 同周期消费合同 | test_rejects_incompatible_sampling_and_consumption；test_rejects_event_order_overlap_and_unobservable_settling_windows |
 | P2：缺字段产生 KeyError 或其他裸异常 | 每种 event 类型先做 required/allowed/type 校验；criterion/source/observation 也做类型守卫；JSON loader 拒绝重复键 | test_every_event_type_rejects_missing_required_field；test_event_unknown_and_wrong_type_errors_are_contract_errors；test_loader_rejects_nonfinite_and_duplicate_json |
+
+## 第二轮剩余发现的候选修复（待独立复审）
+
+| 第二轮发现 | 本轮合同与实现改动 | 关键正反例测试 |
+|---|---|---|
+| 成功布尔值、饱和上界和无效事件覆盖仍可删弱 | 真实成功布尔值固定为 true；saturation_withdrawal 同时强制 event 内正下界与全场景上界；negative_dt、stale_timestamp、计数和 reset 一一对应 | test_success_boolean_criteria_cannot_be_weakened；test_saturation_trigger_and_upper_bound_have_distinct_required_roles；test_invalid_input_coverage_and_counter_are_not_weakenable |
+| 峰值窗口可缩为一个 tick | step 的超调和跨轴峰值窗口必须精确等于绑定 command event 的完整半开区间 | test_peak_step_metrics_must_cover_the_full_command_event |
+| 积分轴限与饱和时间聚合自相矛盾 | controller_integral_Nm 改为逐轴 x/y/z 限值并引用 rate_pid 的 [0.15,0.15,0.10] Nm；saturation duration 改为任意轴 wall-clock 并集 | test_integral_axis_limits_and_saturation_time_aggregation_are_closed；test_per_axis_integral_limit_contract_examples_are_explicit |
+| 初始未知 yaw 被作为绝对恢复要求 | 初始恢复改为 roll/pitch tilt 指标；候选配置固定 recovery case 的 yaw=0，并把未知 yaw 记为六轴限制边界；三轴相对 step 跟踪不变 | test_initial_yaw_unobservability_cannot_be_recast_as_recovery |
+| request/limited/actual/saturated 的生产消费与时序不闭合 | controller 成为唯一 clamp 和 saturation-flag 责任方；TorqueCommand 明确携带四项，actuator 仅推进上一命令的 limited，feedback 携带配对时间戳 | test_torque_request_limit_pairing_and_feedback_timing_are_closed |
+| 三个枚举列表对对象/嵌套列表触发裸 TypeError | 新增逐元素 string type guard，先于 set/成员比较执行 | test_enumeration_collections_reject_nested_and_object_values_as_contract_errors |
+
+本轮仍只定义合同和拒绝性校验；没有实现 G1/G2/G3 指标器、对象或性能判定。上述数学和
+接口候选仍待维护者批准，故不能据此合并、冻结或关闭 Issue #3。
 
 ## 配套完善
 
@@ -33,7 +47,7 @@
 |---|---|---|
 | python validate_config.py --config configs/b0_g0_contract.v1.json | WSL Ubuntu，B0 track | 通过；只证明默认候选合同可加载 |
 | python -m ruff check . | WSL Ubuntu，05_integration/b0 | 通过；只检查 G0 Python 合同 track |
-| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 79 passed；包含评审列出的反例、逐事件结构反例，以及公式和判定方向篡改反例 |
+| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 111 passed；包含两轮评审列出的反例、逐事件结构反例、公式/判定方向篡改反例，以及第二轮的接口和类型守卫反例 |
 | cmake/build/ctest preset development-readiness-debug | WSL Ubuntu，开发就绪 probe | 2/2 CTest 通过；仅为工具链/绑定探针 |
 | python -m pytest --tb=short -v | WSL Ubuntu，02_estimation/python | 9 xfailed、1 skipped；已执行但不是 B0 完成证据 |
 

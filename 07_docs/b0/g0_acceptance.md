@@ -25,16 +25,21 @@
 | 指标族 | 已固定的计算口径 | 必需原始信号 |
 |---|---|---|
 | 姿态误差 | 2*acos(clamp(abs(dot(q_reference,q_candidate)),0,1))，处理 q/-q 等价 | q_nb_truth、q_nb_command 或 q_nb_estimate |
-| 初始偏差稳定 | 从 scenario tick 0 起；进入 band 后完整 dwell 才计入 | q_nb_truth、q_nb_command |
+| 初始倾斜偏差稳定 | acos(clamp(dot(R_nb_command 的第三列, R_nb_truth 的第三列),-1,1))；从 scenario tick 0 起，进入 band 后完整 dwell 才计入 | q_nb_truth、q_nb_command |
 | command step 跟踪稳定 | 从该 step 的开始 tick 起；每个 event 单独窗口、目标和 deadline | q_nb_truth、q_nb_command |
 | 扰动/撤回恢复 | 从该 disturbance 或 command withdrawal 的结束 tick 起 | q_nb_truth、q_nb_command |
-| 超调 | 按事件前 command 到目标的有符号增量投影；分母为该增量绝对值 | q_nb_truth、q_nb_command |
-| 跨轴误差 | 相对于当前 command step 轴的未命令轴误差最大值 | q_nb_truth、q_nb_command |
-| 饱和持续时间 | request 超界且 limited 为组件 clamp 的 dt 总和 | requested_torque_Nm、limited_torque_Nm |
+| 超调 | 按事件前 command 到目标的有符号增量投影；分母为该增量绝对值；完整 event 窗口 | q_nb_truth、q_nb_command |
+| 跨轴误差 | 相对于当前 command step 轴的未命令轴误差最大值；完整 event 窗口 | q_nb_truth、q_nb_command |
+| 饱和持续时间 | 任一轴 request 超界且 limited 为 controller clamp 的 wall-clock 时间并集；每 tick 只计一次 | requested_torque_Nm、limited_torque_Nm |
 | 估计误差与偏航漂移 | truth 与 estimate 相对误差；偏航仅是初始参考下的相对漂移 | q_nb_truth、q_nb_estimate |
-| 积分器 | 逐轴 integral torque contribution，不做全轴掩盖 | controller_integral_Nm |
+| 积分器 | 按声明轴的最大绝对 integral torque contribution；x/y/z 分别限于 0.15/0.15/0.10 Nm | controller_integral_Nm |
 | 加速度污染限制 | event 内 specific-force、limitation status 与 truth/estimate 均须记录 | imu_specific_force_m_s2、limitation_status、q_nb_truth、q_nb_estimate |
-| 无效输入/reset | 显式拒绝原因计数；相同 seed 和显式初态下的 post-reset trace 比较 | sample_validity、rejection_reason、reset_epoch、q_nb_estimate |
+| 无效输入/reset | 每个声明的 invalid event 只有在 invalid 与匹配 rejection reason 时才计一次；相同 seed 和显式初态下比较 post-reset trace | sample_validity、rejection_reason、reset_epoch、q_nb_estimate |
+
+初始偏差场景的候选恢复指标只衡量 tilt，不把未知绝对 yaw 当成六轴 IMU 能保证恢复的
+性能。静止时，对 NED 竖直轴的等价 yaw 变换保持重力量测不变；因此未知初始 yaw 是
+限制刻画边界，且 operating_envelope 明确排除无参考的绝对初始航向恢复。正常的三轴相对 command tracking（含 yaw command）仍保留在六个 step
+事件中。此口径待维护者批准，不表述为已达到的新指标。
 
 稳定窗口必须容纳候选时间界加 dwell。若先达到窗口截止仍未连续驻留完整 dwell，结果是
 performance_fail；不允许返回一个虚构的有限稳定时间。
@@ -61,12 +66,17 @@ artifact_path 仅约定未来证据位置。本 PR 不提交 CSV、图表、仿�
 保持 700 tick（1.75 s），并有 100 tick（0.25 s）间隔；场景长度调整为 14 s，
 使每一个正/负轴事件都有自己的可观测窗口，而不是共享公共窗口。
 
-每个 command event 的 acceptance 项必须显式引用 event_id。校验器拒绝：
+每个 command event 的 acceptance 项必须显式引用 event_id。稳定时间按其起点和
+dwell 容量校验；超调和跨轴峰值则必须恰好覆盖整个 [start_tick, end_tick)。这避免
+例如真实峰值晚至 event 最后一个 tick 时，被一个只含首 tick 的观察窗遗漏。该说明是
+指标合同示意，不是动态仿真结果。
+
+校验器拒绝：
 
 - 同一轴事件重叠、乱序或不在场景范围内；
 - 删除任一 event 的稳定、超调或跨轴指标；
 - 用 sample_validity 等无关 observation 替代所需原始信号；
-- 窗口短于时间界加 dwell；
+- 缩短超调或跨轴峰值窗口、绑定错误 event，或让窗口短于时间界加 dwell；
 - 把 recovery 窗口的起点放在 event end 之外。
 
 ## 饱和撤回的独立证据
@@ -75,12 +85,22 @@ artifact_path 仅约定未来证据位置。本 PR 不提交 CSV、图表、仿�
 
 1. event 内的 actuator_saturation_time_s 使用大于零的下界，作为未来 G3 的实际
    触发证据；
-2. 同时保留上界，防止持续饱和被当作通过；
-3. 将恢复稳定时间绑定到 command event 的结束 tick；
-4. 记录逐轴 integral torque contribution、request、limited 与 actual。
+2. 同时保留覆盖完整场景的正上界，防止持续饱和被当作通过；下界与上界是独立必需
+   角色，不能相互替代；
+3. 以“任意轴饱和”的 wall-clock 并集计时；三个轴同时饱和 0.1 s 仍是 0.1 s；
+4. 将恢复稳定时间绑定到 command event 的结束 tick；
+5. 记录 x/y/z 三个独立 integral torque contribution 限值、request、limited 与 actual；
+6. 让 controller 作为唯一限幅责任方，向 actuator 传递带 timestamp 的成对
+   request/limited/saturated TorqueCommand，feedback 再携带配对命令时间戳。
 
 因此，未来动态运行若从未触发饱和，必须按合同得到失败或 inconclusive，而不能借由
-上界为零而通过。
+上界为零而通过。abs(I_z)=0.12 Nm 对候选 z 限值 0.10 Nm 必须失败；这些是合同
+例子，绝非已经获得的运行结果。
+
+无效输入/reset 也不是一个可任意凑数的计数：场景必须恰有 negative dt 和 stale
+timestamp 各一次，每次只有可见的 invalid/reason 证据匹配时才计一次，随后才有一个
+all-components reset。计数下界固定为两个已声明注入，删掉或重复一种事件、或把阈值
+改为零都会被配置校验拒绝。
 
 ## CTL-REQ 适用性审查
 

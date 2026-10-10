@@ -704,3 +704,345 @@ def test_rejects_component_boundary_violations(mutator, match: str) -> None:
 )
 def test_metric_type_errors_remain_locatable_contract_errors(mutator, match: str) -> None:
     assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("scenario_id", "criterion_id"),
+    [
+        ("acceleration_contamination", "acceleration_limitation_recorded"),
+        ("invalid_input_and_reset", "reset_is_deterministic"),
+    ],
+)
+def test_success_boolean_criteria_cannot_be_weakened(
+    scenario_id: str,
+    criterion_id: str,
+) -> None:
+    assert_invalid(
+        lambda config: criterion(config, scenario_id, criterion_id).__setitem__(
+            "limit", False
+        ),
+        "must be true for successful",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: remove_criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_duration_upper_bound",
+            ),
+            "full-scenario upper bound",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_duration_upper_bound",
+            ).__setitem__("operator", ">="),
+            "full-scenario upper bound",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_duration_upper_bound",
+            )["window"].__setitem__("end_tick", 2399),
+            "positive full-scenario saturation duration upper bound",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_triggered_duration",
+            )["window"].__setitem__("end_tick", 999),
+            "positive saturation trigger criterion over its command event",
+        ),
+    ],
+)
+def test_saturation_trigger_and_upper_bound_have_distinct_required_roles(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: scenario(
+                config,
+                "invalid_input_and_reset",
+            )["events"].remove(
+                event(config, "invalid_input_and_reset", "stale_timestamp_rejection")
+            ),
+            "exactly one negative_dt and one stale_timestamp",
+        ),
+        (
+            lambda config: event(
+                config,
+                "invalid_input_and_reset",
+                "stale_timestamp_rejection",
+            ).__setitem__("invalid_kind", "negative_dt"),
+            "exactly one negative_dt and one stale_timestamp",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "invalid_input_and_reset",
+                "invalid_input_rejected",
+            ).__setitem__("limit", 0),
+            "rejection counter must cover the full scenario",
+        ),
+    ],
+)
+def test_invalid_input_coverage_and_counter_are_not_weakenable(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("criterion_id", "end_tick"),
+    [
+        ("step_x_positive_overshoot", 201),
+        ("step_x_positive_cross_axis", 899),
+    ],
+)
+def test_peak_step_metrics_must_cover_the_full_command_event(
+    criterion_id: str,
+    end_tick: int,
+) -> None:
+    assert_invalid(
+        lambda config: criterion(
+            config,
+            "tri_axis_signed_steps",
+            criterion_id,
+        )["window"].__setitem__("end_tick", end_tick),
+        "must exactly cover its command event for peak observation",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: remove_criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_integral_z_limit",
+            ),
+            "exactly one integral limit for each x, y, and z axis",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_integral_z_limit",
+            ).__setitem__("limit", 0.15),
+            "must match controller_contract.rate_pid.integrator_limit_Nm",
+        ),
+        (
+            lambda config: criterion(
+                config,
+                "saturation_withdrawal",
+                "saturation_integral_z_limit",
+            ).__setitem__("unit", "rad"),
+            "must be 'Nm'",
+        ),
+        (
+            lambda config: config["acceptance_policy"]["metric_definitions"][
+                "controller_integral_Nm"
+            ].__setitem__("axis_aggregation", "max_abs_over_axes"),
+            "must use the declared axis aggregation",
+        ),
+        (
+            lambda config: config["acceptance_policy"]["metric_definitions"][
+                "actuator_saturation_time_s"
+            ].__setitem__("axis_aggregation", "sum_over_axes_per_tick_then_time"),
+            "must use the declared axis aggregation",
+        ),
+        (
+            lambda config: config["acceptance_policy"]["metric_definitions"][
+                "actuator_saturation_time_s"
+            ].__setitem__(
+                "formula", "sum_dt_where_saturation_trigger_definition_is_true"
+            ),
+            "must use the declared metric formula",
+        ),
+    ],
+)
+def test_integral_axis_limits_and_saturation_time_aggregation_are_closed(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+def test_per_axis_integral_limit_contract_examples_are_explicit() -> None:
+    limits = default_config()["controller_contract"]["rate_pid"]["integrator_limit_Nm"]
+    assert limits == [0.15, 0.15, 0.1]
+    assert abs(0.12) > limits[2]
+    simultaneous_axis_durations_s = [0.1, 0.1, 0.1]
+    wall_clock_union_s = max(simultaneous_axis_durations_s)
+    assert wall_clock_union_s == 0.1
+    assert wall_clock_union_s != sum(simultaneous_axis_durations_s)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: scenario(
+                config,
+                "initial_attitude_offset",
+            )["initial_attitude_offset_rad"].__setitem__(2, 0.10472),
+            "unknown six-axis-IMU yaw is not an absolute recovery target",
+        ),
+        (
+            lambda config: config["acceptance_policy"][
+                "initial_yaw_observability"
+            ].__setitem__("absolute_yaw_from_six_axis_imu", "observable"),
+            "must distinguish observable tilt recovery",
+        ),
+        (
+            lambda config: config["operating_envelope"][
+                "max_initial_attitude_offset_rad"
+            ].__setitem__(2, 0.10472),
+            "exclude absolute initial yaw recovery",
+        ),
+    ],
+)
+def test_initial_yaw_unobservability_cannot_be_recast_as_recovery(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: next(
+                field
+                for field in config["interface_contract"]["messages"]["torque_command"]
+                if field["name"] == "requested_torque_body_Nm"
+            ).__setitem__("name", "deleted_request"),
+            "complete named field set",
+        ),
+        (
+            lambda config: config["interface_contract"]["component_calls"]["actuator"].__setitem__(
+                "step",
+                "step(limited_torque_body_Nm, dt_s) -> ActuatorFeedback",
+            ),
+            "complete paired message reset/step contract",
+        ),
+        (
+            lambda config: config["interface_contract"]["torque_flow"].__setitem__(
+                "limit_authority", "actuator_componentwise_clamp"
+            ),
+            "must close controller-limit",
+        ),
+    ],
+)
+def test_torque_request_limit_pairing_and_feedback_timing_are_closed(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: config["estimator_contract"].__setitem__(
+                "normalize_after", [{}]
+            ),
+            r"estimator_contract\.normalize_after\[0\]: must be a non-empty string",
+        ),
+        (
+            lambda config: config["acceptance_policy"].__setitem__(
+                "outcome_classes", [{}]
+            ),
+            r"acceptance_policy\.outcome_classes\[0\]: must be a non-empty string",
+        ),
+        (
+            lambda config: config["operating_envelope"].__setitem__(
+                "validity_excludes", [{}]
+            ),
+            r"operating_envelope\.validity_excludes\[0\]: must be a non-empty string",
+        ),
+        (
+            lambda config: config["estimator_contract"].__setitem__(
+                "normalize_after", [["propagation"]]
+            ),
+            r"estimator_contract\.normalize_after\[0\]: must be a non-empty string",
+        ),
+        (
+            lambda config: config["acceptance_policy"].__setitem__(
+                "outcome_classes", "performance_pass"
+            ),
+            "must be an array",
+        ),
+    ],
+)
+def test_enumeration_collections_reject_nested_and_object_values_as_contract_errors(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: criterion(
+                config,
+                "initial_attitude_offset",
+                "offset_tilt_peak_error",
+            )["window"].__setitem__("end_tick", 1),
+            "must cover the full initial-offset scenario",
+        ),
+        (
+            lambda config: scenario(
+                config,
+                "initial_attitude_offset",
+            )["acceptance"].append(
+                {
+                    "id": "forbidden_absolute_yaw_recovery",
+                    "metric": "attitude_error_rad",
+                    "reducer": "peak",
+                    "operator": "<=",
+                    "limit": 0.1,
+                    "unit": "rad",
+                    "window": {"start_tick": 0, "end_tick": 2400},
+                    "evidence_status": "proposed_not_executed",
+                }
+            ),
+            "must use only the declared tilt recovery criteria",
+        ),
+    ],
+)
+def test_initial_offset_recovery_cannot_reintroduce_absolute_yaw_metrics(
+    mutator,
+    match: str,
+) -> None:
+    assert_invalid(mutator, match)
+
+
+def test_torque_message_validity_cannot_disconnect_saturation_from_request() -> None:
+    assert_invalid(
+        lambda config: next(
+            field
+            for field in config["interface_contract"]["messages"]["torque_command"]
+            if field["name"] == "saturated"
+        ).__setitem__("validity", "any_bool_is_acceptable"),
+        "must preserve paired torque-message semantics",
+    )
