@@ -23,11 +23,16 @@ from validate_config import (  # noqa: E402
 
 
 CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v1.json"
+V2_CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v2.json"
 SCHEMA_PATH = TRACK_ROOT / "schema" / "b0_g0_contract.schema.json"
 
 
 def default_config() -> dict:
     return load_config(CONFIG_PATH)
+
+
+def approved_config() -> dict:
+    return load_config(V2_CONFIG_PATH)
 
 
 def scenario(config: dict, scenario_id: str) -> dict:
@@ -66,6 +71,24 @@ def assert_invalid(mutator, match: str) -> None:
 
 def test_default_contract_is_valid() -> None:
     validate_config(default_config())
+
+
+def test_approved_v2_contract_is_valid_and_distinct_from_v1() -> None:
+    config = approved_config()
+    validate_config(config)
+    assert config["schema_version"] == "b0-g0-contract/v2"
+    assert config["contract_status"]["state"] == "approved"
+    assert config["contract_status"]["approval_record"]["ctl_applicability"] == {
+        "CTL-REQ-001": "not_applicable_to_current_B0",
+        "CTL-REQ-002": "not_applicable_to_current_B0",
+    }
+
+
+def test_v2_rejects_missing_approval_record() -> None:
+    config = approved_config()
+    config["contract_status"].pop("approval_record")
+    with pytest.raises(ContractValidationError, match="missing required key"):
+        validate_config(config)
 
 
 def test_command_line_entrypoint_accepts_default_contract(

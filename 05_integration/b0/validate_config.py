@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA_VERSION = "b0-g0-contract/v1"
+SUPPORTED_SCHEMA_VERSIONS = {"b0-g0-contract/v1", "b0-g0-contract/v2"}
 
 EXPECTED_SCENARIOS = {
     "stationary_zero_command": "in_envelope_performance",
@@ -2925,21 +2925,38 @@ def validate_config(config: dict[str, Any]) -> None:
     """Validate structural, semantic, physical, and scheduling constraints."""
 
     _mapping(config, "$", ROOT_REQUIRED, ROOT_REQUIRED)
-    if config["schema_version"] != SCHEMA_VERSION:
-        _fail("schema_version", f"must be {SCHEMA_VERSION!r}")
+    schema_version = config["schema_version"]
+    if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+        _fail("schema_version", "must be b0-g0-contract/v1 or b0-g0-contract/v2")
 
     status = _mapping(
         config["contract_status"],
         "contract_status",
-        {"state", "freeze_prohibited", "approval_required", "approval_transition"},
+        {"state", "freeze_prohibited", "approval_required", "approval_transition"}
+        | ({"approval_record"} if schema_version == "b0-g0-contract/v2" else set()),
     )
-    if status["state"] != "proposed_pending_maintainer_approval":
-        _fail("contract_status.state", "must remain proposed pending maintainer approval")
-    if status["freeze_prohibited"] is not True:
-        _fail("contract_status.freeze_prohibited", "must be true until approval")
     approvals = _string_list(status["approval_required"], "contract_status.approval_required")
-    if not approvals:
-        _fail("contract_status.approval_required", "must list concrete approval decisions")
+    if schema_version == "b0-g0-contract/v1":
+        if status["state"] != "proposed_pending_maintainer_approval":
+            _fail("contract_status.state", "must remain proposed pending maintainer approval")
+        if status["freeze_prohibited"] is not True or not approvals:
+            _fail("contract_status", "v1 must remain proposed with approval requirements")
+    else:
+        if status["state"] != "approved" or status["freeze_prohibited"] is not False:
+            _fail("contract_status", "v2 must be approved and freeze_prohibited must be false")
+        if approvals:
+            _fail("contract_status.approval_required", "v2 approval requirements must be empty")
+        record = _mapping(status["approval_record"], "contract_status.approval_record", {
+            "decision", "decision_date", "decision_source", "baseline_commit",
+            "approval_package_commit", "scope", "ctl_applicability",
+        })
+        if record["decision"] != "approved_by_project_administrator":
+            _fail("contract_status.approval_record.decision", "must identify the approving authority")
+        if record["ctl_applicability"] != {
+            "CTL-REQ-001": "not_applicable_to_current_B0",
+            "CTL-REQ-002": "not_applicable_to_current_B0",
+        }:
+            _fail("contract_status.approval_record.ctl_applicability", "must preserve the approved CTL applicability decisions")
     transition = _mapping(
         status["approval_transition"],
         "contract_status.approval_transition",
@@ -2953,6 +2970,8 @@ def validate_config(config: dict[str, Any]) -> None:
     expected_transition = {
         "current_version_action": (
             "remain_proposed_until_maintainer_approval_record_is_committed"
+            if schema_version == "b0-g0-contract/v1"
+            else "approved_successor_freezes_contract_without_mutating_v1"
         ),
         "approved_successor_schema_version": "b0-g0-contract/v2",
         "migration_rule": (
@@ -2999,7 +3018,7 @@ def validate_config(config: dict[str, Any]) -> None:
 
 
 def _default_config_path() -> Path:
-    return Path(__file__).resolve().parent / "configs" / "b0_g0_contract.v1.json"
+    return Path(__file__).resolve().parent / "configs" / "b0_g0_contract.v2.json"
 
 
 def main(argv: list[str] | None = None) -> int:

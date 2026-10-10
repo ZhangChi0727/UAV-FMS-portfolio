@@ -1,19 +1,18 @@
-# B0 G0 集中批准包（待维护者决定）
+# B0 G0 集中批准包（已批准，v1 保留）
 
-状态：`待决定`。本文是字段可追溯的设计批准摘要，不是批准记录，不产生 approved 状态，
-也不代表性能、SIL/HIL、飞行或 G0 冻结。
+状态：`已批准用于生成 v2`。PA 决定记录见 `07_docs/b0/g0_approval_decision.md`。
+本文不代表性能、SIL/HIL、飞行或 G0 完成。
 
 准备基点：PR #11 分支 `codex/b0-g0-contracts`，技术基点
 `046674dcb391983345a33d683331bcf2e155dcb1`；本次 G1 工作单保护输入提交为
 `d8068ad30dde50d3effdf2b09645f1879f7a6a45`。当前唯一候选配置仍为
 `05_integration/b0/configs/b0_g0_contract.v1.json`，状态为
-`proposed_pending_maintainer_approval`。v1 必须保留；只有收到下方逐项决定后才生成
-`b0_g0_contract.v2.json`。
+`proposed_pending_maintainer_approval`。v1 必须保留；批准继承到
+`b0_g0_contract.v2.json`，不得原地修改 v1。
 
 ## 决策格式
 
-维护者请逐项回复“批准/修改/不批准”，并对修改给出精确字段和值。回复本表本身不会
-自动改变仓库；批准设计与允许合并是两个独立决定。建议采用的方案只表示 TC 的工程建议。
+PA 已逐项通过三项决定；批准设计与允许合并仍是两个独立决定。
 
 ## 集中决策表
 
@@ -46,4 +45,4 @@
 5. 在 Linux B0 track 实际运行 v1/v2 CLI、Ruff、pytest 和 `git diff --check`，再请求独立复核；
 6. 只有收到单独的明确合并授权、远程 CI 全绿且独立复核无阻塞后，才合并 PR #11。
 
-当前不执行上述批准后动作中的 v2 生成、approved 标记、Issue #3/#4 状态变更或合并。
+已执行 v2 生成与校验器迁移；Issue #3/#4 状态变更和 PR 合并仍需独立授权与验证。
