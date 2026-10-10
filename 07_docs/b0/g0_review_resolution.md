@@ -3,8 +3,8 @@
 **状态：修复待复审，仍为 proposed_pending_maintainer_approval。**
 
 本记录保留 Project Administrator 对 PR #11 基线 fd5615f 的首轮发现，并记录第二轮
-对 8948769 的独立复审收敛工作。“发现 → 合同/代码 → 反例测试”的对应关系不构成算法、
-仿真、HIL、飞行或需求符合性证据，也不表示 G0 已冻结。
+对 8948769 与第三轮对 e0d1e4a 的独立复审收敛工作。“发现 → 合同/代码 → 反例测试”的
+对应关系不构成算法、仿真、HIL、飞行或需求符合性证据，也不表示 G0 已冻结。
 
 ## 已处理的阻塞发现
 
@@ -31,6 +31,18 @@
 本轮仍只定义合同和拒绝性校验；没有实现 G1/G2/G3 指标器、对象或性能判定。上述数学和
 接口候选仍待维护者批准，故不能据此合并、冻结或关闭 Issue #3。
 
+## 第三轮复审发现的候选修复（待独立复审）
+
+| 第三轮发现 | 本轮合同与实现改动 | 关键正反例测试 |
+|---|---|---|
+| 多速率下的命令保持、原 timestamp 与 feedback 配对仍有 k/k-1 歧义 | timing 新增 first_due_tick 与 torque_command_hold；初始化显式 C_reset；interface/actuator/antiwindup 均改为“严格早于当前 base tick 的最新 held command”，并以 feedback 的 paired limited target 回算 | test_round4_held_command_contract_is_explicit；test_round4_rejects_ambiguous_multirate_command_handoff |
+| 饱和触发下界可能长于自身 command event | 校验器将 event tick 宽度换算为 wall-clock 上限，要求 trigger 下界不超过该宽度 | test_round4_saturation_trigger_equal_to_command_window_is_valid；test_round4_rejects_saturation_trigger_longer_than_command_window |
+| initial_attitude_offset 可通过另一个 initial_q_nb 叠加越过候选包线 | 该场景固定 identity base attitude，只允许声明的 roll/pitch plant-truth offset | test_round4_rejects_initial_offset_with_nonidentity_base_attitude |
+| reset replay 窗口可能没有任何或只有一次有效 estimator update | reset 前置顺序、输入/RNG/draw-index、比对时间基准和 1e-12 分量容差写入合同；窗口至少覆盖两次 post-reset due estimator update | test_round4_reset_replay_window_with_two_due_updates_is_valid；test_round4_rejects_reset_replay_window_without_two_due_updates；test_round4_rejects_reset_replay_tolerance_weaker_than_contract |
+
+本轮仍只定义合同和拒绝性校验；没有实现 G1/G2/G3 指标器、对象或性能判定。上述数学和
+接口候选仍待维护者批准，故不能据此合并、冻结或关闭 Issue #3。
+
 ## 配套完善
 
 - 所有合成参数继续标记为候选，并在配置和合同中记录简短量纲/数量级依据；
@@ -47,7 +59,7 @@
 |---|---|---|
 | python validate_config.py --config configs/b0_g0_contract.v1.json | WSL Ubuntu，B0 track | 通过；只证明默认候选合同可加载 |
 | python -m ruff check . | WSL Ubuntu，05_integration/b0 | 通过；只检查 G0 Python 合同 track |
-| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 111 passed；包含两轮评审列出的反例、逐事件结构反例、公式/判定方向篡改反例，以及第二轮的接口和类型守卫反例 |
+| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 121 passed；包含三轮评审的反例、逐事件结构反例、公式/判定方向篡改反例，以及多速率、饱和窗口、组合初态和 reset 重放边界反例 |
 | cmake/build/ctest preset development-readiness-debug | WSL Ubuntu，开发就绪 probe | 2/2 CTest 通过；仅为工具链/绑定探针 |
 | python -m pytest --tb=short -v | WSL Ubuntu，02_estimation/python | 9 xfailed、1 skipped；已执行但不是 B0 完成证据 |
 

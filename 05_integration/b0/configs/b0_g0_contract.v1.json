@@ -111,12 +111,12 @@
       "controller_every_ticks": 2
     },
     "sequence": [
-      "plant_consumes_actual_torque_for_interval_k",
-      "actuator_advances_torque_command_k_minus_1_limited_target",
+      "plant_consumes_held_actual_torque_for_interval_k",
+      "actuator_advances_most_recent_published_torque_command_before_k",
       "imu_samples_interval_end_when_due",
       "estimator_consumes_imu_when_due",
-      "controller_consumes_current_estimate_when_due",
-      "controller_publishes_torque_command_k_with_request_limit_and_saturation"
+      "controller_consumes_current_estimate_and_tagged_held_feedback_when_due",
+      "controller_publishes_next_torque_command_when_due"
     ],
     "timestamp_policy": {
       "strictly_increasing": true,
@@ -137,6 +137,21 @@
       "same_signal_overlap": "reject",
       "allowed_cross_type_overlap_pairs": [],
       "command_after_event": "return_affected_axis_to_zero"
+    },
+    "first_due_tick": {
+      "plant": 1,
+      "actuator": 1,
+      "imu": 2,
+      "estimator": 2,
+      "controller": 2
+    },
+    "torque_command_hold": {
+      "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
+      "controller_publication": "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period",
+      "actuator_consumption": "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k",
+      "hold_between_controller_updates": "reuse_same_command_and_preserve_original_timestamp_without_synthetic_publication",
+      "feedback_pairing": "actuator_feedback_tags_timestamp_of_the_command_actually_advanced",
+      "startup_rule": "hold_reset_command_until_first_due_controller_publication"
     }
   },
   "interface_contract": {
@@ -323,7 +338,7 @@
       },
       "actuator": {
         "reset": "reset(ActuatorInitialState, reset_epoch) -> ActuatorFeedback; invalid input raises ContractValidationError without state change",
-        "step": "step(torque_command, dt_s) -> ActuatorFeedback; advances the previous paired limited target exactly one base interval"
+        "step": "step(torque_command, dt_s) -> ActuatorFeedback; advances the most recent command published strictly before the current base tick exactly one base interval"
       },
       "estimator": {
         "reset": "reset(EstimatorInitialState, reset_epoch, rng_seed) -> StateEstimate; no live truth argument",
@@ -342,9 +357,9 @@
       "saturation_flag_producer": "controller",
       "command_message": "torque_command",
       "feedback_message": "actuator_feedback",
-      "actuator_consumption": "at_tick_k_actuator_advances_torque_command_k_minus_1_limited_target_only",
-      "feedback_pairing": "feedback_at_k_reports_actual_limited_and_saturation_from_command_k_minus_1",
-      "antiwindup_timing": "controller_at_k_uses_new_command_k_request_limit_and_feedback_k_actual_minus_limited_k_minus_1"
+      "actuator_consumption": "at_base_tick_k_actuator_advances_most_recent_command_published_strictly_before_k",
+      "feedback_pairing": "feedback_at_k_reports_actual_limited_and_saturation_of_the_held_command_with_its_original_timestamp",
+      "antiwindup_timing": "controller_at_due_tick_uses_new_command_request_limit_and_tagged_feedback_actual_minus_held_limited"
     }
   },
   "initialization_contract": {
@@ -421,6 +436,26 @@
       "estimator_truth_rule": "estimator_reset_uses_explicit_estimator_q_nb_and_never_receives_live_truth",
       "recovery_metric": "tilt_only_body_z_axis_angle_between_command_and_truth",
       "unknown_initial_yaw_policy": "not_an_absolute_recovery_performance_target_without_declared_yaw_reference"
+    },
+    "reset_torque_command": {
+      "publication_phase": "pre_tick_zero_controller_reset",
+      "timestamp_s": 0.0,
+      "requested_torque_body_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "limited_torque_body_Nm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "saturated": [
+        false,
+        false,
+        false
+      ],
+      "hold_until_base_tick": 2
     }
   },
   "plant_contract": {
@@ -481,7 +516,7 @@
     "antiwindup": {
       "strategy": "conditional_integration_plus_back_calculation",
       "integrator_state": "integral_torque_contribution_body_Nm",
-      "discrete_update": "I_next=clamp(I+dt*(conditional_ki_rate_error+kaw_limit*(limited_target-requested)+kaw_lag*(actual-limited_target)),-I_limit,I_limit)",
+      "discrete_update": "I_next=clamp(I+dt*(conditional_ki_rate_error+kaw_limit*(limited_target-requested)+kaw_lag*(actual-feedback_limited_target)),-I_limit,I_limit)",
       "conditional_integration": {
         "block_when": "requested_minus_limited_has_same_sign_as_rate_error",
         "allow_when": "not_limited_or_rate_error_reduces_saturation"
@@ -496,14 +531,15 @@
         ]
       },
       "actuator_lag_feedback": {
-        "signal": "actual_minus_limited_target_torque_body_Nm",
-        "availability": "actuator_state_after_current_tick_advance_from_previous_limited_target",
-        "delay_ticks": 1,
+        "signal": "actual_minus_feedback_limited_target_torque_body_Nm",
+        "availability": "tagged_feedback_at_due_controller_tick_from_most_recent_held_command",
         "gain_per_s": [
           2,
           2,
           2
-        ]
+        ],
+        "delay_controller_updates": 1,
+        "startup_feedback": "first_due_controller_tick_uses_tagged_reset_torque_command_feedback"
       },
       "reset_value_Nm": [
         0,
@@ -513,7 +549,7 @@
     },
     "parameter_rationale": "Synthetic torque limits and 0.03 s lag create a bounded abstract torque interface; the controller is the sole componentwise limiter and the actuator advances only the paired limited target, not a hidden recomputed clamp.",
     "limit_authority": "controller_componentwise_clamp",
-    "request_limit_pairing": "torque_command_carries_same_tick_requested_limited_and_saturated_fields",
+    "request_limit_pairing": "torque_command_carries_same_due_tick_requested_limited_and_saturated_fields",
     "saturation_status_definition": "controller_sets_true_when_abs_requested_exceeds_limit_and_limited_equals_componentwise_clamp",
     "dynamics_input": "paired_torque_command_limited_target_only"
   },
@@ -736,7 +772,7 @@
       "hardware",
       "absolute_initial_yaw_recovery_without_reference"
     ],
-    "parameter_rationale": "The attitude, rate, and torque ranges are deliberately synthetic and mutually bounded for a rotation-only experiment; they exclude translation and real-airframe claims."
+    "parameter_rationale": "The attitude, rate, and torque ranges are deliberately synthetic and mutually bounded for a rotation-only experiment; they exclude translation, real-airframe claims, and absolute initial yaw recovery without a declared reference."
   },
   "acceptance_policy": {
     "source_ref": "SYNTH-SCENARIO-001",
@@ -897,11 +933,15 @@
       },
       "reset_replay_match": {
         "source_signals": [
+          "imu_gyro_rad_s",
+          "imu_specific_force_m_s2",
+          "q_nb_command",
+          "sample_validity",
           "reset_epoch",
           "q_nb_estimate"
         ],
-        "formula": "post_reset_trace_matches_same_seed_and_explicit_initialization_replay",
-        "axis_aggregation": "all_over_post_reset_window",
+        "formula": "all_q_nb_estimate_components_match_within_tolerance_at_each_replayed_post_reset_due_estimator_tick",
+        "axis_aggregation": "all_over_at_least_two_post_reset_estimator_updates",
         "invalid_data_action": "execution_error_inconclusive"
       },
       "tilt_error_rad": {
@@ -942,6 +982,14 @@
         "rejection_reason"
       ],
       "reset_rule": "exactly_one_all_components_reset_after_invalid_input_coverage"
+    },
+    "reset_replay": {
+      "reset_event_order": "at_reset_event_start_reset_all_components_before_due_scheduled_work",
+      "input_replay_rule": "replay_identical_timestamped_imu_and_attitude_command_trace_from_reset_relative_tick_zero",
+      "rng_replay_rule": "restore_declared_scenario_seed_and_replay_identical_post_reset_noise_draw_indices",
+      "time_reference": "compare_matching_reset_relative_due_estimator_ticks",
+      "q_nb_component_abs_tolerance": 1e-12,
+      "minimum_post_reset_estimator_updates": 2
     }
   },
   "scenarios": [
@@ -1789,7 +1837,10 @@
         "sample_validity",
         "rejection_reason",
         "reset_epoch",
-        "q_nb_estimate"
+        "q_nb_estimate",
+        "imu_gyro_rad_s",
+        "imu_specific_force_m_s2",
+        "q_nb_command"
       ],
       "artifact_path": "artifacts/b0/invalid_input_and_reset/",
       "acceptance": [

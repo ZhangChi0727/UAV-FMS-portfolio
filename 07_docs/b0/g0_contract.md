@@ -101,10 +101,14 @@ initialization_contract 明确区分：
 
 - 场景中的 initial_q_nb 与 initial_body_rate_rad_s 只属于 plant truth；
 - initial_attitude_offset 场景的偏差也只属于 plant truth，按
-  q_base ⊗ qx(roll) ⊗ qy(pitch) ⊗ qz(yaw)、FRD 内禀 x→y→z 顺序组合；
+  q_base ⊗ qx(roll) ⊗ qy(pitch) ⊗ qz(yaw)、FRD 内禀 x→y→z 顺序组合；该场景的
+  initial_q_nb 固定为单位四元数，故进入候选包线的姿态偏差只能来自声明的 roll/pitch
+  offset，不能由另一个 base attitude 叠加绕过；
 - estimator、command、actuator、积分器与微分滤波器从
   initialization_contract/default_component_state 显式初始化；
 - tick 0 只完成 reset 与初始化，不积分；首个区间为 [0, base_period_s)；
+- pre-tick-0 的 Controller.reset 必须发布 timestamp=0 的全零 C_reset（request、limited
+  与 saturated 全部显式）；它保持到 controller 的第一个 due base tick；
 - 随机状态在首次噪声抽样前由场景 seed 初始化；reset 产生新的显式 epoch。
 
 初始偏差恢复的候选口径专门处理六轴 IMU 的航向边界。该场景只施加
@@ -128,25 +132,40 @@ IMU 样本。
 
 ## 确定性时序与事件语义
 
-每个基础 tick 按唯一顺序执行：
+`timing/first_due_tick` 与 `timing/torque_command_hold` 固定多速率命令交接：plant 和
+actuator 首次在 tick 1 到期；IMU、estimator 与 controller 首次在各自 2-tick 周期的
+tick 2 到期。controller 只在 due tick 发布命令；actuator 虽每个 base tick 执行，仍只
+消费**严格早于当前 tick**发布的最新 TorqueCommand。因此保持命令不产生伪造的新时间戳。
 
-1. plant 在积分区间 k 消费先前保持的 actual torque；
-2. actuator 在 tick k 只向 TorqueCommand[k-1].limited 推进，并生成
-   ActuatorFeedback[k]；
+每个基础 tick k 按唯一顺序执行：
+
+1. plant 为区间 k 消费上一 actuator 更新后保持的 actual torque；
+2. actuator 推进在 k 之前最近发布的 TorqueCommand 的 limited 字段一个 base interval，
+   并生成带原 command timestamp 的 ActuatorFeedback[k]；
 3. 到期时 IMU 在区间末采样；
 4. 到期时 estimator 消费该新 IMU；
-5. 到期时 controller 消费当前 estimate 与 ActuatorFeedback[k]；
-6. controller 在同一 tick 计算 TorqueCommand[k] 的 request、limited 和
-   saturated，并仅供下一次 actuator 推进使用。
+5. 到期时 controller 消费当前 estimate 与该 tick 的已标记 feedback；
+6. controller 在上述 actuator 步之后发布新命令，timestamp 恰为 k*base_period_s，供
+   后续 base tick 使用。
 
-因此 TorqueCommand[k] 不会在产生的同一 tick 反过来影响 actuator 或 plant；
-ActuatorFeedback[k].command_timestamp_s 标记其来自 k-1 的配对命令。控制器的
-限幅回算使用新命令 k 的 limited-requested；滞后回算使用已到达的
-actual[k]-limited[k-1]。没有隐藏全局值或代数环。
+默认 2-tick controller 周期的前五个关键点如下；表中的 feedback timestamp 指
+`ActuatorFeedback.command_timestamp_s`，不是每次反馈的新 command publication：
+
+| base tick | actuator 推进的 held command | feedback 的 command timestamp | 此 tick 末 controller publication |
+|---:|---|---:|---|
+| pre-0 | 无积分；reset 发布 C_reset | — | C_reset，0 |
+| 1 | C_reset | 0 | 无（controller 未到期） |
+| 2 | C_reset | 0 | C_2，2*base_period_s |
+| 3 | C_2 | 2*base_period_s | 无（controller 未到期） |
+| 4 | C_2 | 2*base_period_s | C_4，4*base_period_s |
+
+首个 due controller tick 使用 C_reset 的标记反馈；之后每个 due controller tick 使用最近
+已推进 held command 的 feedback。该规则既规定启动命令，也规定 C_2 在 tick 3 和 tick 4
+之间被保持且原时间戳不变，没有隐藏全局值、代数环或“每 tick 重新发布”的隐含分支。
 
 当前候选要求 estimator 与 IMU 同周期，controller 与 estimator 同周期；因此不存在
-“无新 IMU 仍重复消费”的隐含分支，no_new_imu_action 明确为 not_scheduled。
-controller 读取的 estimate 年龄为零个基础 tick。
+“无新 IMU 仍重复消费”的隐含分支，no_new_imu_action 明确为 not_scheduled。controller
+读取的 estimate 年龄为零个基础 tick。
 
 事件使用半开区间 [start_tick, end_tick)：开始端包含、结束端不包含。事件按非递减
 开始 tick 声明；同一信号（含同一指令轴）重叠被拒绝。跨类型重叠仅可由
@@ -158,9 +177,10 @@ timing/event_tick_semantics/allowed_cross_type_overlap_pairs 逐项批准；默�
 三个力矩量绝不混同：
 
 ~~~text
-requested_torque : controller 的未限幅输出（TorqueCommand[k]）
-limited_target   : controller 在同 tick 对 request 逐轴 clamp 后的目标（TorqueCommand[k]）
-actual_torque    : actuator 从 TorqueCommand[k-1] 推进后发布的有界输出（Feedback[k]）
+requested_torque       : controller 在 due tick k 的未限幅输出（TorqueCommand[k]）
+limited_target         : 同一 TorqueCommand[k] 内对 request 的逐轴 clamp
+feedback_limited_target: Feedback[k] 配对 held command 的 limited 字段与原 timestamp
+actual_torque          : actuator 推进该 held command 后发布的有界输出（Feedback[k]）
 ~~~
 
 控制器采用候选组合策略“条件积分 + 回算”：
@@ -170,28 +190,32 @@ I_next = clamp(
   I + dt * (
     conditional(ki * rate_error)
     + kaw_limit * (limited_target[k] - requested[k])
-    + kaw_lag * (actual[k] - limited_target[k-1])
+    + kaw_lag * (actual[k] - feedback_limited_target[k])
   ),
   -I_limit, I_limit
 )
 ~~~
 
-actuator_contract/antiwindup 固定每一项的单位、生产者、时刻、增益、reset 值和一
-tick actuator 发布延迟：
+`feedback_limited_target[k]` 不表示“数值上碰巧等于当前 target 的值”；它是
+ActuatorFeedback 明确携带、带原命令时间戳的配对字段。默认多速率下它来自一个 controller
+publication 前的 held command；首个 due controller tick 则明确使用 C_reset 的反馈。
 
-- 当 requested - limited 与 rate_error 同号时，不允许自然积分继续把 request
-  推向饱和；
-- limited_target[k] - requested[k] 在同一 controller tick 的组件限幅后可得，专门
-  处理 request 超界；
-- actual[k] - limited_target[k-1] 在 actuator 推进后可得，专门处理动态滞后；
+actuator_contract/antiwindup 固定每一项的单位、生产者、可用时刻、每轴增益、reset 值和
+一 controller-publication delay：
+
+- 当 requested - limited 与 rate_error 同号时，不允许自然积分继续把 request 推向饱和；
+- limited_target[k] - requested[k] 在同一 controller tick 的组件限幅后可得，专门处理
+  request 超界；
+- actual[k] - feedback_limited_target[k] 在 actuator 推进后可得，专门处理动态滞后，且
+  不把 held command 错配为当前刚发布的命令；
 - 积分状态是 integral_torque_contribution_body_Nm，按轴限于
   controller_contract/rate_pid/integrator_limit_Nm。
 
-手算的合同例子（不是动态性能结果）：x 轴 requested=+0.50 Nm、
-limited_target=actual=+0.35 Nm、正 rate_error 时，条件积分被阻断，限幅反馈为
--0.15 Nm。以候选 kaw_limit=8 1/s 和 controller dt=0.005 s，该项使积分贡献减少
-0.006 Nm；lag 项为零。未饱和时限幅反馈为零，反向误差则允许正常积分并协助恢复。
-此例说明 request 超界不会因 actual=limited_target 而被误判为无饱和。
+手算的合同例子（不是动态性能结果）：x 轴当前 requested=+0.50 Nm、当前
+limited_target=+0.35 Nm，而配对反馈中的 actual=feedback_limited_target=+0.35 Nm、正
+rate_error 时，条件积分被阻断，限幅反馈为 -0.15 Nm。以候选 kaw_limit=8 1/s 和
+controller dt=0.005 s，该项使积分贡献减少 0.006 Nm；lag 项为零。即使执行器已跟上其
+held target，当前 request 超界仍由限幅回算记录，不能被误判为“无饱和”。
 
 ## 控制、估计与 IMU 的未实现合同
 
@@ -225,8 +249,9 @@ acceptance_policy/metric_definitions 为每项指标固定原始信号、公式�
 - 饱和为任一轴 request 超界且 limited 等于 controller clamp。饱和时间是“任意轴
   为真”的 wall-clock 并集，每个 tick 最多累计一次 dt；三轴同时饱和 0.1 s 的候选
   指标值是 0.1 s，不是 0.3 s；
-- saturation_withdrawal 必须同时有 event 内正持续时间下界和全场景上界。二者角色
-  不可相互替代；从未饱和或持续过长都不能通过；
+- saturation_withdrawal 必须同时有 event 内正持续时间下界和全场景上界。下界不得
+  大于绑定 command event 的物理 wall-clock 时长（相等允许）；二者角色不可相互替代，
+  从未饱和或持续过长都不能通过；
 - controller_integral_Nm 是按声明轴的最大绝对 integral contribution，x/y/z 的
   限值分别为 0.15/0.15/0.10 Nm；示例 abs(I_z)=0.12 Nm 必须违反 z 轴准则，不能
   被 x/y 的 0.15 Nm 掩盖；
@@ -234,6 +259,11 @@ acceptance_policy/metric_definitions 为每项指标固定原始信号、公式�
   每个事件以 sample_validity=false 且与 invalid_kind 匹配的 rejection_reason 计
   一次；计数准则覆盖全场景并必须等于这两个事件，随后才允许一个 all-components
   reset；
+- reset 在其事件开始、任何 due scheduled work 之前重置全部组件；从 reset-relative tick
+  zero 重放相同 timestamped IMU 与 attitude-command trace，恢复声明的场景 seed 与相同的
+  post-reset noise draw index。比较匹配的 reset-relative due estimator ticks 的每个
+  q_nb_estimate 分量，绝对容差为 1e-12；该窗口必须至少包含两次 post-reset due estimator
+  updates，不能用空窗口或一次样本伪造确定性；
 - 加速度污染必须记录 additive specific-force、limitation status 与 truth/estimate
   信号，不能以任意 true 代替证据。
 

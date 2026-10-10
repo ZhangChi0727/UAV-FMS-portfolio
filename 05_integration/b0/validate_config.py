@@ -27,12 +27,12 @@ EXPECTED_SCENARIOS = {
 }
 
 REQUIRED_SEQUENCE = [
-    "plant_consumes_actual_torque_for_interval_k",
-    "actuator_advances_torque_command_k_minus_1_limited_target",
+    "plant_consumes_held_actual_torque_for_interval_k",
+    "actuator_advances_most_recent_published_torque_command_before_k",
     "imu_samples_interval_end_when_due",
     "estimator_consumes_imu_when_due",
-    "controller_consumes_current_estimate_when_due",
-    "controller_publishes_torque_command_k_with_request_limit_and_saturation",
+    "controller_consumes_current_estimate_and_tagged_held_feedback_when_due",
+    "controller_publishes_next_torque_command_when_due",
 ]
 
 ROOT_REQUIRED = {
@@ -189,7 +189,14 @@ METRIC_SPECS: dict[str, dict[str, Any]] = {
         "reducers": {"all"},
         "unit": "bool",
         "value_kind": "bool",
-        "observations": {"reset_epoch", "q_nb_estimate"},
+        "observations": {
+            "imu_gyro_rad_s",
+            "imu_specific_force_m_s2",
+            "q_nb_command",
+            "sample_validity",
+            "reset_epoch",
+            "q_nb_estimate",
+        },
         "event_types": {"reset"},
     },
 }
@@ -271,8 +278,9 @@ METRIC_DEFINITION_SEMANTICS: dict[str, tuple[str, str]] = {
         "count_over_scenario_one_per_declared_invalid_event",
     ),
     "reset_replay_match": (
-        "post_reset_trace_matches_same_seed_and_explicit_initialization_replay",
-        "all_over_post_reset_window",
+        "all_q_nb_estimate_components_match_within_tolerance_at_each_replayed_"
+        "post_reset_due_estimator_tick",
+        "all_over_at_least_two_post_reset_estimator_updates",
     ),
 }
 
@@ -589,7 +597,7 @@ def _validate_conventions(config: dict[str, Any]) -> float:
 def _validate_timing(
     config: dict[str, Any],
     source_ids: set[str],
-) -> tuple[float, dict[str, int], set[str]]:
+) -> tuple[float, dict[str, int], dict[str, int], set[str]]:
     timing = _mapping(
         config["timing"],
         "timing",
@@ -601,6 +609,8 @@ def _validate_timing(
             "timestamp_policy",
             "sample_consumption_policy",
             "event_tick_semantics",
+            "first_due_tick",
+            "torque_command_hold",
         },
     )
     _source_reference(timing["source_ref"], "timing.source_ref", source_ids)
@@ -634,9 +644,65 @@ def _validate_timing(
             "must equal estimator_every_ticks so a controller consumes a current estimate",
         )
 
+    first_due = _mapping(
+        timing["first_due_tick"],
+        "timing.first_due_tick",
+        {"plant", "actuator", "imu", "estimator", "controller"},
+    )
+    normalized_first_due = {
+        name: _integer(value, f"timing.first_due_tick.{name}", positive=True)
+        for name, value in first_due.items()
+    }
+    expected_first_due = {
+        "plant": 1,
+        "actuator": 1,
+        "imu": normalized["imu_every_ticks"],
+        "estimator": normalized["estimator_every_ticks"],
+        "controller": normalized["controller_every_ticks"],
+    }
+    if normalized_first_due != expected_first_due:
+        _fail(
+            "timing.first_due_tick",
+            "must start plant/actuator at tick 1 and each due consumer at its first period",
+        )
+
     sequence = _list(timing["sequence"], "timing.sequence", length=len(REQUIRED_SEQUENCE))
     if sequence != REQUIRED_SEQUENCE:
         _fail("timing.sequence", "must use the declared deterministic publication order")
+
+    hold = _mapping(
+        timing["torque_command_hold"],
+        "timing.torque_command_hold",
+        {
+            "reset_command",
+            "controller_publication",
+            "actuator_consumption",
+            "hold_between_controller_updates",
+            "feedback_pairing",
+            "startup_rule",
+        },
+    )
+    expected_hold = {
+        "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
+        "controller_publication": (
+            "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period"
+        ),
+        "actuator_consumption": (
+            "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k"
+        ),
+        "hold_between_controller_updates": (
+            "reuse_same_command_and_preserve_original_timestamp_without_synthetic_publication"
+        ),
+        "feedback_pairing": (
+            "actuator_feedback_tags_timestamp_of_the_command_actually_advanced"
+        ),
+        "startup_rule": "hold_reset_command_until_first_due_controller_publication",
+    }
+    if hold != expected_hold:
+        _fail(
+            "timing.torque_command_hold",
+            "must close startup, held-command, original-timestamp, and feedback pairing semantics",
+        )
 
     timestamp_policy = _mapping(
         timing["timestamp_policy"],
@@ -721,7 +787,7 @@ def _validate_timing(
         normalized_pairs,
         "timing.event_tick_semantics.allowed_cross_type_overlap_pairs",
     )
-    return base_period_s, normalized, set(normalized_pairs)
+    return base_period_s, normalized, normalized_first_due, set(normalized_pairs)
 
 
 def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -> None:
@@ -861,14 +927,15 @@ def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -
         "command_message": "torque_command",
         "feedback_message": "actuator_feedback",
         "actuator_consumption": (
-            "at_tick_k_actuator_advances_torque_command_k_minus_1_limited_target_only"
+            "at_base_tick_k_actuator_advances_most_recent_command_published_strictly_before_k"
         ),
         "feedback_pairing": (
-            "feedback_at_k_reports_actual_limited_and_saturation_from_command_k_minus_1"
+            "feedback_at_k_reports_actual_limited_and_saturation_of_the_held_command_"
+            "with_its_original_timestamp"
         ),
         "antiwindup_timing": (
-            "controller_at_k_uses_new_command_k_request_limit_and_feedback_k_"
-            "actual_minus_limited_k_minus_1"
+            "controller_at_due_tick_uses_new_command_request_limit_and_tagged_feedback_"
+            "actual_minus_held_limited"
         ),
     }
     if torque_flow != expected_torque_flow:
@@ -896,8 +963,8 @@ def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -
                 "ContractValidationError without state change"
             ),
             "step": (
-                "step(torque_command, dt_s) -> ActuatorFeedback; advances the previous paired "
-                "limited target exactly one base interval"
+                "step(torque_command, dt_s) -> ActuatorFeedback; advances the most recent command "
+                "published strictly before the current base tick exactly one base interval"
             ),
         },
         "estimator": {
@@ -939,6 +1006,7 @@ def _validate_initialization_contract(
     config: dict[str, Any],
     source_ids: set[str],
     tolerance: float,
+    first_due_ticks: dict[str, int],
 ) -> None:
     contract = _mapping(
         config["initialization_contract"],
@@ -949,6 +1017,7 @@ def _validate_initialization_contract(
             "default_component_state",
             "scenario_field_ownership",
             "initial_attitude_offset",
+            "reset_torque_command",
         },
     )
     _source_reference(contract["source_ref"], "initialization_contract.source_ref", source_ids)
@@ -1086,6 +1155,62 @@ def _validate_initialization_contract(
             "must define owner, composition, sequence, and estimator truth isolation",
         )
 
+    reset_command = _mapping(
+        contract["reset_torque_command"],
+        "initialization_contract.reset_torque_command",
+        {
+            "publication_phase",
+            "timestamp_s",
+            "requested_torque_body_Nm",
+            "limited_torque_body_Nm",
+            "saturated",
+            "hold_until_base_tick",
+        },
+    )
+    if reset_command["publication_phase"] != "pre_tick_zero_controller_reset":
+        _fail(
+            "initialization_contract.reset_torque_command.publication_phase",
+            "must publish the zero command before tick zero",
+        )
+    if _number(
+        reset_command["timestamp_s"],
+        "initialization_contract.reset_torque_command.timestamp_s",
+    ) != 0.0:
+        _fail(
+            "initialization_contract.reset_torque_command.timestamp_s",
+            "must be zero",
+        )
+    for field in ("requested_torque_body_Nm", "limited_torque_body_Nm"):
+        values = _vector(
+            reset_command[field],
+            f"initialization_contract.reset_torque_command.{field}",
+            length=3,
+        )
+        if any(value != 0.0 for value in values):
+            _fail(
+                f"initialization_contract.reset_torque_command.{field}",
+                "must be zero before the first controller publication",
+            )
+    saturated = _list(
+        reset_command["saturated"],
+        "initialization_contract.reset_torque_command.saturated",
+        length=3,
+    )
+    if any(value is not False for value in saturated):
+        _fail(
+            "initialization_contract.reset_torque_command.saturated",
+            "must be false on every axis",
+        )
+    if _integer(
+        reset_command["hold_until_base_tick"],
+        "initialization_contract.reset_torque_command.hold_until_base_tick",
+        positive=True,
+    ) != first_due_ticks["controller"]:
+        _fail(
+            "initialization_contract.reset_torque_command.hold_until_base_tick",
+            "must equal timing.first_due_tick.controller",
+        )
+
 
 def _validate_spd(matrix: Any, path: str) -> None:
     rows = _list(matrix, path, length=3)
@@ -1195,7 +1320,7 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
         "implementation_status": "future_g1_contract_only",
         "limit_authority": "controller_componentwise_clamp",
         "request_limit_pairing": (
-            "torque_command_carries_same_tick_requested_limited_and_saturated_fields"
+            "torque_command_carries_same_due_tick_requested_limited_and_saturated_fields"
         ),
         "saturation_status_definition": (
             "controller_sets_true_when_abs_requested_exceeds_limit_and_limited_equals_"
@@ -1240,7 +1365,7 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
     if antiwindup["discrete_update"] != (
         "I_next=clamp(I+dt*(conditional_ki_rate_error+"
         "kaw_limit*(limited_target-requested)+"
-        "kaw_lag*(actual-limited_target)),-I_limit,I_limit)"
+        "kaw_lag*(actual-feedback_limited_target)),-I_limit,I_limit)"
     ):
         _fail(
             "actuator_contract.antiwindup.discrete_update",
@@ -1291,29 +1416,43 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
     lag_feedback = _mapping(
         antiwindup["actuator_lag_feedback"],
         "actuator_contract.antiwindup.actuator_lag_feedback",
-        {"signal", "availability", "delay_ticks", "gain_per_s"},
+        {
+            "signal",
+            "availability",
+            "delay_controller_updates",
+            "startup_feedback",
+            "gain_per_s",
+        },
     )
-    if lag_feedback["signal"] != "actual_minus_limited_target_torque_body_Nm":
+    if lag_feedback["signal"] != "actual_minus_feedback_limited_target_torque_body_Nm":
         _fail(
             "actuator_contract.antiwindup.actuator_lag_feedback.signal",
-            "must distinguish actuator lag from limit feedback",
+            "must use the limited target tagged in actuator feedback",
         )
     if (
         lag_feedback["availability"]
-        != "actuator_state_after_current_tick_advance_from_previous_limited_target"
+        != "tagged_feedback_at_due_controller_tick_from_most_recent_held_command"
     ):
         _fail(
             "actuator_contract.antiwindup.actuator_lag_feedback.availability",
-            "must declare the actuator-state timing",
+            "must declare held-command feedback timing",
         )
     if _integer(
-        lag_feedback["delay_ticks"],
-        "actuator_contract.antiwindup.actuator_lag_feedback.delay_ticks",
+        lag_feedback["delay_controller_updates"],
+        "actuator_contract.antiwindup.actuator_lag_feedback.delay_controller_updates",
         positive=True,
     ) != 1:
         _fail(
-            "actuator_contract.antiwindup.actuator_lag_feedback.delay_ticks",
-            "must be one publication delay",
+            "actuator_contract.antiwindup.actuator_lag_feedback.delay_controller_updates",
+            "must be one controller publication delay",
+        )
+    if (
+        lag_feedback["startup_feedback"]
+        != "first_due_controller_tick_uses_tagged_reset_torque_command_feedback"
+    ):
+        _fail(
+            "actuator_contract.antiwindup.actuator_lag_feedback.startup_feedback",
+            "must define the reset-command startup feedback",
         )
     _vector(
         lag_feedback["gain_per_s"],
@@ -1321,6 +1460,7 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
         length=3,
         nonnegative=True,
     )
+
     reset = _vector(
         antiwindup["reset_value_Nm"],
         "actuator_contract.antiwindup.reset_value_Nm",
@@ -1665,6 +1805,7 @@ def _validate_acceptance_policy(
             "outcome_classes",
             "initial_yaw_observability",
             "invalid_input",
+            "reset_replay",
         },
     )
     _source_reference(policy["source_ref"], "acceptance_policy.source_ref", source_ids)
@@ -1832,6 +1973,55 @@ def _validate_acceptance_policy(
     for field, expected in expected_invalid_rules.items():
         if invalid_input[field] != expected:
             _fail(f"acceptance_policy.invalid_input.{field}", "must define complete coverage")
+
+    reset_replay = _mapping(
+        policy["reset_replay"],
+        "acceptance_policy.reset_replay",
+        {
+            "reset_event_order",
+            "input_replay_rule",
+            "rng_replay_rule",
+            "time_reference",
+            "q_nb_component_abs_tolerance",
+            "minimum_post_reset_estimator_updates",
+        },
+    )
+    expected_reset_replay = {
+        "reset_event_order": (
+            "at_reset_event_start_reset_all_components_before_due_scheduled_work"
+        ),
+        "input_replay_rule": (
+            "replay_identical_timestamped_imu_and_attitude_command_trace_from_"
+            "reset_relative_tick_zero"
+        ),
+        "rng_replay_rule": (
+            "restore_declared_scenario_seed_and_replay_identical_post_reset_noise_"
+            "draw_indices"
+        ),
+        "time_reference": "compare_matching_reset_relative_due_estimator_ticks",
+    }
+    for field, expected in expected_reset_replay.items():
+        if reset_replay[field] != expected:
+            _fail(f"acceptance_policy.reset_replay.{field}", "must define deterministic replay")
+    tolerance = _number(
+        reset_replay["q_nb_component_abs_tolerance"],
+        "acceptance_policy.reset_replay.q_nb_component_abs_tolerance",
+        positive=True,
+    )
+    if tolerance != 1e-12:
+        _fail(
+            "acceptance_policy.reset_replay.q_nb_component_abs_tolerance",
+            "must be 1e-12",
+        )
+    if _integer(
+        reset_replay["minimum_post_reset_estimator_updates"],
+        "acceptance_policy.reset_replay.minimum_post_reset_estimator_updates",
+        positive=True,
+    ) != 2:
+        _fail(
+            "acceptance_policy.reset_replay.minimum_post_reset_estimator_updates",
+            "must require two post-reset estimator updates",
+        )
 
     definitions = _mapping(
         policy["metric_definitions"],
@@ -2096,6 +2286,32 @@ def _validate_event_criterion_timing(
             _fail(f"{path}.window.start_tick", "must start at the reset event")
 
 
+
+def _validate_reset_replay_window(
+    criterion: dict[str, Any],
+    path: str,
+    reset_event: dict[str, Any],
+    estimator_every_ticks: int,
+    estimator_first_due_tick: int,
+    minimum_updates: int,
+) -> None:
+    window = criterion["window"]
+    earliest_tick = max(reset_event["start_tick"], estimator_first_due_tick)
+    offset = (estimator_first_due_tick - earliest_tick) % estimator_every_ticks
+    first_post_reset_due_tick = earliest_tick + offset
+    if first_post_reset_due_tick >= window["end_tick"]:
+        update_count = 0
+    else:
+        update_count = 1 + (
+            window["end_tick"] - 1 - first_post_reset_due_tick
+        ) // estimator_every_ticks
+    if update_count < minimum_updates:
+        _fail(
+            f"{path}.window",
+            "must cover at least two post-reset due estimator updates",
+        )
+
+
 def _validate_tri_axis_steps(events: list[dict[str, Any]], path: str) -> None:
     if len(events) != 6:
         _fail(path, "must provide signed steps for all three body axes")
@@ -2122,6 +2338,7 @@ def _validate_required_acceptance(
     events: list[dict[str, Any]],
     total_ticks: int,
     integrator_limits: list[float],
+    base_period_s: float,
 ) -> None:
     metric_set = {criterion["metric"] for criterion, _ in criteria}
     missing_metrics = REQUIRED_SCENARIO_METRICS[scenario_id] - metric_set
@@ -2187,10 +2404,18 @@ def _validate_required_acceptance(
             "start_tick": command_event["start_tick"],
             "end_tick": command_event["end_tick"],
         }
+        command_duration_s = (
+            command_event["end_tick"] - command_event["start_tick"]
+        ) * base_period_s
         if trigger["window"] != command_window or float(trigger["limit"]) <= 0.0:
             _fail(
                 "scenarios",
                 "saturation_withdrawal requires a positive saturation trigger criterion over its command event",
+            )
+        if float(trigger["limit"]) > command_duration_s + 1e-12:
+            _fail(
+                "scenarios",
+                "saturation trigger duration must not exceed its command-event window duration",
             )
         if upper["window"] != full_window or float(upper["limit"]) <= 0.0:
             _fail(
@@ -2290,6 +2515,8 @@ def _validate_scenarios(
     base_period_s: float,
     quaternion_tolerance: float,
     dwell_ticks: int,
+    schedules: dict[str, int],
+    first_due_ticks: dict[str, int],
     allowed_cross_type_pairs: set[str],
 ) -> None:
     scenarios = _list(config["scenarios"], "scenarios", length=len(EXPECTED_SCENARIOS))
@@ -2334,6 +2561,11 @@ def _validate_scenarios(
         _validate_quaternion(record["initial_q_nb"], f"{path}.initial_q_nb", quaternion_tolerance)
         _vector(record["initial_body_rate_rad_s"], f"{path}.initial_body_rate_rad_s", length=3)
         if scenario_id == "initial_attitude_offset":
+            if record["initial_q_nb"] != [1, 0, 0, 0]:
+                _fail(
+                    f"{path}.initial_q_nb",
+                    "must be the identity base attitude so only the declared tilt offset enters the envelope",
+                )
             offset = _vector(
                 record.get("initial_attitude_offset_rad"),
                 f"{path}.initial_attitude_offset_rad",
@@ -2408,6 +2640,17 @@ def _validate_scenarios(
                     base_period_s,
                     dwell_ticks,
                 )
+                if validated["metric"] == "reset_replay_match":
+                    _validate_reset_replay_window(
+                        validated,
+                        criterion_path,
+                        events_by_id[validated["event_id"]],
+                        schedules["estimator_every_ticks"],
+                        first_due_ticks["estimator"],
+                        config["acceptance_policy"]["reset_replay"][
+                            "minimum_post_reset_estimator_updates"
+                        ],
+                    )
             elif validated["metric"] in {"attitude_settling_time_s", "tilt_settling_time_s"}:
                 if scenario_id != "initial_attitude_offset":
                     _fail(
@@ -2434,6 +2677,7 @@ def _validate_scenarios(
             events,
             total_ticks,
             config["controller_contract"]["rate_pid"]["integrator_limit_Nm"],
+            base_period_s,
         )
 
         scenario_ids.append(scenario_id)
@@ -2597,9 +2841,11 @@ def validate_config(config: dict[str, Any]) -> None:
 
     source_ids = _validate_sources(config)
     tolerance = _validate_conventions(config)
-    base_period_s, schedules, allowed_cross_type_pairs = _validate_timing(config, source_ids)
+    base_period_s, schedules, first_due_ticks, allowed_cross_type_pairs = _validate_timing(
+        config, source_ids
+    )
     _validate_interface_contract(config, source_ids)
-    _validate_initialization_contract(config, source_ids, tolerance)
+    _validate_initialization_contract(config, source_ids, tolerance, first_due_ticks)
     _validate_plant(config, source_ids)
     actuator_limits = _validate_actuator(config, source_ids)
     _validate_imu(config, source_ids, schedules)
@@ -2614,6 +2860,8 @@ def validate_config(config: dict[str, Any]) -> None:
         base_period_s,
         tolerance,
         dwell_ticks,
+        schedules,
+        first_due_ticks,
         allowed_cross_type_pairs,
     )
     _validate_operating_envelope(config, source_ids)
