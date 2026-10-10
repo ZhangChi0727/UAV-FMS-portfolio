@@ -1,10 +1,10 @@
 # B0 G0 决定记录
 
-日期：2026-10-10  
-决定人：Project Administrator（经用户授权交付 PA 评审）  
+日期：2026-10-10
+决定人：Project Administrator（经用户授权交付 PA 评审）
 范围：G0 合同候选冻结与 CTL 适用性；不构成性能合规证明。
 
-基线提交：`046674dcb391983345a33d683331bcf2e155dcb1`  
+基线提交：`046674dcb391983345a33d683331bcf2e155dcb1`
 批准包提交：`ab2e6b05b2d51d851b1c3dfada5b69a66f47b9b0`
 
 ## 决定
