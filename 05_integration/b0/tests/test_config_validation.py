@@ -1059,9 +1059,13 @@ def test_round4_held_command_contract_is_explicit() -> None:
         "controller": 2,
     }
     assert timing["torque_command_hold"] == {
-        "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
+        "reset_command": (
+            "at_each_epoch_local_tick_zero_publish_zero_torque_command_with_"
+            "scenario_clock_timestamp"
+        ),
         "controller_publication": (
-            "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period"
+            "at_each_due_controller_base_tick_timestamp_equals_scenario_clock_tick_"
+            "times_base_period"
         ),
         "actuator_consumption": (
             "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k"
@@ -1072,11 +1076,13 @@ def test_round4_held_command_contract_is_explicit() -> None:
         "feedback_pairing": (
             "actuator_feedback_tags_timestamp_of_the_command_actually_advanced"
         ),
-        "startup_rule": "hold_reset_command_until_first_due_controller_publication",
+        "startup_rule": (
+            "hold_reset_command_until_first_due_controller_publication_of_each_epoch"
+        ),
     }
     reset_command = config["initialization_contract"]["reset_torque_command"]
-    assert reset_command["timestamp_s"] == 0.0
-    assert reset_command["hold_until_base_tick"] == timing["first_due_tick"]["controller"]
+    assert reset_command["startup_timestamp_s"] == 0.0
+    assert reset_command["hold_until_epoch_local_tick"] == timing["first_due_tick"]["controller"]
 
 
 @pytest.mark.parametrize(
@@ -1097,7 +1103,7 @@ def test_round4_held_command_contract_is_explicit() -> None:
         ),
         (
             lambda config: config["initialization_contract"]["reset_torque_command"].__setitem__(
-                "hold_until_base_tick", 1
+                "hold_until_epoch_local_tick", 1
             ),
             "must equal timing.first_due_tick.controller",
         ),
@@ -1145,18 +1151,27 @@ def test_round4_rejects_initial_offset_with_nonidentity_base_attitude() -> None:
     )
 
 
-def test_round4_reset_replay_window_with_two_due_updates_is_valid() -> None:
+@pytest.mark.parametrize(
+    ("reset_start", "expected_first_due", "expected_second_due", "minimum_window_end"),
+    [
+        (1000, 1002, 1004, 1005),
+        (1001, 1003, 1005, 1006),
+    ],
+)
+def test_round5_runtime_reset_restarts_local_due_phase(
+    reset_start: int,
+    expected_first_due: int,
+    expected_second_due: int,
+    minimum_window_end: int,
+) -> None:
     config = default_config()
     reset = event(config, "invalid_input_and_reset", "deterministic_all_component_reset")
-    schedule = config["timing"]["schedules"]["estimator_every_ticks"]
-    first_due = config["timing"]["first_due_tick"]["estimator"]
-    earliest = max(reset["start_tick"], first_due)
-    first_post_reset_due_tick = earliest + (first_due - earliest) % schedule
-    criterion(
-        config,
-        "invalid_input_and_reset",
-        "reset_is_deterministic",
-    )["window"]["end_tick"] = first_post_reset_due_tick + schedule + 1
+    reset["start_tick"] = reset_start
+    reset["end_tick"] = reset_start + 1
+    assert minimum_window_end == expected_second_due + 1
+    assert expected_first_due < expected_second_due < minimum_window_end
+    replay = criterion(config, "invalid_input_and_reset", "reset_is_deterministic")
+    replay["window"] = {"start_tick": reset_start, "end_tick": expected_second_due + 1}
     validate_config(config)
 
 
@@ -1184,4 +1199,116 @@ def test_round4_rejects_reset_replay_tolerance_weaker_than_contract() -> None:
             "q_nb_component_abs_tolerance", 1e-9
         ),
         "must be 1e-12",
+    )
+
+
+@pytest.mark.parametrize(
+    ("reset_start", "second_due_tick"),
+    [(1000, 1004), (1001, 1005)],
+)
+def test_round5_rejects_window_ending_on_second_local_due_update(
+    reset_start: int,
+    second_due_tick: int,
+) -> None:
+    def mutate(config: dict) -> None:
+        reset = event(config, "invalid_input_and_reset", "deterministic_all_component_reset")
+        reset["start_tick"] = reset_start
+        reset["end_tick"] = reset_start + 1
+        criterion(config, "invalid_input_and_reset", "reset_is_deterministic")["window"] = {
+            "start_tick": reset_start,
+            "end_tick": second_due_tick,
+        }
+
+    assert_invalid(mutate, "must cover at least two post-reset due estimator updates")
+
+
+def test_round5_rejects_reset_only_window() -> None:
+    def mutate(config: dict) -> None:
+        reset = event(config, "invalid_input_and_reset", "deterministic_all_component_reset")
+        criterion(config, "invalid_input_and_reset", "reset_is_deterministic")["window"] = {
+            "start_tick": reset["start_tick"],
+            "end_tick": reset["end_tick"],
+        }
+
+    assert_invalid(mutate, "must cover at least two post-reset due estimator updates")
+
+
+def test_round5_rejects_legacy_global_phase_for_odd_runtime_reset() -> None:
+    def mutate(config: dict) -> None:
+        reset = event(config, "invalid_input_and_reset", "deterministic_all_component_reset")
+        reset["start_tick"] = 1001
+        reset["end_tick"] = 1002
+        criterion(config, "invalid_input_and_reset", "reset_is_deterministic")["window"] = {
+            "start_tick": 1001,
+            "end_tick": 1005,
+        }
+
+    assert_invalid(mutate, "must cover at least two post-reset due estimator updates")
+
+
+def test_round5_rejects_multi_tick_reset_event() -> None:
+    assert_invalid(
+        lambda config: event(
+            config,
+            "invalid_input_and_reset",
+            "deterministic_all_component_reset",
+        ).__setitem__("end_tick", 1002),
+        "reset must occupy exactly one base tick",
+    )
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: config["timing"]["reset_epoch_timing"].__setitem__(
+                "reset_tick_action", "also_run_controller"
+            ),
+            "must close runtime-reset epoch",
+        ),
+        (
+            lambda config: config["initialization_contract"]["reset_torque_command"].__setitem__(
+                "runtime_timestamp_rule", "reset_to_zero"
+            ),
+            "must close runtime-reset command",
+        ),
+        (
+            lambda config: config["estimator_contract"].__setitem__(
+                "reset_epoch_first_step_contract", "reuse_previous_dt"
+            ),
+            "reset_epoch_first_step_contract",
+        ),
+        (
+            lambda config: config["acceptance_policy"]["reset_replay"].__setitem__(
+                "first_controller_update_rule", "zero_dt"
+            ),
+            "must define deterministic replay",
+        ),
+    ],
+)
+def test_round5_rejects_ambiguous_runtime_reset_contract(mutator, match: str) -> None:
+    assert_invalid(mutator, match)
+
+
+def test_round5_startup_and_runtime_reset_share_epoch_zero_contract() -> None:
+    config = default_config()
+    timing = config["timing"]
+    tick_zero = config["initialization_contract"]["tick_zero"]
+    reset_command = config["initialization_contract"]["reset_torque_command"]
+    assert tick_zero["runtime_epoch_scope"] == (
+        "startup_tick_zero_and_each_runtime_reset_epoch_local_tick_zero"
+    )
+    assert timing["reset_epoch_timing"]["schedule_phase"] == (
+        "restart_all_component_schedules_from_epoch_local_tick_zero"
+    )
+    assert reset_command["hold_until_epoch_local_tick"] == timing["first_due_tick"]["controller"]
+    assert config["estimator_contract"]["reset_epoch_first_step_contract"] == (
+        "first_due_estimator_step_after_each_reset_uses_one_new_valid_imu_"
+        "with_dt_from_reset_boundary_equal_imu_period_ticks_times_base_period_"
+        "s_and_reset_state_is_not_an_update"
+    )
+    assert config["controller_contract"]["reset_epoch_first_step_contract"] == (
+        "first_due_controller_step_after_each_reset_uses_dt_equal_controller_"
+        "period_ticks_times_base_period_s_and_feedback_paired_to_reset_command_"
+        "before_first_normal_publication"
     )

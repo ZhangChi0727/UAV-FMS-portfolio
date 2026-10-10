@@ -130,47 +130,73 @@ limitation_characterization 的边界。它既不把 truth 注入 estimator，�
 因此，“初始姿态偏差”不会把真值暗中送入估计器；估计器只能读取自身显式初值和随后的
 IMU 样本。
 
-## 确定性时序与事件语义
+## 确定性时序、运行时 reset 与事件语义
 
-`timing/first_due_tick` 与 `timing/torque_command_hold` 固定多速率命令交接：plant 和
-actuator 首次在 tick 1 到期；IMU、estimator 与 controller 首次在各自 2-tick 周期的
-tick 2 到期。controller 只在 due tick 发布命令；actuator 虽每个 base tick 执行，仍只
-消费**严格早于当前 tick**发布的最新 TorqueCommand。因此保持命令不产生伪造的新时间戳。
+`timing/first_due_tick` 固定一个 epoch 内的多速率相位：plant 和 actuator 首次在 epoch-local
+tick 1 到期；IMU、estimator 与 controller 首次在 epoch-local tick 2 到期。启动本身是
+epoch 0；每个 runtime reset 的事件开始都创建一个新的 epoch-local tick 0。这里选择的是
+**重启局部相位**，而不是保留 reset 前的全局偶/奇相位。场景全局时钟、全局 tick 和每个消息的
+timestamp 始终不回退。
 
-每个基础 tick k 按唯一顺序执行：
+reset event 必须恰占半开区间 `[R, R+1)`，其中 R 是其全局开始 tick。它在 R 的边界执行以下
+唯一动作：丢弃 reset 前 plant/actuator/estimator/controller 状态、held TorqueCommand 和
+feedback；以显式初始状态与声明 seed 初始化所有组件；runtime reset 时将 `reset_epoch` 恰增
+一次；发布零 `C_reset`。该 reset tick **不**执行 plant、actuator、IMU、estimator 或 controller
+step，因而不产生零 dt、虚构的长 dt 或把 reset state 误计为 estimator update。
 
-1. plant 为区间 k 消费上一 actuator 更新后保持的 actual torque；
-2. actuator 推进在 k 之前最近发布的 TorqueCommand 的 limited 字段一个 base interval，
-   并生成带原 command timestamp 的 ActuatorFeedback[k]；
+`C_reset` 的 timestamp 是 `R*base_period_s`（启动时 R=0，故为 0），属于从不回退的
+scenario clock，并必须大于此前该 command stream 的已发布 timestamp。它保留为 held command，
+直到新 epoch 的首个 controller due tick；首个 controller 用的 feedback 必须仍标记为该
+`C_reset` 的原 timestamp。所有后续 normal command 与 IMU/estimate/feedback timestamp 都按
+`reset_boundary_s + epoch_local_tick*base_period_s` 映射到全局场景时间。
+
+在一个非 reset 的 epoch-local tick k，唯一顺序仍为：
+
+1. plant 为该 epoch 的相应基础区间消费上一 actuator 更新后保持的 actual torque；
+2. actuator 推进严格早于当前全局 tick 发布的最近 TorqueCommand 的 limited 字段一个 base
+   interval，并在 feedback 中保留该 command 的原 timestamp；
 3. 到期时 IMU 在区间末采样；
-4. 到期时 estimator 消费该新 IMU；
-5. 到期时 controller 消费当前 estimate 与该 tick 的已标记 feedback；
-6. controller 在上述 actuator 步之后发布新命令，timestamp 恰为 k*base_period_s，供
-   后续 base tick 使用。
+4. 到期时 estimator 消费一个新的有效 IMU；
+5. 到期时 controller 消费当前 estimate 与标记 feedback；
+6. controller 在 actuator step 后发布新的 normal command，timestamp 是同一 scenario-clock
+   时刻，供后续 tick 使用。
 
-默认 2-tick controller 周期的前五个关键点如下；表中的 feedback timestamp 指
-`ActuatorFeedback.command_timestamp_s`，不是每次反馈的新 command publication：
+对候选 `base_period_s=0.0025` 和 2-tick IMU/estimator/controller 周期，以下两个运行时
+例子是合同的人工核对表，而不是执行结果。
 
-| base tick | actuator 推进的 held command | feedback 的 command timestamp | 此 tick 末 controller publication |
-|---:|---|---:|---|
-| pre-0 | 无积分；reset 发布 C_reset | — | C_reset，0 |
-| 1 | C_reset | 0 | 无（controller 未到期） |
-| 2 | C_reset | 0 | C_2，2*base_period_s |
-| 3 | C_2 | 2*base_period_s | 无（controller 未到期） |
-| 4 | C_2 | 2*base_period_s | C_4，4*base_period_s |
+### runtime reset：R=1000（reset boundary = 2.5000 s）
 
-首个 due controller tick 使用 C_reset 的标记反馈；之后每个 due controller tick 使用最近
-已推进 held command 的 feedback。该规则既规定启动命令，也规定 C_2 在 tick 3 和 tick 4
-之间被保持且原时间戳不变，没有隐藏全局值、代数环或“每 tick 重新发布”的隐含分支。
+| 全局 tick | epoch-local tick | 动作与时间戳 | estimator 计数 |
+|---:|---:|---|---|
+| 1000 | 0 | reset-only；发布 `C_reset`，timestamp 2.5000 s；无 component step | 不计入 |
+| 1001 | 1 | plant/actuator 推进 C_reset；无 IMU/estimator/controller due | 0 |
+| 1002 | 2 | 新 IMU timestamp 2.5050 s；estimator dt=0.0050 s；controller dt=0.0050 s，使用 C_reset feedback 后发布首个 normal command | 第 1 个有效 update |
+| 1004 | 4 | 第二个新 IMU/estimate/controller due，timestamp 2.5100 s | 第 2 个有效 update |
 
-当前候选要求 estimator 与 IMU 同周期，controller 与 estimator 同周期；因此不存在
-“无新 IMU 仍重复消费”的隐含分支，no_new_imu_action 明确为 not_scheduled。controller
-读取的 estimate 年龄为零个基础 tick。
+### runtime reset：R=1001（reset boundary = 2.5025 s）
 
-事件使用半开区间 [start_tick, end_tick)：开始端包含、结束端不包含。事件按非递减
-开始 tick 声明；同一信号（含同一指令轴）重叠被拒绝。跨类型重叠仅可由
-timing/event_tick_semantics/allowed_cross_type_overlap_pairs 逐项批准；默认没有。
-命令事件结束后，其受影响轴回到零，其余轴不被隐式修改。
+| 全局 tick | epoch-local tick | 动作与时间戳 | estimator 计数 |
+|---:|---:|---|---|
+| 1001 | 0 | reset-only；发布 `C_reset`，timestamp 2.5025 s；无 component step | 不计入 |
+| 1002 | 1 | plant/actuator 推进 C_reset；无 IMU/estimator/controller due | 0 |
+| 1003 | 2 | 新 IMU timestamp 2.5075 s；estimator dt=0.0050 s；controller dt=0.0050 s，使用 C_reset feedback 后发布首个 normal command | 第 1 个有效 update |
+| 1005 | 4 | 第二个新 IMU/estimate/controller due，timestamp 2.5125 s | 第 2 个有效 update |
+
+因此 reset-replay 的最短合格半开观察窗口是 `[R, R+5)`：R=1000 时为 `[1000,1005)`，
+R=1001 时为 `[1001,1006)`。窗口在第二次 due update 的 tick 结束处（例如 `[1001,1005)`）
+仍不包含该 update，必须被拒绝。
+
+重放的两次运行必须在同一个 reset boundary 比较：它们拥有相同的 epoch-local schedule、
+explicit initial state、输入 reset-relative trace、scenario seed 和 post-reset noise draw index。
+比较只使用带有效样本的 matching epoch-local estimator due tick；reset state、本身的 `C_reset`
+及其 zero command 不是 estimator update。保留 IMU、attitude command、state estimate、torque
+command 和 actuator feedback 的 scenario-clock timestamp，以及 feedback 的 paired-command
+timestamp 和 reset_epoch，才能独立重建该比较。
+
+事件使用半开区间 `[start_tick, end_tick)`：开始端包含、结束端不包含。事件按非递减开始 tick
+声明；同一信号（含同一指令轴）重叠被拒绝。跨类型重叠仅可由
+`timing/event_tick_semantics/allowed_cross_type_overlap_pairs` 逐项批准；默认没有。命令事件
+结束后，其受影响轴回到零，其余轴不被隐式修改。
 
 ## 限幅与完整抗饱和合同
 
@@ -259,11 +285,13 @@ acceptance_policy/metric_definitions 为每项指标固定原始信号、公式�
   每个事件以 sample_validity=false 且与 invalid_kind 匹配的 rejection_reason 计
   一次；计数准则覆盖全场景并必须等于这两个事件，随后才允许一个 all-components
   reset；
-- reset 在其事件开始、任何 due scheduled work 之前重置全部组件；从 reset-relative tick
-  zero 重放相同 timestamped IMU 与 attitude-command trace，恢复声明的场景 seed 与相同的
-  post-reset noise draw index。比较匹配的 reset-relative due estimator ticks 的每个
-  q_nb_estimate 分量，绝对容差为 1e-12；该窗口必须至少包含两次 post-reset due estimator
-  updates，不能用空窗口或一次样本伪造确定性；
+- reset 仅占其 `[R,R+1)` 的 epoch-local tick 0：它先丢弃 pre-reset held command/feedback，
+  发布 timestamp 为 `R*base_period_s` 的 C_reset，并重启局部 schedule；global scenario clock
+  不回退。首个 estimator/controller due 在 R+2，以一个新 valid IMU 和 dt=2*base_period_s
+  执行；reset state 不计为 update。两次 replay 在同一 reset boundary、相同局部 due tick、
+  initial state、input trace、seed/draw index 下比较每个 q_nb_estimate 分量，容差为 1e-12；
+  最短窗口 `[R,R+5)` 必须覆盖两次有效 update，不能用空窗口、一次样本或错误的全局偶/奇相位
+  伪造确定性；
 - 加速度污染必须记录 additive specific-force、limitation status 与 truth/estimate
   信号，不能以任意 true 代替证据。
 
