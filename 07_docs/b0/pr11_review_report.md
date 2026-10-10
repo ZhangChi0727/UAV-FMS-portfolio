@@ -31,7 +31,7 @@ git diff --check
 - v2 `approval_record` 校验日期、40 位 SHA、非空 source/scope，并要求 source 引用 `07_docs/b0/g0_approval_decision.md`；该文件按仓库根定位。
 - CI 显式运行 v1、v2、默认 CLI、测试和 `origin/main...HEAD` whitespace 检查。
 - G1 工作单引用实际 v2、决定记录、字段名、时域、oracle、容差和未来执行目录；不表示 G1 已实现或 ready。
-- 待 Linux 活跃副本恢复可访问后重跑绝对解释器命令；待主会话 PA 对本轮提交复核；待满足明确合并授权和远程 CI 门槛后才合并。
+- 本段记录撰写时 Linux 尚未同步；后续追加轮次已完成同步和重跑。
 
 ## 追加轮次：`468743e` 之后
 
@@ -39,4 +39,4 @@ git diff --check
 - R2：G1 工作单明确 `q_delta=normalize(q_ref^{-1}⊗q)`、`[w,v]`、`2*atan2(||v||,|w|)`，并保留 identity、q/-q、极小角和已知角度作为纯数学验收例。
 - R3：日期严格匹配 `YYYY-MM-DD` 后再用 `date.fromisoformat` 验证；source 首个分号分隔字段必须精确为 `07_docs/b0/g0_approval_decision.md`，按仓库根定位；新增非法日期、来源和迁移反例。
 - R4：v1/v2 差异测试仅允许 `schema_version` 和 `contract_status`；g0_contract、g0_acceptance、g0_approval、g0_review_resolution 已区分历史 proposed、当前设计批准与性能未执行。
-- R5：Windows 工作区与远程分支在 `468743e` clean/synchronized；WSL 只读访问仍返回 `E_ACCESSDENIED`，未声称 Linux 已同步或已重跑。主会话 PA 复核待返回。
+- R5：WSL 经提升权限后确认初始 HEAD 为 `ab2e6b0` 且 clean；通过明确 refspec 后安全快进至 `6868e290ca6d65261866183afc47fa04c37d5c9c`，工作树 clean。Linux 使用 `/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python` 在 `05_integration/b0` 实跑 v1、v2、默认 CLI、pytest 和 Ruff，结果分别通过、通过、通过、`162 passed`、通过。远程三项 CI 对 `6868e29` 全部 SUCCESS（run `38057395174`）。主会话 PA 复核仍待返回。
