@@ -7,7 +7,7 @@
     "approval_record": {
       "decision": "approved_by_project_administrator",
       "decision_date": "2026-10-10",
-      "decision_source": "07_docs/b0/g0_approval_decision.md; Project Administrator review in task conversation",
+      "decision_source": "07_docs/b0/g0_approval_decision.md; user ratification 2026-10-10 via PA main session 019f9ef3-4a0c-79f1-99d4-c8415f62bd29",
       "baseline_commit": "046674dcb391983345a33d683331bcf2e155dcb1",
       "approval_package_commit": "ab2e6b05b2d51d851b1c3dfada5b69a66f47b9b0",
       "scope": "freeze the documented synthetic G0 candidate envelope and acceptance contract only; not a performance result",
