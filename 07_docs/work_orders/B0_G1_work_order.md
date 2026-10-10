@@ -1,6 +1,6 @@
-# B0 G1 对象与传感器实施子工作单（定稿）
+# B0 G1 对象与传感器实施子工作单（条件定稿）
 
-状态：`定稿，依赖 PR #11 合并后启动`。本文件仅为 Issue #4 的实施交接规划，
+状态：`条件定稿，待历史 G0 授权来源确认；依赖 PR #11 合并后启动`。本文件仅为 Issue #4 的实施交接规划，
 不表示 G1 已开始、对象/IMU 已实现或任何性能通过。对应未来一个独立 G1 实施 PR；建议分支
 `codex/b0-g1-plant-imu`，以 G0 合并后的 `main` 为起点。
 
@@ -49,26 +49,25 @@
 
 - 零力矩/静止：identity q、zero rate、zero torque 在无噪声 fixture 下保持；specific force
   不在 plant 内计算。
-- 主惯量定轴解析用例：分别对 x/y/z 轴施加 `+/-0.01 Nm`，初始 `omega_b=[0,0,0]`，
+- 主惯量定轴解析用例：初始 `q_nb=[1,0,0,0]`、`omega_b=[0,0,0]`，分别对 x/y/z 轴施加 `+/-0.01 Nm`，
   `dt=0.00025 s`、总时域 `0.01 s`；以 `omega_i(t)=tau_i t/I_i` 和小角度
   `theta_i(t)=0.5 tau_i t^2/I_i` 为参考，逐轴比较符号和绝对误差 `1e-10`。
 - 四元数：每个有效 step 后 `|norm(q)-1| <= 1e-12`（候选 G1 gate）；比较姿态时接受
   q 与 -q。
-- RK4 步长减半：同一初态、恒定 `tau=[0.01,-0.01,0.005] Nm`、总时域 `0.05 s`，
+- RK4 步长减半：初始 `q_nb=[1,0,0,0]`、`omega_b=[0,0,0]`，恒定 `tau=[0.01,-0.01,0.005] Nm`、总时域 `0.05 s`，
   以 `dt=0.0025 s` 与 `dt/2=0.00125 s` 的结果分别对高精度参考（连续方程用
   `dt/16` RK4）比较；步长差只能作为收敛证据，不能替代参考解。姿态使用
   对 `q_delta=normalize(q_ref^{-1}⊗q)` 使用 `2*atan2(norm(q_delta[1:4]), abs(q_delta[0]))`，
   输入为 scalar-first `[w,x,y,z]`，零范数输入非法；容差 `1e-8 rad`，角速度误差
   `1e-8 rad/s`。纯数学回归例：identity 对 identity 得 `0`；`q` 与 `-q` 得相同距离；
-  `q_delta=[cos(ε/2),sin(ε/2),0,0]` 得 ε（极小 ε 用 `atan2` 保持稳定）；
+  `q_delta=[cos(ε/2),sin(ε/2),0,0]` 得 `abs(ε)`，其中 `0<=ε<=π`（极小 ε 用 `atan2` 保持稳定）；
   `q_delta=[√2/2,0,0,√2/2]` 得 `π/2`。
 
 ## 执行器验收设计
 
-- 对一阶 bounded 响应使用解析参考 `y(t)=target+(y0-target)exp(-t/tau)`；边界值、正负
-  轴、零 target 和限值内外输入均测试。当前候选 tau/limits 只从 v2 读取。
+- 对一阶 bounded 响应使用解析参考 `y(t)=target+(y0-target)exp(-t/tau)`；`target` 在一个步长内保持恒定；fixture 明确 `y0=0`，各轴分别测试正/负限值和 `target=0`，限值与 tau 只从 v2 读取；非法超限输入另测，不改变 G0 的限幅责任。
 - 执行器采用批准一阶模型的零阶保持精确离散更新
-  `y_next=target+(y-y_target)*exp(-dt/tau)`；初始候选数值误差为 torque absolute
+  `y_next=target+(y-target)*exp(-dt/tau)`；初始候选数值误差为 torque absolute
   `1e-10 Nm`（double、`dt=0.0025 s`、时域 `0.05 s`、固定 tick）。该容差依据为
   解析指数参考与 double 舍入量级，须由维护者在 G1 开工前确认；未确认前标记为候选，
   不得称为已批准门槛。
@@ -146,5 +145,5 @@ RESULTS.md 的已验证结果（仅在有保留 artifact 时）和 Issue #4，�
 G1 实施 PR 完成需有批准 v2 输入、上述组件实现、无 skip/xfail 的强制组件测试、解析误差
 和收敛记录、CI 结果、独立评审及清洁工作区。它不得宣称 G2/G3 或 B0 完成。
 
-本定稿在 PR #11 合并、G1 数值 oracle 执行确认和 Issue #4 进入 `ready` 前不表示 G1
+本条件定稿在历史 G0 授权来源确认、PR #11 合并、G1 数值 oracle 执行确认和 Issue #4 进入 `ready` 前不表示 G1
 已实现；当前不创建实施分支、空 PR 或算法代码。
