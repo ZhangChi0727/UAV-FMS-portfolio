@@ -123,6 +123,29 @@ def test_v2_rejects_invalid_approval_date_and_sha() -> None:
     config["contract_status"]["approval_record"]["decision_date"] = "2026-02-30"
     with pytest.raises(ContractValidationError, match="decision_date"):
         validate_config(config)
+
+
+@pytest.mark.parametrize("value", ["20261010", "2026-W41-6", "2026-02-30", "2026-1-1"])
+def test_v2_rejects_non_exact_or_invalid_approval_dates(value: str) -> None:
+    config = approved_config()
+    config["contract_status"]["approval_record"]["decision_date"] = value
+    with pytest.raises(ContractValidationError, match="decision_date"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("value", ["other.md", "../g0_approval_decision.md", "prefix/07_docs/b0/g0_approval_decision.md"])
+def test_v2_rejects_untrusted_approval_source_reference(value: str) -> None:
+    config = approved_config()
+    config["contract_status"]["approval_record"]["decision_source"] = value
+    with pytest.raises(ContractValidationError, match="decision_source"):
+        validate_config(config)
+
+
+def test_v1_to_v2_migration_changes_only_governance_metadata() -> None:
+    v1 = default_config()
+    v2 = approved_config()
+    allowed = {"schema_version", "contract_status"}
+    assert {key for key in v1 if v1[key] != v2[key]} == allowed
     config = approved_config()
     config["contract_status"]["approval_record"]["baseline_commit"] = "not-a-sha"
     with pytest.raises(ContractValidationError, match="baseline_commit"):

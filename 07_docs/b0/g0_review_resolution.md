@@ -1,6 +1,6 @@
 # PR #11 G0 评审修复记录
 
-**状态：修复待复审，仍为 proposed_pending_maintainer_approval。**
+**状态：历史修复记录；v1 保持 proposed，v2 设计已批准，性能仍未执行。**
 
 本记录保留 Project Administrator 对 PR #11 基线 fd5615f 的首轮发现，并记录第二轮
 对 8948769、第三轮对 e0d1e4a 与第四轮对 996cf81 的独立复审收敛工作。“发现 → 合同/代码 → 反例测试”的
