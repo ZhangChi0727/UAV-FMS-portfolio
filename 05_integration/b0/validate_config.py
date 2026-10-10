@@ -56,11 +56,15 @@ ROOT_REQUIRED = {
 
 OBSERVATIONS = {
     "actuator_actual_torque_Nm",
+    "actuator_feedback_command_timestamp_s",
+    "actuator_feedback_timestamp_s",
+    "attitude_command_timestamp_s",
     "controller_integral_Nm",
     "controller_requested_torque_Nm",
     "external_torque_Nm",
     "imu_gyro_rad_s",
     "imu_specific_force_m_s2",
+    "imu_timestamp_s",
     "limited_torque_Nm",
     "limitation_status",
     "omega_b_estimate_rad_s",
@@ -72,6 +76,8 @@ OBSERVATIONS = {
     "requested_torque_Nm",
     "reset_epoch",
     "sample_validity",
+    "state_estimate_timestamp_s",
+    "torque_command_timestamp_s",
 }
 
 METRIC_SPECS: dict[str, dict[str, Any]] = {
@@ -190,12 +196,18 @@ METRIC_SPECS: dict[str, dict[str, Any]] = {
         "unit": "bool",
         "value_kind": "bool",
         "observations": {
+            "imu_timestamp_s",
             "imu_gyro_rad_s",
             "imu_specific_force_m_s2",
+            "attitude_command_timestamp_s",
             "q_nb_command",
+            "state_estimate_timestamp_s",
+            "q_nb_estimate",
+            "torque_command_timestamp_s",
+            "actuator_feedback_timestamp_s",
+            "actuator_feedback_command_timestamp_s",
             "sample_validity",
             "reset_epoch",
-            "q_nb_estimate",
         },
         "event_types": {"reset"},
     },
@@ -279,8 +291,8 @@ METRIC_DEFINITION_SEMANTICS: dict[str, tuple[str, str]] = {
     ),
     "reset_replay_match": (
         "all_q_nb_estimate_components_match_within_tolerance_at_each_replayed_"
-        "post_reset_due_estimator_tick",
-        "all_over_at_least_two_post_reset_estimator_updates",
+        "valid_reset_epoch_local_due_estimator_tick",
+        "all_over_at_least_two_valid_reset_epoch_local_estimator_updates",
     ),
 }
 
@@ -610,6 +622,7 @@ def _validate_timing(
             "sample_consumption_policy",
             "event_tick_semantics",
             "first_due_tick",
+            "reset_epoch_timing",
             "torque_command_hold",
         },
     )
@@ -666,6 +679,31 @@ def _validate_timing(
             "must start plant/actuator at tick 1 and each due consumer at its first period",
         )
 
+    reset_epoch_timing = _mapping(
+        timing["reset_epoch_timing"],
+        "timing.reset_epoch_timing",
+        {"epoch_zero", "reset_tick_action", "schedule_phase", "timestamp_mapping"},
+    )
+    expected_reset_epoch_timing = {
+        "epoch_zero": (
+            "scenario_start_and_each_runtime_reset_event_start_define_"
+            "epoch_local_tick_zero"
+        ),
+        "reset_tick_action": (
+            "reset_only_no_plant_actuator_imu_estimator_or_controller_step"
+        ),
+        "schedule_phase": "restart_all_component_schedules_from_epoch_local_tick_zero",
+        "timestamp_mapping": (
+            "scenario_clock_timestamp_s_equals_reset_boundary_s_plus_"
+            "epoch_local_tick_times_base_period_s_never_rewinds"
+        ),
+    }
+    if reset_epoch_timing != expected_reset_epoch_timing:
+        _fail(
+            "timing.reset_epoch_timing",
+            "must close runtime-reset epoch, reset-tick, schedule, and timestamp semantics",
+        )
+
     sequence = _list(timing["sequence"], "timing.sequence", length=len(REQUIRED_SEQUENCE))
     if sequence != REQUIRED_SEQUENCE:
         _fail("timing.sequence", "must use the declared deterministic publication order")
@@ -683,9 +721,13 @@ def _validate_timing(
         },
     )
     expected_hold = {
-        "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
+        "reset_command": (
+            "at_each_epoch_local_tick_zero_publish_zero_torque_command_with_"
+            "scenario_clock_timestamp"
+        ),
         "controller_publication": (
-            "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period"
+            "at_each_due_controller_base_tick_timestamp_equals_scenario_clock_tick_"
+            "times_base_period"
         ),
         "actuator_consumption": (
             "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k"
@@ -696,7 +738,9 @@ def _validate_timing(
         "feedback_pairing": (
             "actuator_feedback_tags_timestamp_of_the_command_actually_advanced"
         ),
-        "startup_rule": "hold_reset_command_until_first_due_controller_publication",
+        "startup_rule": (
+            "hold_reset_command_until_first_due_controller_publication_of_each_epoch"
+        ),
     }
     if hold != expected_hold:
         _fail(
@@ -718,7 +762,9 @@ def _validate_timing(
         "strictly_increasing": True,
         "nonpositive_dt_action": "reject_sample",
         "stale_timestamp_action": "reject_sample_preserve_last_valid_state",
-        "reset_action": "clear_internal_state_then_require_explicit_initialization",
+        "reset_action": (
+            "clear_internal_state_publish_reset_command_and_begin_new_epoch_local_tick_zero"
+        ),
     }
     if timestamp_policy != expected_timestamp_policy:
         _fail("timing.timestamp_policy", "must define the required reject and reset behavior")
@@ -1029,6 +1075,8 @@ def _validate_initialization_contract(
             "timestamp_s",
             "integration_before_tick_zero",
             "first_interval",
+            "runtime_epoch_scope",
+            "runtime_first_interval",
             "reset_epoch_initial",
             "rng_rule",
         },
@@ -1044,6 +1092,22 @@ def _validate_initialization_contract(
         _fail(
             "initialization_contract.tick_zero.first_interval",
             "must define the first half-open interval",
+        )
+    if (
+        tick_zero["runtime_epoch_scope"]
+        != "startup_tick_zero_and_each_runtime_reset_epoch_local_tick_zero"
+    ):
+        _fail(
+            "initialization_contract.tick_zero.runtime_epoch_scope",
+            "must apply tick zero to startup and every runtime reset epoch",
+        )
+    if (
+        tick_zero["runtime_first_interval"]
+        != "[reset_boundary_s, reset_boundary_s+base_period_s)"
+    ):
+        _fail(
+            "initialization_contract.tick_zero.runtime_first_interval",
+            "must define the reset-relative first half-open interval",
         )
     if _integer(
         tick_zero["reset_epoch_initial"],
@@ -1160,24 +1224,51 @@ def _validate_initialization_contract(
         "initialization_contract.reset_torque_command",
         {
             "publication_phase",
-            "timestamp_s",
+            "startup_timestamp_s",
+            "runtime_timestamp_rule",
+            "epoch_association",
+            "pre_reset_command_action",
             "requested_torque_body_Nm",
             "limited_torque_body_Nm",
             "saturated",
-            "hold_until_base_tick",
+            "hold_until_epoch_local_tick",
+            "first_feedback_pairing",
+            "first_normal_publication",
         },
     )
-    if reset_command["publication_phase"] != "pre_tick_zero_controller_reset":
-        _fail(
-            "initialization_contract.reset_torque_command.publication_phase",
-            "must publish the zero command before tick zero",
-        )
+    expected_reset_command = {
+        "publication_phase": (
+            "at_each_epoch_local_tick_zero_after_discarding_pre_reset_held_state"
+        ),
+        "runtime_timestamp_rule": (
+            "scenario_clock_reset_boundary_s_never_rewinds_and_exceeds_last_"
+            "published_command_timestamp"
+        ),
+        "epoch_association": (
+            "reset_epoch_metadata_increments_once_per_runtime_reset_and_partitions_"
+            "replay_trace"
+        ),
+        "pre_reset_command_action": "discard_pre_reset_held_command_and_feedback",
+        "first_feedback_pairing": (
+            "first_due_controller_tick_uses_feedback_paired_to_reset_command_"
+            "original_timestamp"
+        ),
+        "first_normal_publication": (
+            "at_epoch_local_controller_first_due_tick_after_tagged_reset_feedback"
+        ),
+    }
+    for field, expected in expected_reset_command.items():
+        if reset_command[field] != expected:
+            _fail(
+                f"initialization_contract.reset_torque_command.{field}",
+                "must close runtime-reset command, timestamp, epoch, and feedback semantics",
+            )
     if _number(
-        reset_command["timestamp_s"],
-        "initialization_contract.reset_torque_command.timestamp_s",
+        reset_command["startup_timestamp_s"],
+        "initialization_contract.reset_torque_command.startup_timestamp_s",
     ) != 0.0:
         _fail(
-            "initialization_contract.reset_torque_command.timestamp_s",
+            "initialization_contract.reset_torque_command.startup_timestamp_s",
             "must be zero",
         )
     for field in ("requested_torque_body_Nm", "limited_torque_body_Nm"):
@@ -1189,7 +1280,7 @@ def _validate_initialization_contract(
         if any(value != 0.0 for value in values):
             _fail(
                 f"initialization_contract.reset_torque_command.{field}",
-                "must be zero before the first controller publication",
+                "must be zero before the first controller publication of each epoch",
             )
     saturated = _list(
         reset_command["saturated"],
@@ -1202,12 +1293,12 @@ def _validate_initialization_contract(
             "must be false on every axis",
         )
     if _integer(
-        reset_command["hold_until_base_tick"],
-        "initialization_contract.reset_torque_command.hold_until_base_tick",
+        reset_command["hold_until_epoch_local_tick"],
+        "initialization_contract.reset_torque_command.hold_until_epoch_local_tick",
         positive=True,
     ) != first_due_ticks["controller"]:
         _fail(
-            "initialization_contract.reset_torque_command.hold_until_base_tick",
+            "initialization_contract.reset_torque_command.hold_until_epoch_local_tick",
             "must equal timing.first_due_tick.controller",
         )
 
@@ -1548,6 +1639,7 @@ def _validate_estimator(config: dict[str, Any]) -> None:
             "output_message",
             "reset_contract",
             "step_contract",
+            "reset_epoch_first_step_contract",
             "no_new_imu_action",
         },
     )
@@ -1567,6 +1659,11 @@ def _validate_estimator(config: dict[str, Any]) -> None:
         ),
         "step_contract": (
             "one_new_valid_imu_sample_per_due_estimator_tick_or_reject_without_state_change"
+        ),
+        "reset_epoch_first_step_contract": (
+            "first_due_estimator_step_after_each_reset_uses_one_new_valid_imu_"
+            "with_dt_from_reset_boundary_equal_imu_period_ticks_times_base_period_"
+            "s_and_reset_state_is_not_an_update"
         ),
         "no_new_imu_action": "not_scheduled",
     }
@@ -1613,6 +1710,7 @@ def _validate_controller(
             "rate_pid",
             "input_messages",
             "output_message",
+            "reset_epoch_first_step_contract",
             "body_rate_target_limit_rad_s",
             "parameter_rationale",
         },
@@ -1624,6 +1722,11 @@ def _validate_controller(
         "output": "torque_command_with_requested_limited_target_and_saturation_status",
         "truth_inputs_forbidden": True,
         "output_message": "torque_command",
+        "reset_epoch_first_step_contract": (
+            "first_due_controller_step_after_each_reset_uses_dt_equal_controller_"
+            "period_ticks_times_base_period_s_and_feedback_paired_to_reset_command_"
+            "before_first_normal_publication"
+        ),
     }
     for field, expected_value in expected.items():
         if controller[field] != expected_value:
@@ -1979,6 +2082,11 @@ def _validate_acceptance_policy(
         "acceptance_policy.reset_replay",
         {
             "reset_event_order",
+            "schedule_phase_rule",
+            "reset_tick_action",
+            "timestamp_coordinate_rule",
+            "first_estimator_update_rule",
+            "first_controller_update_rule",
             "input_replay_rule",
             "rng_replay_rule",
             "time_reference",
@@ -1988,17 +2096,34 @@ def _validate_acceptance_policy(
     )
     expected_reset_replay = {
         "reset_event_order": (
-            "at_reset_event_start_reset_all_components_before_due_scheduled_work"
+            "at_reset_event_start_discard_pre_reset_state_publish_reset_command_and_"
+            "begin_new_epoch_local_tick_zero"
+        ),
+        "schedule_phase_rule": "restart_all_component_schedules_from_epoch_local_tick_zero",
+        "reset_tick_action": "reset_only_no_plant_actuator_imu_estimator_or_controller_step",
+        "timestamp_coordinate_rule": (
+            "scenario_clock_never_rewinds_and_maps_epoch_local_tick_n_to_reset_"
+            "boundary_s_plus_n_times_base_period_s"
+        ),
+        "first_estimator_update_rule": (
+            "first_due_estimator_tick_uses_one_new_valid_imu_with_dt_equal_imu_"
+            "period_ticks_times_base_period_s_and_excludes_reset_state"
+        ),
+        "first_controller_update_rule": (
+            "first_due_controller_tick_uses_dt_equal_controller_period_ticks_times_"
+            "base_period_s_and_feedback_paired_to_reset_command"
         ),
         "input_replay_rule": (
-            "replay_identical_timestamped_imu_and_attitude_command_trace_from_"
-            "reset_relative_tick_zero"
+            "replay_identical_reset_relative_imu_and_attitude_command_trace_at_same_"
+            "reset_boundary_scenario_clock_timestamps"
         ),
         "rng_replay_rule": (
             "restore_declared_scenario_seed_and_replay_identical_post_reset_noise_"
             "draw_indices"
         ),
-        "time_reference": "compare_matching_reset_relative_due_estimator_ticks",
+        "time_reference": (
+            "compare_matching_reset_epoch_local_due_estimator_ticks_with_valid_samples_only"
+        ),
     }
     for field, expected in expected_reset_replay.items():
         if reset_replay[field] != expected:
@@ -2112,8 +2237,14 @@ def _validate_event(event: Any, path: str, total_ticks: int) -> dict[str, Any]:
             or record["invalid_kind"] not in {"negative_dt", "stale_timestamp"}
         ):
             _fail(f"{path}.invalid_kind", "must be negative_dt or stale_timestamp")
-    elif event_type == "reset" and record["target"] != "all_components":
-        _fail(f"{path}.target", "must be all_components")
+    elif event_type == "reset":
+        if record["target"] != "all_components":
+            _fail(f"{path}.target", "must be all_components")
+        if end != start + 1:
+            _fail(
+                path,
+                "reset must occupy exactly one base tick as epoch-local tick zero",
+            )
     return record
 
 
@@ -2296,9 +2427,9 @@ def _validate_reset_replay_window(
     minimum_updates: int,
 ) -> None:
     window = criterion["window"]
-    earliest_tick = max(reset_event["start_tick"], estimator_first_due_tick)
-    offset = (estimator_first_due_tick - earliest_tick) % estimator_every_ticks
-    first_post_reset_due_tick = earliest_tick + offset
+    first_post_reset_due_tick = (
+        reset_event["start_tick"] + estimator_first_due_tick
+    )
     if first_post_reset_due_tick >= window["end_tick"]:
         update_count = 0
     else:

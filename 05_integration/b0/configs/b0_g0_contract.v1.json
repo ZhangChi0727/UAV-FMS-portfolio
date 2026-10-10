@@ -122,7 +122,7 @@
       "strictly_increasing": true,
       "nonpositive_dt_action": "reject_sample",
       "stale_timestamp_action": "reject_sample_preserve_last_valid_state",
-      "reset_action": "clear_internal_state_then_require_explicit_initialization"
+      "reset_action": "clear_internal_state_publish_reset_command_and_begin_new_epoch_local_tick_zero"
     },
     "sample_consumption_policy": {
       "estimator_period_relation": "estimator_every_ticks_must_equal_imu_every_ticks",
@@ -145,13 +145,19 @@
       "estimator": 2,
       "controller": 2
     },
+    "reset_epoch_timing": {
+      "epoch_zero": "scenario_start_and_each_runtime_reset_event_start_define_epoch_local_tick_zero",
+      "reset_tick_action": "reset_only_no_plant_actuator_imu_estimator_or_controller_step",
+      "schedule_phase": "restart_all_component_schedules_from_epoch_local_tick_zero",
+      "timestamp_mapping": "scenario_clock_timestamp_s_equals_reset_boundary_s_plus_epoch_local_tick_times_base_period_s_never_rewinds"
+    },
     "torque_command_hold": {
-      "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
-      "controller_publication": "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period",
+      "reset_command": "at_each_epoch_local_tick_zero_publish_zero_torque_command_with_scenario_clock_timestamp",
+      "controller_publication": "at_each_due_controller_base_tick_timestamp_equals_scenario_clock_tick_times_base_period",
       "actuator_consumption": "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k",
       "hold_between_controller_updates": "reuse_same_command_and_preserve_original_timestamp_without_synthetic_publication",
       "feedback_pairing": "actuator_feedback_tags_timestamp_of_the_command_actually_advanced",
-      "startup_rule": "hold_reset_command_until_first_due_controller_publication"
+      "startup_rule": "hold_reset_command_until_first_due_controller_publication_of_each_epoch"
     }
   },
   "interface_contract": {
@@ -368,6 +374,8 @@
       "timestamp_s": 0.0,
       "integration_before_tick_zero": false,
       "first_interval": "[0, base_period_s)",
+      "runtime_epoch_scope": "startup_tick_zero_and_each_runtime_reset_epoch_local_tick_zero",
+      "runtime_first_interval": "[reset_boundary_s, reset_boundary_s+base_period_s)",
       "reset_epoch_initial": 0,
       "rng_rule": "seed_from_scenario_seed_before_any_noise_draw"
     },
@@ -438,8 +446,11 @@
       "unknown_initial_yaw_policy": "not_an_absolute_recovery_performance_target_without_declared_yaw_reference"
     },
     "reset_torque_command": {
-      "publication_phase": "pre_tick_zero_controller_reset",
-      "timestamp_s": 0.0,
+      "publication_phase": "at_each_epoch_local_tick_zero_after_discarding_pre_reset_held_state",
+      "startup_timestamp_s": 0.0,
+      "runtime_timestamp_rule": "scenario_clock_reset_boundary_s_never_rewinds_and_exceeds_last_published_command_timestamp",
+      "epoch_association": "reset_epoch_metadata_increments_once_per_runtime_reset_and_partitions_replay_trace",
+      "pre_reset_command_action": "discard_pre_reset_held_command_and_feedback",
       "requested_torque_body_Nm": [
         0.0,
         0.0,
@@ -455,7 +466,9 @@
         false,
         false
       ],
-      "hold_until_base_tick": 2
+      "hold_until_epoch_local_tick": 2,
+      "first_feedback_pairing": "first_due_controller_tick_uses_feedback_paired_to_reset_command_original_timestamp",
+      "first_normal_publication": "at_epoch_local_controller_first_due_tick_after_tagged_reset_feedback"
     }
   },
   "plant_contract": {
@@ -609,6 +622,7 @@
     "output_message": "state_estimate",
     "reset_contract": "reset_uses_initialization_contract.default_component_state.estimator_values_and_never_accepts_live_truth",
     "step_contract": "one_new_valid_imu_sample_per_due_estimator_tick_or_reject_without_state_change",
+    "reset_epoch_first_step_contract": "first_due_estimator_step_after_each_reset_uses_one_new_valid_imu_with_dt_from_reset_boundary_equal_imu_period_ticks_times_base_period_s_and_reset_state_is_not_an_update",
     "no_new_imu_action": "not_scheduled"
   },
   "controller_contract": {
@@ -725,6 +739,7 @@
       "actuator_feedback"
     ],
     "output_message": "torque_command",
+    "reset_epoch_first_step_contract": "first_due_controller_step_after_each_reset_uses_dt_equal_controller_period_ticks_times_base_period_s_and_feedback_paired_to_reset_command_before_first_normal_publication",
     "body_rate_target_limit_rad_s": [
       2,
       2,
@@ -933,15 +948,21 @@
       },
       "reset_replay_match": {
         "source_signals": [
+          "imu_timestamp_s",
           "imu_gyro_rad_s",
           "imu_specific_force_m_s2",
+          "attitude_command_timestamp_s",
           "q_nb_command",
+          "state_estimate_timestamp_s",
+          "q_nb_estimate",
+          "torque_command_timestamp_s",
+          "actuator_feedback_timestamp_s",
+          "actuator_feedback_command_timestamp_s",
           "sample_validity",
-          "reset_epoch",
-          "q_nb_estimate"
+          "reset_epoch"
         ],
-        "formula": "all_q_nb_estimate_components_match_within_tolerance_at_each_replayed_post_reset_due_estimator_tick",
-        "axis_aggregation": "all_over_at_least_two_post_reset_estimator_updates",
+        "formula": "all_q_nb_estimate_components_match_within_tolerance_at_each_replayed_valid_reset_epoch_local_due_estimator_tick",
+        "axis_aggregation": "all_over_at_least_two_valid_reset_epoch_local_estimator_updates",
         "invalid_data_action": "execution_error_inconclusive"
       },
       "tilt_error_rad": {
@@ -984,10 +1005,15 @@
       "reset_rule": "exactly_one_all_components_reset_after_invalid_input_coverage"
     },
     "reset_replay": {
-      "reset_event_order": "at_reset_event_start_reset_all_components_before_due_scheduled_work",
-      "input_replay_rule": "replay_identical_timestamped_imu_and_attitude_command_trace_from_reset_relative_tick_zero",
+      "reset_event_order": "at_reset_event_start_discard_pre_reset_state_publish_reset_command_and_begin_new_epoch_local_tick_zero",
+      "schedule_phase_rule": "restart_all_component_schedules_from_epoch_local_tick_zero",
+      "reset_tick_action": "reset_only_no_plant_actuator_imu_estimator_or_controller_step",
+      "timestamp_coordinate_rule": "scenario_clock_never_rewinds_and_maps_epoch_local_tick_n_to_reset_boundary_s_plus_n_times_base_period_s",
+      "first_estimator_update_rule": "first_due_estimator_tick_uses_one_new_valid_imu_with_dt_equal_imu_period_ticks_times_base_period_s_and_excludes_reset_state",
+      "first_controller_update_rule": "first_due_controller_tick_uses_dt_equal_controller_period_ticks_times_base_period_s_and_feedback_paired_to_reset_command",
+      "input_replay_rule": "replay_identical_reset_relative_imu_and_attitude_command_trace_at_same_reset_boundary_scenario_clock_timestamps",
       "rng_replay_rule": "restore_declared_scenario_seed_and_replay_identical_post_reset_noise_draw_indices",
-      "time_reference": "compare_matching_reset_relative_due_estimator_ticks",
+      "time_reference": "compare_matching_reset_epoch_local_due_estimator_ticks_with_valid_samples_only",
       "q_nb_component_abs_tolerance": 1e-12,
       "minimum_post_reset_estimator_updates": 2
     }
@@ -1837,10 +1863,16 @@
         "sample_validity",
         "rejection_reason",
         "reset_epoch",
-        "q_nb_estimate",
+        "imu_timestamp_s",
         "imu_gyro_rad_s",
         "imu_specific_force_m_s2",
-        "q_nb_command"
+        "attitude_command_timestamp_s",
+        "q_nb_command",
+        "state_estimate_timestamp_s",
+        "q_nb_estimate",
+        "torque_command_timestamp_s",
+        "actuator_feedback_timestamp_s",
+        "actuator_feedback_command_timestamp_s"
       ],
       "artifact_path": "artifacts/b0/invalid_input_and_reset/",
       "acceptance": [

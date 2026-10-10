@@ -34,7 +34,7 @@
 | 估计误差与偏航漂移 | truth 与 estimate 相对误差；偏航仅是初始参考下的相对漂移 | q_nb_truth、q_nb_estimate |
 | 积分器 | 按声明轴的最大绝对 integral torque contribution；x/y/z 分别限于 0.15/0.15/0.10 Nm | controller_integral_Nm |
 | 加速度污染限制 | event 内 specific-force、limitation status 与 truth/estimate 均须记录 | imu_specific_force_m_s2、limitation_status、q_nb_truth、q_nb_estimate |
-| 无效输入/reset | 每个声明的 invalid event 只有在 invalid 与匹配 rejection reason 时才计一次；reset 前先重置组件，再用相同输入/seed/draw index 比较至少两次 reset-relative due estimator updates 的 q_nb_estimate 分量（abs tol 1e-12） | imu_gyro_rad_s、imu_specific_force_m_s2、q_nb_command、sample_validity、reset_epoch、q_nb_estimate |
+| 无效输入/reset | 每个声明的 invalid event 只有在 invalid 与匹配 rejection reason 时才计一次；runtime reset 重启 epoch-local schedule、保持 scenario-clock timestamp，并在至少两次有效 reset-epoch-local estimator due update 上比较 q_nb_estimate 分量（abs tol 1e-12） | imu/command/estimate/torque/feedback 的 timestamp、feedback command timestamp、imu_gyro_rad_s、imu_specific_force_m_s2、q_nb_command、q_nb_estimate、sample_validity、reset_epoch |
 
 初始偏差场景的候选恢复指标只衡量 tilt，不把未知绝对 yaw 当成六轴 IMU 能保证恢复的
 性能。静止时，对 NED 竖直轴的等价 yaw 变换保持重力量测不变；因此未知初始 yaw 是
@@ -100,17 +100,29 @@ dwell 容量校验；超调和跨轴峰值则必须恰好覆盖整个 [start_tic
 
 ## 无效输入与确定性 reset 重放
 
-无效输入/reset 也不是一个可任意凑数的计数：场景必须恰有 negative dt 和 stale
-timestamp 各一次，每次只有可见的 invalid/reason 证据匹配时才计一次，随后才有一个
-all-components reset。计数下界固定为两个已声明注入，删掉或重复一种事件、或把阈值
-改为零都会被配置校验拒绝。
+无效输入/reset 也不是一个可任意凑数的计数：场景必须恰有 negative dt 和 stale timestamp
+各一次，每次只有可见的 invalid/reason 证据匹配时才计一次，随后才有一个 all-components
+reset。计数下界固定为两个已声明注入，删掉或重复一种事件、或把阈值改为零都会被配置校验拒绝。
 
-reset event 的开始先于同 tick 的任何 due scheduled work。重放从 reset-relative tick zero
-开始，必须使用相同 timestamped IMU、attitude command、场景 seed 以及 post-reset noise
-draw index；在匹配的 reset-relative due estimator tick 比较 q_nb_estimate 的每个分量，
-绝对容差固定为 1e-12。acceptance window 至少需要容纳两次 post-reset due estimator
-updates；因此 [reset_start, reset_start+1) 之类没有有效 estimator update 的窗口不是
-“确定性重放”证据。
+每个 runtime reset event 必须恰为 `[R,R+1)`。其开始定义新的 epoch-local tick 0，清除
+pre-reset state、held command 和 feedback，以显式初态/seed reset，并发布零 `C_reset`；该 tick
+不能执行 plant、actuator、IMU、estimator 或 controller step。全局 scenario clock 不重置：
+`C_reset` 的 timestamp 为 `R*base_period_s`，各后续 timestamp 使用
+`reset_boundary_s + local_tick*base_period_s`。这使任意 runtime reset 都不会制造零 dt 或
+未经说明的长 dt。
+
+2-tick 采样配置下，首个有效 IMU/estimate/controller due 是 R+2，dt=2*base_period_s，且
+controller 使用与 C_reset 原 timestamp 配对的 feedback；第二个有效 estimator update 是 R+4。
+故最短 reset replay 窗口为 `[R,R+5)`。人工边界例：R=1000 时 update 在 1002、1004，最短窗口
+为 `[1000,1005)`；R=1001 时 update 在 1003、1005，最短窗口为 `[1001,1006)`。结束点正好为
+第二个 tick 的窗口不包含该 tick，必须失败。
+
+两次重放必须在同一 reset boundary 具有相同 epoch-local schedule、explicit initial state、
+timestamped IMU/attitude-command trace、scenario seed 与 post-reset noise draw index；只在
+matching、valid 的 epoch-local estimator due ticks 比较 q_nb_estimate 的每个分量，绝对容差固定
+为 1e-12。reset state 和 C_reset 不计为 estimator update。保留每条 IMU、attitude command、
+state estimate、torque command、actuator feedback 的 scenario-clock timestamp、feedback paired
+command timestamp 与 reset_epoch，才构成将来 G3 可审计的 replay 证据输入；本 PR 尚未运行 G3。
 
 ## CTL-REQ 适用性审查
 
