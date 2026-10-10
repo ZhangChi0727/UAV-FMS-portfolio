@@ -1,0 +1,972 @@
+{
+  "schema_version": "b0-g0-contract/v1",
+  "contract_status": {
+    "state": "proposed_pending_maintainer_approval",
+    "freeze_prohibited": true,
+    "approval_required": [
+      "synthetic envelope",
+      "acceptance values",
+      "gain ranges",
+      "CTL-REQ applicability"
+    ]
+  },
+  "sources": [
+    {
+      "id": "ARCH-COORD-001",
+      "kind": "repository",
+      "status": "active_baseline",
+      "locator": "07_docs/architecture.md; 07_docs/development_baseline.md",
+      "use": "coordinate, unit, and B0 scope conventions"
+    },
+    {
+      "id": "BASELINE-G0-001",
+      "kind": "repository",
+      "status": "active_work_order",
+      "locator": "07_docs/work_orders/B0_work_order.md; 07_docs/work_orders/B0_G0_work_order.md",
+      "use": "G0 lifecycle, truth isolation, and acceptance obligations"
+    },
+    {
+      "id": "LIT-STATUS-001",
+      "kind": "historical_literature_record",
+      "status": "no_source_located_numeric_parameter_reused",
+      "locator": "literature/evidence_matrix.xlsx#Studies; Evidence Extraction",
+      "use": "audit only; not a numerical parameter authority"
+    },
+    {
+      "id": "SYNTH-TIME-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "base tick and integer-rate scheduling"
+    },
+    {
+      "id": "SYNTH-PLANT-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "rigid-body inertia and future G1 integration contract"
+    },
+    {
+      "id": "SYNTH-ACTUATOR-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "actuator lag, torque limits, and anti-windup signal"
+    },
+    {
+      "id": "SYNTH-IMU-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "IMU rate, gravity, noise, and bias envelope"
+    },
+    {
+      "id": "SYNTH-CONTROL-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "future controller gain bounds and initial candidates"
+    },
+    {
+      "id": "SYNTH-SCENARIO-001",
+      "kind": "synthetic_assumption",
+      "status": "proposed_pending_maintainer_approval",
+      "locator": "this configuration",
+      "use": "scenario disturbances, windows, and proposed engineering gates"
+    }
+  ],
+  "conventions": {
+    "world_frame": "NED",
+    "body_frame": "FRD",
+    "units": "SI",
+    "quaternion": {
+      "name": "q_nb",
+      "representation": "scalar_first_hamilton",
+      "rotation": "body_to_ned",
+      "normalization_required": true,
+      "sign_policy": "canonical_scalar_nonnegative_then_first_nonzero_vector_positive",
+      "unit_norm_tolerance": 0.000001
+    },
+    "body_angular_rate": {
+      "name": "omega_b",
+      "frame": "body_frd",
+      "unit": "rad/s"
+    }
+  },
+  "timing": {
+    "source_ref": "SYNTH-TIME-001",
+    "base_period_s": 0.0025,
+    "schedules": {
+      "plant_every_ticks": 1,
+      "actuator_every_ticks": 1,
+      "imu_every_ticks": 2,
+      "estimator_every_ticks": 2,
+      "controller_every_ticks": 2
+    },
+    "sequence": [
+      "plant_consumes_actual_torque_for_interval",
+      "actuator_advances_previous_limited_target",
+      "imu_samples_interval_end_when_due",
+      "estimator_consumes_imu_when_due",
+      "controller_consumes_current_estimate_when_due",
+      "controller_publishes_next_limited_target"
+    ],
+    "timestamp_policy": {
+      "strictly_increasing": true,
+      "nonpositive_dt_action": "reject_sample",
+      "stale_timestamp_action": "reject_sample_preserve_last_valid_state",
+      "reset_action": "clear_internal_state_then_require_explicit_initialization"
+    }
+  },
+  "plant_contract": {
+    "source_ref": "SYNTH-PLANT-001",
+    "implementation_status": "future_g1_contract_only",
+    "state": [
+      "q_nb",
+      "omega_b_rad_s"
+    ],
+    "inertia_kg_m2": [
+      [
+        0.022,
+        0,
+        0
+      ],
+      [
+        0,
+        0.024,
+        0
+      ],
+      [
+        0,
+        0,
+        0.041
+      ]
+    ],
+    "inertia_reference_frame": "body_frd",
+    "integrator_contract": {
+      "method": "rk4",
+      "step_halving_check_required": true
+    },
+    "truth_visibility": {
+      "allowed_consumers": [
+        "plant",
+        "sensor",
+        "independent_metric_evaluator"
+      ],
+      "forbidden_consumers": [
+        "estimator",
+        "controller"
+      ]
+    }
+  },
+  "actuator_contract": {
+    "source_ref": "SYNTH-ACTUATOR-001",
+    "implementation_status": "future_g1_contract_only",
+    "requested_torque": "requested_torque_body_Nm",
+    "limited_target_torque": "limited_torque_body_Nm",
+    "actual_torque": "actual_torque_body_Nm",
+    "model": "first_order_bounded",
+    "time_constant_s": 0.03,
+    "limits_Nm": [
+      0.35,
+      0.35,
+      0.2
+    ],
+    "antiwindup": {
+      "feedback_signal": "actual_minus_limited_target_torque_body_Nm",
+      "recipient": "future_rate_pid"
+    }
+  },
+  "imu_contract": {
+    "source_ref": "SYNTH-IMU-001",
+    "implementation_status": "future_g1_contract_only",
+    "sample_period_ticks": 2,
+    "sample_location": "center_of_gravity",
+    "timestamp": "end_of_interval",
+    "gravity_ned_m_s2": [
+      0,
+      0,
+      9.80665
+    ],
+    "specific_force_definition": "f_b = a_b - R_nb_transpose_times_g_n",
+    "gyro": {
+      "noise_std_rad_s": [
+        0.003,
+        0.003,
+        0.003
+      ],
+      "bias_rad_s": [
+        0.004,
+        -0.003,
+        0.002
+      ]
+    },
+    "accelerometer": {
+      "noise_std_m_s2": [
+        0.03,
+        0.03,
+        0.03
+      ],
+      "bias_m_s2": [
+        0.06,
+        -0.04,
+        0.03
+      ]
+    }
+  },
+  "estimator_contract": {
+    "implementation_status": "future_g2_contract_only",
+    "input": "imu_sample_with_timestamp_and_validity",
+    "output": "estimated_q_nb_and_estimated_omega_b_rad_s",
+    "truth_inputs_allowed_only_for": "explicit_reset_initialization",
+    "truth_inputs_forbidden_after_reset": true,
+    "normalize_after": [
+      "propagation",
+      "correction"
+    ],
+    "absolute_yaw_observation": "not_available_from_six_axis_imu",
+    "invalid_sample_action": "reject_sample_preserve_last_valid_state"
+  },
+  "controller_contract": {
+    "source_ref": "SYNTH-CONTROL-001",
+    "implementation_status": "future_g2_contract_only",
+    "input": "estimated_q_nb_and_estimated_omega_b_rad_s_only",
+    "output": "requested_torque_body_Nm",
+    "truth_inputs_forbidden": true,
+    "attitude_error": {
+      "equation": "conjugate_q_nb_est_hamilton_product_q_nb_command",
+      "shortest_path": "negate_error_quaternion_when_scalar_part_is_negative",
+      "half_turn_tie_break": "at_zero_scalar_choose_first_nonzero_vector_component_positive"
+    },
+    "attitude_kp": {
+      "initial": [
+        4,
+        4,
+        2.5
+      ],
+      "minimum": [
+        0,
+        0,
+        0
+      ],
+      "maximum": [
+        8,
+        8,
+        6
+      ]
+    },
+    "rate_pid": {
+      "kp": {
+        "initial": [
+          0.08,
+          0.08,
+          0.06
+        ],
+        "minimum": [
+          0,
+          0,
+          0
+        ],
+        "maximum": [
+          0.2,
+          0.2,
+          0.15
+        ]
+      },
+      "ki": {
+        "initial": [
+          0.02,
+          0.02,
+          0.015
+        ],
+        "minimum": [
+          0,
+          0,
+          0
+        ],
+        "maximum": [
+          0.08,
+          0.08,
+          0.06
+        ]
+      },
+      "kd": {
+        "initial": [
+          0.004,
+          0.004,
+          0.003
+        ],
+        "minimum": [
+          0,
+          0,
+          0
+        ],
+        "maximum": [
+          0.02,
+          0.02,
+          0.015
+        ]
+      },
+      "integrator_limit_Nm": [
+        0.15,
+        0.15,
+        0.1
+      ],
+      "integration_rule": "future_implementation_must_state_discrete_rule",
+      "derivative_rule": "future_implementation_must_state_measurement_or_error_rule"
+    }
+  },
+  "seed_policy": {
+    "tuning_seed": 2026100900,
+    "acceptance_seeds": [
+      2026100901,
+      2026100902,
+      2026100903,
+      2026100904,
+      2026100905,
+      2026100906,
+      2026100907,
+      2026100908
+    ],
+    "rule": "acceptance_seeds_are_reserved_and_must_not_be_reused_for_tuning"
+  },
+  "operating_envelope": {
+    "source_ref": "SYNTH-SCENARIO-001",
+    "status": "proposed_pending_maintainer_approval",
+    "statement": "synthetic rigid-body attitude experiment only; not a real airframe",
+    "max_command_attitude_rad": [
+      0.698132,
+      0.698132,
+      0.523599
+    ],
+    "max_initial_attitude_offset_rad": [
+      0.174533,
+      0.139626,
+      0.10472
+    ],
+    "max_body_rate_rad_s": [
+      2,
+      2,
+      1.5
+    ],
+    "validity_excludes": [
+      "translation",
+      "aerodynamics",
+      "navigation",
+      "hardware"
+    ]
+  },
+  "acceptance_policy": {
+    "source_ref": "SYNTH-SCENARIO-001",
+    "status": "proposed_pending_maintainer_approval",
+    "attitude_error": {
+      "sign_equivalent_angle_formula": "2*acos(clamp(abs(dot(q_reference,q_candidate)),0,1))",
+      "unit": "rad"
+    },
+    "settling": {
+      "band_rad": 0.0174533,
+      "dwell_s": 0.25,
+      "reference": "after_end_of_command_or_disturbance_event"
+    },
+    "overshoot": {
+      "reference": "first_signed_target_amplitude_after_nonzero_step",
+      "zero_command_action": "not_applicable",
+      "unit": "percent"
+    },
+    "outcome_classes": [
+      "performance_pass",
+      "performance_fail",
+      "limitation_characterized",
+      "invalid_input_rejected",
+      "execution_error_inconclusive"
+    ]
+  },
+  "scenarios": [
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [],
+      "id": "stationary_zero_command",
+      "class": "in_envelope_performance",
+      "seed": 2026100901,
+      "duration_s": 5,
+      "observations": [
+        "q_nb_truth",
+        "q_nb_estimate",
+        "omega_b_truth_rad_s",
+        "omega_b_estimate_rad_s",
+        "actuator_actual_torque_Nm"
+      ],
+      "artifact_path": "artifacts/b0/stationary_zero_command/",
+      "acceptance": [
+        {
+          "id": "stationary_attitude_peak",
+          "metric": "attitude_error_rad",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.0174533,
+          "unit": "rad",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "stationary_rate_peak",
+          "metric": "body_rate_error_rad_s",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.05,
+          "unit": "rad/s",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "stationary_quaternion_norm",
+          "metric": "quaternion_norm_error",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.000001,
+          "unit": "1",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [],
+      "id": "initial_attitude_offset",
+      "class": "in_envelope_performance",
+      "seed": 2026100902,
+      "duration_s": 6,
+      "initial_attitude_offset_rad": [
+        0.174533,
+        -0.139626,
+        0.10472
+      ],
+      "observations": [
+        "q_nb_truth",
+        "q_nb_estimate",
+        "controller_requested_torque_Nm"
+      ],
+      "artifact_path": "artifacts/b0/initial_attitude_offset/",
+      "acceptance": [
+        {
+          "id": "offset_settling_time",
+          "metric": "attitude_settling_time_s",
+          "reducer": "max",
+          "operator": "<=",
+          "limit": 3,
+          "unit": "s",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "offset_peak_error",
+          "metric": "attitude_error_rad",
+          "reducer": "peak",
+          "operator": "<=",
+          "limit": 0.4,
+          "unit": "rad",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "command_step",
+          "axis": "x",
+          "value_rad": 0.174533,
+          "start_tick": 200,
+          "end_tick": 600
+        },
+        {
+          "type": "command_step",
+          "axis": "x",
+          "value_rad": -0.174533,
+          "start_tick": 700,
+          "end_tick": 1100
+        },
+        {
+          "type": "command_step",
+          "axis": "y",
+          "value_rad": 0.174533,
+          "start_tick": 1200,
+          "end_tick": 1600
+        },
+        {
+          "type": "command_step",
+          "axis": "y",
+          "value_rad": -0.174533,
+          "start_tick": 1700,
+          "end_tick": 2100
+        },
+        {
+          "type": "command_step",
+          "axis": "z",
+          "value_rad": 0.174533,
+          "start_tick": 2200,
+          "end_tick": 2600
+        },
+        {
+          "type": "command_step",
+          "axis": "z",
+          "value_rad": -0.174533,
+          "start_tick": 2700,
+          "end_tick": 3100
+        }
+      ],
+      "id": "tri_axis_signed_steps",
+      "class": "in_envelope_performance",
+      "seed": 2026100903,
+      "duration_s": 8,
+      "observations": [
+        "q_nb_truth",
+        "q_nb_estimate",
+        "q_nb_command",
+        "controller_requested_torque_Nm",
+        "actuator_actual_torque_Nm"
+      ],
+      "artifact_path": "artifacts/b0/tri_axis_signed_steps/",
+      "acceptance": [
+        {
+          "id": "steps_settling_time",
+          "metric": "tracking_settling_time_s",
+          "reducer": "max",
+          "operator": "<=",
+          "limit": 1.2,
+          "unit": "s",
+          "window": {
+            "start_tick": 200,
+            "end_tick": 3200
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "steps_overshoot",
+          "metric": "tracking_overshoot_percent",
+          "reducer": "max",
+          "operator": "<=",
+          "limit": 20,
+          "unit": "%",
+          "window": {
+            "start_tick": 200,
+            "end_tick": 3200
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "steps_cross_axis",
+          "metric": "cross_axis_attitude_error_rad",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.0523599,
+          "unit": "rad",
+          "window": {
+            "start_tick": 200,
+            "end_tick": 3200
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "external_torque",
+          "vector_Nm": [
+            0.08,
+            -0.05,
+            0.04
+          ],
+          "start_tick": 400,
+          "end_tick": 800
+        }
+      ],
+      "id": "external_torque_disturbance",
+      "class": "in_envelope_performance",
+      "seed": 2026100904,
+      "duration_s": 5,
+      "observations": [
+        "q_nb_truth",
+        "q_nb_estimate",
+        "external_torque_Nm",
+        "actuator_actual_torque_Nm"
+      ],
+      "artifact_path": "artifacts/b0/external_torque_disturbance/",
+      "acceptance": [
+        {
+          "id": "disturbance_peak_attitude",
+          "metric": "attitude_error_rad",
+          "reducer": "peak",
+          "operator": "<=",
+          "limit": 0.35,
+          "unit": "rad",
+          "window": {
+            "start_tick": 400,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "disturbance_recovery",
+          "metric": "attitude_settling_time_s",
+          "reducer": "max",
+          "operator": "<=",
+          "limit": 2.5,
+          "unit": "s",
+          "window": {
+            "start_tick": 800,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "disturbance_saturation_time",
+          "metric": "actuator_saturation_time_s",
+          "reducer": "total_time",
+          "operator": "<=",
+          "limit": 1,
+          "unit": "s",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2000
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "imu_bias",
+          "gyro_bias_rad_s": [
+            0.004,
+            -0.003,
+            0.002
+          ],
+          "accelerometer_bias_m_s2": [
+            0.06,
+            -0.04,
+            0.03
+          ],
+          "start_tick": 0,
+          "end_tick": 4000
+        }
+      ],
+      "id": "imu_noise_and_bias",
+      "class": "in_envelope_performance",
+      "seed": 2026100905,
+      "duration_s": 10,
+      "observations": [
+        "imu_gyro_rad_s",
+        "imu_specific_force_m_s2",
+        "q_nb_truth",
+        "q_nb_estimate"
+      ],
+      "artifact_path": "artifacts/b0/imu_noise_and_bias/",
+      "acceptance": [
+        {
+          "id": "imu_roll_pitch_rms",
+          "metric": "roll_pitch_estimation_error_rad",
+          "reducer": "rms",
+          "operator": "<=",
+          "limit": 0.0872665,
+          "unit": "rad",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 4000
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "imu_yaw_drift",
+          "metric": "yaw_drift_rad_s",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.05,
+          "unit": "rad/s",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 4000
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "command_step",
+          "axis": "x",
+          "value_rad": 0.698132,
+          "start_tick": 200,
+          "end_tick": 1000
+        }
+      ],
+      "id": "saturation_withdrawal",
+      "class": "in_envelope_performance",
+      "seed": 2026100906,
+      "duration_s": 6,
+      "observations": [
+        "q_nb_truth",
+        "q_nb_estimate",
+        "controller_integral_Nm",
+        "requested_torque_Nm",
+        "limited_torque_Nm",
+        "actuator_actual_torque_Nm"
+      ],
+      "artifact_path": "artifacts/b0/saturation_withdrawal/",
+      "acceptance": [
+        {
+          "id": "saturation_integral_limit",
+          "metric": "controller_integral_Nm",
+          "reducer": "max_abs",
+          "operator": "<=",
+          "limit": 0.15,
+          "unit": "Nm",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "saturation_recovery",
+          "metric": "attitude_settling_time_s",
+          "reducer": "max",
+          "operator": "<=",
+          "limit": 2,
+          "unit": "s",
+          "window": {
+            "start_tick": 1000,
+            "end_tick": 2400
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "saturation_duration",
+          "metric": "actuator_saturation_time_s",
+          "reducer": "total_time",
+          "operator": "<=",
+          "limit": 2,
+          "unit": "s",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 2400
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "specific_force_disturbance",
+          "vector_m_s2": [
+            2,
+            0,
+            0
+          ],
+          "start_tick": 400,
+          "end_tick": 1200
+        }
+      ],
+      "id": "acceleration_contamination",
+      "class": "limitation_characterization",
+      "seed": 2026100907,
+      "duration_s": 5,
+      "observations": [
+        "imu_specific_force_m_s2",
+        "q_nb_truth",
+        "q_nb_estimate",
+        "limitation_status"
+      ],
+      "artifact_path": "artifacts/b0/acceleration_contamination/",
+      "acceptance": [
+        {
+          "id": "acceleration_limitation_recorded",
+          "metric": "limitation_event_recorded",
+          "reducer": "all",
+          "operator": "==",
+          "limit": true,
+          "unit": "bool",
+          "window": {
+            "start_tick": 400,
+            "end_tick": 1200
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    },
+    {
+      "source_ref": "SYNTH-SCENARIO-001",
+      "initial_q_nb": [
+        1,
+        0,
+        0,
+        0
+      ],
+      "initial_body_rate_rad_s": [
+        0,
+        0,
+        0
+      ],
+      "events": [
+        {
+          "type": "invalid_input",
+          "invalid_kind": "negative_dt",
+          "start_tick": 400,
+          "end_tick": 401
+        },
+        {
+          "type": "invalid_input",
+          "invalid_kind": "stale_timestamp",
+          "start_tick": 800,
+          "end_tick": 801
+        },
+        {
+          "type": "reset",
+          "start_tick": 1000,
+          "end_tick": 1001
+        }
+      ],
+      "id": "invalid_input_and_reset",
+      "class": "invalid_input",
+      "seed": 2026100908,
+      "duration_s": 3,
+      "observations": [
+        "sample_validity",
+        "rejection_reason",
+        "reset_epoch",
+        "q_nb_estimate"
+      ],
+      "artifact_path": "artifacts/b0/invalid_input_and_reset/",
+      "acceptance": [
+        {
+          "id": "invalid_input_rejected",
+          "metric": "invalid_input_rejection_count",
+          "reducer": "min",
+          "operator": ">=",
+          "limit": 2,
+          "unit": "count",
+          "window": {
+            "start_tick": 0,
+            "end_tick": 1200
+          },
+          "evidence_status": "proposed_not_executed"
+        },
+        {
+          "id": "reset_is_deterministic",
+          "metric": "reset_replay_match",
+          "reducer": "all",
+          "operator": "==",
+          "limit": true,
+          "unit": "bool",
+          "window": {
+            "start_tick": 1000,
+            "end_tick": 1200
+          },
+          "evidence_status": "proposed_not_executed"
+        }
+      ]
+    }
+  ]
+}
