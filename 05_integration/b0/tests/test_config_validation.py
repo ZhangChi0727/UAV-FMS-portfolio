@@ -102,6 +102,44 @@ def test_v2_rejects_missing_approval_record() -> None:
         validate_config(config)
 
 
+@pytest.mark.parametrize("value", [{}, [], None, True, 3.14, "", "   ", "b0-g0-contract/v9"])
+def test_schema_version_type_and_value_errors_are_contract_errors(value) -> None:
+    config = approved_config()
+    config["schema_version"] = value
+    with pytest.raises(ContractValidationError, match="schema_version"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("field", ["decision_source", "decision_date", "baseline_commit", "approval_package_commit", "scope"])
+def test_v2_rejects_empty_approval_metadata(field: str) -> None:
+    config = approved_config()
+    config["contract_status"]["approval_record"][field] = ""
+    with pytest.raises(ContractValidationError, match=f"approval_record.{field}"):
+        validate_config(config)
+
+
+def test_v2_rejects_invalid_approval_date_and_sha() -> None:
+    config = approved_config()
+    config["contract_status"]["approval_record"]["decision_date"] = "2026-02-30"
+    with pytest.raises(ContractValidationError, match="decision_date"):
+        validate_config(config)
+    config = approved_config()
+    config["contract_status"]["approval_record"]["baseline_commit"] = "not-a-sha"
+    with pytest.raises(ContractValidationError, match="baseline_commit"):
+        validate_config(config)
+
+
+@pytest.mark.parametrize("value", [{}, [], None, True, 3.14])
+def test_cli_rejects_non_string_schema_version_without_traceback(tmp_path: Path, value) -> None:
+    config = approved_config()
+    config["schema_version"] = value
+    path = tmp_path / "invalid-v2.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    with pytest.raises(SystemExit) as exc:
+        main(["--config", str(path)])
+    assert exc.value.code != 0
+
+
 def test_command_line_entrypoint_accepts_default_contract(
     capsys: pytest.CaptureFixture[str],
 ) -> None:

@@ -7,7 +7,7 @@
     "approval_record": {
       "decision": "approved_by_project_administrator",
       "decision_date": "2026-10-10",
-      "decision_source": "Project Administrator review communicated in task conversation",
+      "decision_source": "07_docs/b0/g0_approval_decision.md; Project Administrator review in task conversation",
       "baseline_commit": "046674dcb391983345a33d683331bcf2e155dcb1",
       "approval_package_commit": "ab2e6b05b2d51d851b1c3dfada5b69a66f47b9b0",
       "scope": "freeze the documented synthetic G0 candidate envelope and acceptance contract only; not a performance result",

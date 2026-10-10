@@ -1,11 +1,11 @@
 # B0 G0 合同与接口设计
 
-**状态：提议中，等待维护者集中批准；不得称为冻结。**
+**状态：v2 设计已批准；性能仍未执行，不得称为性能冻结。**
 **范围：B0 v0.2 的合同、版本化配置、校验和验收设计；不实现 G1/G2/G3。**
 
 机器可读配置
-[b0_g0_contract.v1.json](../../05_integration/b0/configs/b0_g0_contract.v1.json)
-是参数、场景、种子、接口和候选通过值的唯一权威来源。
+[b0_g0_contract.v2.json](../../05_integration/b0/configs/b0_g0_contract.v2.json)
+是当前批准合同的机器权威来源；v1 保留为 proposed 历史回归配置。
 [validate_config.py](../../05_integration/b0/validate_config.py) 是唯一可执行的
 合同校验入口；JSON Schema 仅为顶层结构索引，不能单独用于接受配置。
 

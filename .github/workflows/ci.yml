@@ -75,13 +75,24 @@ jobs:
         run: python -m ruff check .
         working-directory: 05_integration/b0
 
-      - name: Validate default B0 G0 contract
+      - name: Validate historical B0 G0 v1 contract
         run: python validate_config.py --config configs/b0_g0_contract.v1.json
+        working-directory: 05_integration/b0
+
+      - name: Validate approved B0 G0 v2 contract
+        run: python validate_config.py --config configs/b0_g0_contract.v2.json
+        working-directory: 05_integration/b0
+
+      - name: Validate default approved B0 G0 contract
+        run: python validate_config.py
         working-directory: 05_integration/b0
 
       - name: Run B0 G0 contract tests
         run: python -m pytest -v
         working-directory: 05_integration/b0
+
+      - name: Check complete PR diff whitespace
+        run: git diff --check origin/main...HEAD
   navigation-baseline:
     name: Python navigation baseline (3.11)
     runs-on: ubuntu-latest

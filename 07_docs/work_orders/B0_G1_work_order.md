@@ -1,15 +1,16 @@
-# B0 G1 对象与传感器实施子工作单（草案）
+# B0 G1 对象与传感器实施子工作单（定稿）
 
-状态：`草案，依赖 G0 维护者批准与 PR #11 合并`。本文件仅为 Issue #4 的实施交接规划，
+状态：`定稿，依赖 PR #11 合并后启动`。本文件仅为 Issue #4 的实施交接规划，
 不表示 G1 已开始、对象/IMU 已实现或任何性能通过。对应未来一个独立 G1 实施 PR；建议分支
 `codex/b0-g1-plant-imu`，以 G0 合并后的 `main` 为起点。
 
 ## 输入与可追溯性
 
-- 批准配置：`05_integration/b0/configs/b0_g0_contract.v2.json`（当前尚不存在；由维护者
-  决定后生成）。不得复制另一套参数默认值。
-- 当前候选参考：v1 `05_integration/b0/configs/b0_g0_contract.v1.json`，基点
-  `046674dcb391983345a33d683331bcf2e155dcb1`；该 SHA 不是批准 v2 的依据。
+- 批准配置：`05_integration/b0/configs/b0_g0_contract.v2.json`，技术批准提交
+  `1fd66551c0143a93f7b0f1e0bff19df32b1bb5b0`，决定记录
+  `07_docs/b0/g0_approval_decision.md`。不得复制另一套参数默认值。
+- v1 `05_integration/b0/configs/b0_g0_contract.v1.json` 仅作历史回归；其基点
+  `046674dcb391983345a33d683331bcf2e155dcb1` 不是批准 v2 的依据。
 - schema 只作顶层文档索引；`05_integration/b0/validate_config.py` 的字段/跨字段规则和
   v2 决定记录是实施前必须核对的合同入口。
 - 依赖：G0 v2 合并后的准确 merge SHA、批准包、`requirements/b0-dev.txt`、WSL venv
@@ -30,8 +31,9 @@
 1. `Plant.reset(PlantInitialState, reset_epoch) -> PlantState`；
    `Plant.step(actual_torque_body_Nm, dt_s) -> PlantState`。
 2. `Actuator.reset(ActuatorInitialState, reset_epoch) -> ActuatorFeedback`；
-   `Actuator.step(torque_command, dt_s) -> ActuatorFeedback`。actuator 只推进 paired
-   `limited_target_torque_body_Nm`，不重新计算 clamp；controller 的唯一限幅责任在 G2。
+   `Actuator.step(torque_command, dt_s) -> ActuatorFeedback`。G1 输入字段严格使用批准消息
+   `limited_torque_body_Nm`，不建立 `limited_target_torque_body_Nm` 别名；actuator 不重新
+   计算 clamp，controller 的唯一限幅责任在 G2。
 3. `IMU.reset(IMUInitialState, reset_epoch, rng_seed) -> IMUState`；
    `IMU.sample(truth_state, sample_timestamp_s) -> IMUSample`。truth 只在 sensor boundary
    使用，不外泄给 estimator/controller。
@@ -47,20 +49,23 @@
 
 - 零力矩/静止：identity q、zero rate、zero torque 在无噪声 fixture 下保持；specific force
   不在 plant 内计算。
-- 主惯量定轴解析用例：选定单一 body 轴、零初始 rate，比较角速度与姿态的解析趋势/符号；
-  正负力矩各一例，验证 `tau` 符号、NED/FRD 映射和 q/-q 等价。
+- 主惯量定轴解析用例：分别对 x/y/z 轴施加 `+/-0.01 Nm`，初始 `omega_b=[0,0,0]`，
+  `dt=0.00025 s`、总时域 `0.01 s`；以 `omega_i(t)=tau_i t/I_i` 和小角度
+  `theta_i(t)=0.5 tau_i t^2/I_i` 为参考，逐轴比较符号和绝对误差 `1e-10`。
 - 四元数：每个有效 step 后 `|norm(q)-1| <= 1e-12`（候选 G1 gate）；比较姿态时接受
   q 与 -q。
-- RK4 步长减半：同一输入在 `dt` 与 `dt/2` 下比较终点姿态/角速度；初始候选为
-  `abs(angle_error) <= 1e-8 rad`、`abs(rate_error) <= 1e-8 rad/s`，正式开工前以批准
-  v2 和解析量级复核，不得看结果后放宽。
+- RK4 步长减半：同一初态、恒定 `tau=[0.01,-0.01,0.005] Nm`、总时域 `0.05 s`，
+  以 `dt=0.0025 s` 与 `dt/2=0.00125 s` 的结果分别对高精度参考（连续方程用
+  `dt/16` RK4）比较；步长差只能作为收敛证据，不能替代参考解。姿态使用
+  `2*atan2(norm(q_ref^{-1}⊗q), abs(w))`，容差 `1e-8 rad`；角速度误差 `1e-8 rad/s`。
 
 ## 执行器验收设计
 
 - 对一阶 bounded 响应使用解析参考 `y(t)=target+(y0-target)exp(-t/tau)`；边界值、正负
   轴、零 target 和限值内外输入均测试。当前候选 tau/limits 只从 v2 读取。
-- 初始候选数值误差为 torque absolute `1e-10 Nm`（double、固定 tick）并记录解析参考、
-  dt、误差和终止状态；若批准包另有数值约束，以 v2 为准并更新本工作单。
+- 初始候选数值误差为 torque absolute `1e-10 Nm`（double、`dt=0.0025 s`、时域
+  `0.05 s`、固定 tick）并记录解析参考、误差和终止状态；若批准包另有数值约束，以 v2
+  为准并更新本工作单。
 - 用合成 TorqueCommand 夹具验证 limited target 的配对、held command 原 timestamp、
   feedback paired-command timestamp、reset 清除旧缓存，以及 R=1000/R=1001 的局部相位；
   不测试 controller 的首次 dt 实现，那属于 G2/G3。
@@ -72,7 +77,8 @@
 - 对已知 q_nb 的解析旋转，验证 `f_b = R_bn(a_n-g_n)` 和 body-frame angular rate；正负
   轴各测试，明确不引入平移动力学或杆臂效应。
 - 噪声/偏置按 v2 的“每样本独立 Gaussian 标准差 + 恒定 body bias”语义生成；固定 seed
-  的同一 reset trace 必须逐样本可重复，改变 seed 不得误称为统计性能结果。
+  的同一 reset trace 必须逐样本可重复，改变 seed 只验证随机流改变，不宣称统计性能。另以
+  zero-noise/zero-bias fixture、单独 bias fixture 和单独 noise fixture 分离验证三种来源。
 - IMU 每 2 base ticks 在区间末采样；无新样本时不调用 estimator（由 G0 schedule 约束），
   但 G1 只验证 sample timestamp、validity、seed/reset 和输入缓存清除。
 
@@ -92,9 +98,10 @@ G1 只实现并测试 plant/actuator/IMU 自身所需 reset state；估计器/co
 
 ## 数值 oracle、容差与证据
 
-上述 `1e-12` quaternion norm、`1e-8` step-halving 候选和 `1e-10 Nm` actuator 候选必须
-在 G1 开工前由批准 v2、解析参考量级和维护者审阅共同确定。实施者不得看到结果后修改
-阈值以制造通过；若对象误差不满足，保留失败 artifact、分析原因并提出变更决定。
+上述 `1e-12` quaternion norm、`1e-8` 姿态/角速度收敛、`1e-10 Nm` actuator 候选已作为
+本工作单的待执行 oracle；它们不因测试结果自动放宽。姿态范数、姿态角误差、角速度误差、
+执行器误差分别记录，不能互相替代。若对象误差不满足，保留失败 artifact、分析原因并提出
+新决定。
 
 每项测试保留：配置版本/hash、代码 SHA、seed、dt/tick、解析参考、实际输出、绝对/相对
 误差、单位、容差和终止状态。不要提交 notebook 输出、私有路径、完整文献或 credentials。
@@ -105,11 +112,11 @@ G1 只实现并测试 plant/actuator/IMU 自身所需 reset state；估计器/co
 `01_simulation/b0/imu.py`，以及同目录 `tests/`；若资产审计发现更合适的现有路径，须在
 G1 PR 记录映射理由，不搬迁遗留导航代码。
 
-在 Linux 活跃 checkout、B0 track 内运行：
+在 Linux 活跃 checkout 的仓库根目录运行未来入口；G1 开始后进入 `01_simulation/b0`：
 
 ```text
-/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q 01_simulation/b0/tests
-/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m ruff check 01_simulation/b0
+/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q tests
+/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m ruff check .
 git diff --check
 ```
 
@@ -122,5 +129,5 @@ RESULTS.md 的已验证结果（仅在有保留 artifact 时）和 Issue #4，�
 G1 实施 PR 完成需有批准 v2 输入、上述组件实现、无 skip/xfail 的强制组件测试、解析误差
 和收敛记录、CI 结果、独立评审及清洁工作区。它不得宣称 G2/G3 或 B0 完成。
 
-本草案在 G0 v2 合并、G1 数值 oracle 确认和 Issue #4 进入 `ready` 前保持草案；当前不创建
-实施分支、空 PR 或算法代码。
+本定稿在 PR #11 合并、G1 数值 oracle 执行确认和 Issue #4 进入 `ready` 前不表示 G1
+已实现；当前不创建实施分支、空 PR 或算法代码。
