@@ -2,92 +2,107 @@
 
 **状态：提议中，等待维护者批准；本矩阵不是性能结论。**
 
-本矩阵的机器权威来源是
-[`b0_g0_contract.v1.json`](../../05_integration/b0/configs/b0_g0_contract.v1.json)。
-每个 JSON Pointer 中的数值、种子、事件窗口和通过值都只是
-`proposed_pending_maintainer_approval` / `proposed_not_executed` 候选。
-本文件不能被用于宣称 SIL、HIL、实机或需求符合性已经完成。
+机器权威来源是
+[b0_g0_contract.v1.json](../../05_integration/b0/configs/b0_g0_contract.v1.json)。
+全部数值、种子、事件窗口和候选界值仍为待批准、未执行的工程候选。本文不能被用来
+宣称 SIL、HIL、实机、CTL-REQ 或闭环性能符合性。
 
-## 结果分类
-
-未来 G3/G4 必须在记录中区分下列结果，不能把工具错误、限制刻画或无效输入测试
-归入性能通过：
+## 结果分类与无效数据
 
 | 分类 | 含义 |
 |---|---|
-| `performance_pass` | 已批准的包线内场景，独立指标满足所有适用准则 |
-| `performance_fail` | 已批准的包线内场景，独立指标违反至少一项准则 |
-| `limitation_characterized` | 包线外或已知限制场景按预定方式记录，不等同于性能通过 |
-| `invalid_input_rejected` | 非法输入按合同拒绝或 reset，不是动态性能证据 |
-| `execution_error_inconclusive` | 构建、运行、数据或指标错误；必须保留原因且不得计为通过 |
+| performance_pass | 已批准的包线内场景，独立指标满足所有适用准则 |
+| performance_fail | 已批准的包线内场景，独立指标违反至少一项准则，含截止时仍未稳定 |
+| limitation_characterized | 已知限制按预定信号、窗口与状态记录，不等同于性能通过 |
+| invalid_input_rejected | 非法输入按合同拒绝或 reset；不是动态性能证据 |
+| execution_error_inconclusive | 构建、运行、数据、时间戳或指标器错误；不得计为通过 |
 
-结果分类的权威字段为
-`/acceptance_policy/outcome_classes`。
+所有指标定义的缺数据行为都是 execution_error_inconclusive。零 command delta 的超调
+是 not_applicable，而不是 0% 或通过。
 
 ## 指标口径
 
-| 指标族 | 合同定义 | 配置字段 |
+| 指标族 | 已固定的计算口径 | 必需原始信号 |
 |---|---|---|
-| 四元数姿态误差 | 使用 `q` 与 `-q` 等价的夹角公式，避免符号翻转伪误差 | `/acceptance_policy/attitude_error` |
-| 稳定时间 | 从命令或扰动事件结束起，进入稳定带并连续保持驻留时间；G3 必须在独立指标器实现这一口径 | `/acceptance_policy/settling` |
-| 超调 | 仅针对非零阶跃的首个有符号目标幅值；零指令不定义超调 | `/acceptance_policy/overshoot` |
-| 角速度、积分、力矩和饱和 | 单位、窗口、reducer、运算符和界值均在具体 `acceptance` 项中声明 | `/scenarios/*/acceptance/*` |
-| 偏航 | 仅评价给定初始参考下的相对跟踪/漂移；六轴 IMU 不提供持续绝对偏航观测 | `/estimator_contract/absolute_yaw_observation` |
+| 姿态误差 | 2*acos(clamp(abs(dot(q_reference,q_candidate)),0,1))，处理 q/-q 等价 | q_nb_truth、q_nb_command 或 q_nb_estimate |
+| 初始偏差稳定 | 从 scenario tick 0 起；进入 band 后完整 dwell 才计入 | q_nb_truth、q_nb_command |
+| command step 跟踪稳定 | 从该 step 的开始 tick 起；每个 event 单独窗口、目标和 deadline | q_nb_truth、q_nb_command |
+| 扰动/撤回恢复 | 从该 disturbance 或 command withdrawal 的结束 tick 起 | q_nb_truth、q_nb_command |
+| 超调 | 按事件前 command 到目标的有符号增量投影；分母为该增量绝对值 | q_nb_truth、q_nb_command |
+| 跨轴误差 | 相对于当前 command step 轴的未命令轴误差最大值 | q_nb_truth、q_nb_command |
+| 饱和持续时间 | request 超界且 limited 为组件 clamp 的 dt 总和 | requested_torque_Nm、limited_torque_Nm |
+| 估计误差与偏航漂移 | truth 与 estimate 相对误差；偏航仅是初始参考下的相对漂移 | q_nb_truth、q_nb_estimate |
+| 积分器 | 逐轴 integral torque contribution，不做全轴掩盖 | controller_integral_Nm |
+| 加速度污染限制 | event 内 specific-force、limitation status 与 truth/estimate 均须记录 | imu_specific_force_m_s2、limitation_status、q_nb_truth、q_nb_estimate |
+| 无效输入/reset | 显式拒绝原因计数；相同 seed 和显式初态下的 post-reset trace 比较 | sample_validity、rejection_reason、reset_epoch、q_nb_estimate |
 
-G3 还必须明确记录用于计算的原始信号、指标器版本、配置 hash、Git revision、种子、
-时间窗口和终止状态。指标器必须独立于被测估计器和控制器。
+稳定窗口必须容纳候选时间界加 dwell。若先达到窗口截止仍未连续驻留完整 dwell，结果是
+performance_fail；不允许返回一个虚构的有限稳定时间。
 
 ## 八类场景
 
-| 场景 | 类别 | 配置入口 | 预定事件/覆盖点 | 候选准则与预期证据 | 未来负责阶段 |
-|---|---|---|---|---|---|
-| `stationary_zero_command` | 包线内性能 | `/scenarios/0` | 零指令、静止、四元数归一化 | 三项候选准则：姿态误差、角速度误差、四元数范数；`artifacts/b0/stationary_zero_command/` | G1、G2、G3 |
-| `initial_attitude_offset` | 包线内性能 | `/scenarios/1` | 显式初始姿态偏差 | 稳定时间和峰值姿态误差；`artifacts/b0/initial_attitude_offset/` | G1、G2、G3 |
-| `tri_axis_signed_steps` | 包线内性能 | `/scenarios/2` | x/y/z 每轴正、负阶跃 | 稳定时间、超调、交叉轴误差；`artifacts/b0/tri_axis_signed_steps/` | G2 控制器、G3 |
-| `external_torque_disturbance` | 包线内性能 | `/scenarios/3` | 有界外部机体系力矩 | 峰值偏差、恢复时间、饱和时间；`artifacts/b0/external_torque_disturbance/` | G1、G2、G3 |
-| `imu_noise_and_bias` | 包线内性能 | `/scenarios/4` | 可复现噪声和偏置 | 横滚/俯仰估计 RMS 与偏航漂移；`artifacts/b0/imu_noise_and_bias/` | G1、G2 估计器、G3 |
-| `saturation_withdrawal` | 包线内性能 | `/scenarios/5` | 大阶跃、限幅后撤回 | 积分界、恢复时间、饱和持续时间；`artifacts/b0/saturation_withdrawal/` | G1、G2 控制器、G3 |
-| `acceleration_contamination` | 限制刻画 | `/scenarios/6` | 非重力 specific-force 污染 | 记录限制事件和状态；不预设任意污染下恢复；`artifacts/b0/acceleration_contamination/` | G1、G2 估计器、G3 |
-| `invalid_input_and_reset` | 无效输入 | `/scenarios/7` | 负 dt、陈旧 timestamp、reset | 拒绝计数和确定性 reset replay；`artifacts/b0/invalid_input_and_reset/` | G1、G2、G3 |
+| 场景 | 类别 | 事件与观察规则 | 候选准则与未来责任 |
+|---|---|---|---|
+| stationary_zero_command | 包线内性能 | 无事件；记录 truth、estimate、command、角速度和 actual torque | 姿态误差、角速度误差、四元数范数；G1/G2/G3 |
+| initial_attitude_offset | 包线内性能 | 偏差只施加到 plant truth；estimate 从显式自身初态 reset | tick 0 起的稳定时间和峰值姿态误差；G1/G2/G3 |
+| tri_axis_signed_steps | 包线内性能 | 六个有 ID 的 x/y/z 正负 step，各自半开区间、结束后该轴归零 | 每个 event 单独有稳定、超调和跨轴准则；G2 控制器/G3 |
+| external_torque_disturbance | 包线内性能 | 有界机体系外力矩 event；恢复从 event end 起算 | 峰值误差、独立恢复、饱和持续时间；G1/G2/G3 |
+| imu_noise_and_bias | 包线内性能 | 每样本噪声、替换式偏置 event 和固定 seed | 横滚/俯仰 RMS、相对偏航漂移；G1/G2 估计器/G3 |
+| saturation_withdrawal | 包线内性能 | 非零 command event、逐轴 request/limited/actual 记录，撤回后恢复 | 必须出现正饱和持续时间、积分界、恢复和总饱和上界；G1/G2 控制器/G3 |
+| acceleration_contamination | 限制刻画 | additive specific-force event；不引入平移动力学 | event 内限制记录与完整信号依赖；G1/G2 估计器/G3 |
+| invalid_input_and_reset | 无效输入 | negative dt、stale timestamp、all-components reset | 明确拒绝计数与确定性 reset replay；G1/G2/G3 |
 
-所有场景的 `artifact_path` 只是未来证据位置约定。本 PR 不创建生成输出、图表、CSV
-或伪造的结果文件。
+artifact_path 仅约定未来证据位置。本 PR 不提交 CSV、图表、仿真输出或伪造结果。
+
+## 三轴阶跃与观察窗口核算
+
+候选 base tick 是 0.0025 s，dwell 是 0.25 s，即 100 tick。每个阶跃的候选
+稳定界为 1.2 s，即 480 tick，故一个合格观察窗口至少需要 580 tick。当前每一段
+保持 700 tick（1.75 s），并有 100 tick（0.25 s）间隔；场景长度调整为 14 s，
+使每一个正/负轴事件都有自己的可观测窗口，而不是共享公共窗口。
+
+每个 command event 的 acceptance 项必须显式引用 event_id。校验器拒绝：
+
+- 同一轴事件重叠、乱序或不在场景范围内；
+- 删除任一 event 的稳定、超调或跨轴指标；
+- 用 sample_validity 等无关 observation 替代所需原始信号；
+- 窗口短于时间界加 dwell；
+- 把 recovery 窗口的起点放在 event end 之外。
+
+## 饱和撤回的独立证据
+
+饱和撤回不是“非零 command 即认为会饱和”。它需要：
+
+1. event 内的 actuator_saturation_time_s 使用大于零的下界，作为未来 G3 的实际
+   触发证据；
+2. 同时保留上界，防止持续饱和被当作通过；
+3. 将恢复稳定时间绑定到 command event 的结束 tick；
+4. 记录逐轴 integral torque contribution、request、limited 与 actual。
+
+因此，未来动态运行若从未触发饱和，必须按合同得到失败或 inconclusive，而不能借由
+上界为零而通过。
 
 ## CTL-REQ 适用性审查
 
-现有需求 ID 和阈值必须原样保留，但不自动成为 B0 发布准则。
+原有编号和阈值保持不变；本轮未修改需求，也没有产生符合性证据。
 
-| 需求 | 原始阈值 | G0 适用性结论 | 原因与行动 |
+| 需求 | 原始阈值 | 当前结论 | 维护者待决事项 |
 |---|---|---|---|
-| `CTL-REQ-001` | Attitude settling time — 10 degree step input，`< 0.8 s`，Test | **条件化适用，未批准、未执行** | B0 含三轴正/负的十度阶跃，但对象、命令定义、稳定带/驻留时间和指标器尚未实现或批准。B0 的候选工程准则见 `/scenarios/2/acceptance`，与旧阈值不同；在维护者裁决前不得报告符合 `CTL-REQ-001`。 |
-| `CTL-REQ-002` | Attitude overshoot，`< 15%`，Test | **条件化适用，阈值冲突待裁决，未执行** | B0 候选超调准则位于 `/scenarios/2/acceptance`，并非旧阈值。若维护者保留旧需求，则必须在相同对象、命令、采样和 metric 定义下单独验证；若不保留，必须记录不适用理由并批准 B0 自身门槛。 |
+| CTL-REQ-001 | Attitude settling time — 10 degree step input，< 0.8 s，Test | 条件化适用，未批准、未执行 | 是否在相同对象、command、band、dwell 与指标口径下采纳旧阈值 |
+| CTL-REQ-002 | Attitude overshoot，< 15%，Test | 条件化适用、候选阈值冲突，未执行 | 是否采纳旧阈值，或正式记录不适用并批准 B0 工程阈值 |
 
-这两个结论保留旧要求的文字和阈值，但不宣称任何符合性。G0 退出前需要维护者对每一项
-选择“适用”“条件化适用”或“不适用”，并记录对应理由。
+候选 B0 阈值不能替换、重编号或暗中放宽这些旧阈值。批准记录须连同新的配置版本保存。
 
-## 场景执行和独立验收规则
+## 未来 G3/G4 执行规则
 
-未来实现应遵守以下最小规则：
+1. 加载 validate_config.py 接受的批准配置，不允许隐式默认或未知字段；
+2. 使用保留验收 seed；调参 seed 与验收 seed 分离；
+3. 每项指标由独立于估计器/控制器的指标器计算；
+4. 按 timing/sequence 执行并保留 request、limited、actual 三种 torque；
+5. 每次运行保留 revision、配置 hash、seed、时钟策略、原始信号、指标器版本和终止状态；
+6. 不将 replay、板端、实时闭环 HIL 和实机飞行混为同一级证据；
+7. 已批准字段变更时必须版本化、说明原因并重跑受影响场景。
 
-1. 从已批准的配置版本加载，不允许缺字段、未知字段、NaN/Inf、非法惯量或隐式默认；
-2. 只使用配置的保留验收种子；调参种子与验收种子分离；
-3. 估计器与控制器只能获取合同声明的估计/测量输入，不能读取对象 truth；
-4. 执行时以 `/timing/sequence` 指定的顺序调度，并保留 request、limited target 和 actual torque；
-5. 对每一项准则由独立指标器计算。算法运行错误或数据缺失只能为
-   `execution_error_inconclusive`；
-6. 若调整任一已批准参数或阈值，必须增加配置版本、说明理由并重跑受影响场景；
-7. 不预设 Monte Carlo 次数或统计显著性。若以后引入随机试验，必须先说明试验目的、
-   种子集合和分析方法。
-
-## 待维护者集中批准的决定
-
-| 决定 | 权威位置 | 未批准时的处理 |
-|---|---|---|
-| 有效旋转包线及排除的飞行能力 | `/operating_envelope` | 仅可称为合成候选，不能称为真实机型包线 |
-| 稳定带、驻留时间、超调定义 | `/acceptance_policy` | 不得把任意运行时间计算为需求稳定时间/超调 |
-| 八类场景的扰动、窗口、种子和阈值 | `/scenarios` | 只可运行用于开发诊断，不能宣称验收通过 |
-| 执行器/IMU/增益候选 | `/actuator_contract`、`/imu_contract`、`/controller_contract` | 后续实现不得把候选写成已验证或最终参数 |
-| CTL-REQ-001/002 的适用性 | 本节与 `07_docs/requirements.md` | 不得报告需求符合性 |
-
-G0 的配置校验测试只证明这些候选能够被一致地加载、拒绝非法输入并满足跨字段合同；
-它不证明八类场景的动态性能。
+维护者尚未批准前，这些规则只是候选执行合同；G0 校验通过不等于 G0 冻结或 B0 完成。
+批准不得把本 v1 原地改成 approved：必须新增版本化的 v2 配置、校验器合同和维护者决定
+记录，再重新验证受影响场景。

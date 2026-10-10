@@ -2,7 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/main/05_integration/b0/schema/b0_g0_contract.schema.json",
   "title": "B0 G0 contract configuration",
-  "description": "Structural schema for the proposed B0 G0 contract. validate_config.py adds strict cross-field and physical validation.",
+  "description": "Documentation-only top-level structural index for the proposed B0 G0 contract. It is not an executable validation entry; validate_config.py is the authoritative strict structural, cross-field, physical, scheduling, and acceptance validator.",
+  "x-b0-validation-role": "top_level_documentation_index_only",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -11,6 +12,8 @@
     "sources",
     "conventions",
     "timing",
+    "interface_contract",
+    "initialization_contract",
     "plant_contract",
     "actuator_contract",
     "imu_contract",
@@ -31,7 +34,8 @@
       "required": [
         "state",
         "freeze_prohibited",
-        "approval_required"
+        "approval_required",
+        "approval_transition"
       ],
       "properties": {
         "state": {
@@ -47,6 +51,9 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "approval_transition": {
+          "type": "object"
         }
       }
     },
@@ -93,6 +100,12 @@
       "type": "object"
     },
     "timing": {
+      "type": "object"
+    },
+    "interface_contract": {
+      "type": "object"
+    },
+    "initialization_contract": {
       "type": "object"
     },
     "plant_contract": {
