@@ -5,10 +5,10 @@
 
 准备基点：PR #11 分支 `codex/b0-g0-contracts`，技术基点
 `046674dcb391983345a33d683331bcf2e155dcb1`；本次 G1 工作单保护输入提交为
-`d8068ad30dde50d3effdf2b09645f1879f7a6a45`。当前唯一候选配置仍为
-`05_integration/b0/configs/b0_g0_contract.v1.json`，状态为
-`proposed_pending_maintainer_approval`。v1 必须保留；批准继承到
-`b0_g0_contract.v2.json`，不得原地修改 v1。
+`d8068ad30dde50d3effdf2b09645f1879f7a6a45`。v1
+`05_integration/b0/configs/b0_g0_contract.v1.json` 保留为
+`proposed_pending_maintainer_approval` 历史回归；当前批准配置为
+`05_integration/b0/configs/b0_g0_contract.v2.json`。不得原地修改 v1。
 
 ## 决策格式
 

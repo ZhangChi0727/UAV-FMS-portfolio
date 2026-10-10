@@ -2960,6 +2960,8 @@ def validate_config(config: dict[str, Any]) -> None:
         date_value = record["decision_date"]
         if not isinstance(date_value, str) or not date_value.strip():
             _fail("contract_status.approval_record.decision_date", "must be a non-empty YYYY-MM-DD date")
+        if not isinstance(date_value, str) or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", date_value) is None:
+            _fail("contract_status.approval_record.decision_date", "must match YYYY-MM-DD exactly")
         try:
             dt.date.fromisoformat(date_value)
         except (TypeError, ValueError):
@@ -2970,8 +2972,8 @@ def validate_config(config: dict[str, Any]) -> None:
                 _fail(f"contract_status.approval_record.{field}", "must be a 40-character lowercase hexadecimal SHA")
         source = record["decision_source"]
         expected_source = "07_docs/b0/g0_approval_decision.md"
-        if expected_source not in source:
-            _fail("contract_status.approval_record.decision_source", f"must reference {expected_source}")
+        if source.split(";", 1)[0].strip() != expected_source:
+            _fail("contract_status.approval_record.decision_source", f"must begin with the exact repository path {expected_source}")
         approval_path = Path(__file__).resolve().parents[2] / expected_source
         if not approval_path.is_file():
             _fail("contract_status.approval_record.decision_source", f"referenced file is missing: {expected_source}")

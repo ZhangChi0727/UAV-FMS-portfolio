@@ -32,3 +32,11 @@ git diff --check
 - CI 显式运行 v1、v2、默认 CLI、测试和 `origin/main...HEAD` whitespace 检查。
 - G1 工作单引用实际 v2、决定记录、字段名、时域、oracle、容差和未来执行目录；不表示 G1 已实现或 ready。
 - 待 Linux 活跃副本恢复可访问后重跑绝对解释器命令；待主会话 PA 对本轮提交复核；待满足明确合并授权和远程 CI 门槛后才合并。
+
+## 追加轮次：`468743e` 之后
+
+- R1：B0 CI checkout 已设置 `fetch-depth: 0`，因此 `origin/main...HEAD` 有真实对象可比较；完整 base..HEAD whitespace 检查在 Windows 退出 0。
+- R2：G1 工作单明确 `q_delta=normalize(q_ref^{-1}⊗q)`、`[w,v]`、`2*atan2(||v||,|w|)`，并保留 identity、q/-q、极小角和已知角度作为纯数学验收例。
+- R3：日期严格匹配 `YYYY-MM-DD` 后再用 `date.fromisoformat` 验证；source 首个分号分隔字段必须精确为 `07_docs/b0/g0_approval_decision.md`，按仓库根定位；新增非法日期、来源和迁移反例。
+- R4：v1/v2 差异测试仅允许 `schema_version` 和 `contract_status`；g0_contract、g0_acceptance、g0_approval、g0_review_resolution 已区分历史 proposed、当前设计批准与性能未执行。
+- R5：Windows 工作区与远程分支在 `468743e` clean/synchronized；WSL 只读访问仍返回 `E_ACCESSDENIED`，未声称 Linux 已同步或已重跑。主会话 PA 复核待返回。
