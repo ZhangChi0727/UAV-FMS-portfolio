@@ -57,16 +57,21 @@
 - RK4 步长减半：同一初态、恒定 `tau=[0.01,-0.01,0.005] Nm`、总时域 `0.05 s`，
   以 `dt=0.0025 s` 与 `dt/2=0.00125 s` 的结果分别对高精度参考（连续方程用
   `dt/16` RK4）比较；步长差只能作为收敛证据，不能替代参考解。姿态使用
-  对 `q_delta=q_ref^{-1}⊗q` 使用 `2*atan2(norm(q_delta[1:4]), abs(q_delta[0]))`，容差
-  `1e-8 rad`；角速度误差 `1e-8 rad/s`。
+  对 `q_delta=normalize(q_ref^{-1}⊗q)` 使用 `2*atan2(norm(q_delta[1:4]), abs(q_delta[0]))`，
+  输入为 scalar-first `[w,x,y,z]`，零范数输入非法；容差 `1e-8 rad`，角速度误差
+  `1e-8 rad/s`。纯数学回归例：identity 对 identity 得 `0`；`q` 与 `-q` 得相同距离；
+  `q_delta=[cos(ε/2),sin(ε/2),0,0]` 得 ε（极小 ε 用 `atan2` 保持稳定）；
+  `q_delta=[√2/2,0,0,√2/2]` 得 `π/2`。
 
 ## 执行器验收设计
 
 - 对一阶 bounded 响应使用解析参考 `y(t)=target+(y0-target)exp(-t/tau)`；边界值、正负
   轴、零 target 和限值内外输入均测试。当前候选 tau/limits 只从 v2 读取。
-- 初始候选数值误差为 torque absolute `1e-10 Nm`（double、`dt=0.0025 s`、时域
-  `0.05 s`、固定 tick）并记录解析参考、误差和终止状态；若批准包另有数值约束，以 v2
-  为准并更新本工作单。
+- 执行器采用批准一阶模型的零阶保持精确离散更新
+  `y_next=target+(y-y_target)*exp(-dt/tau)`；初始候选数值误差为 torque absolute
+  `1e-10 Nm`（double、`dt=0.0025 s`、时域 `0.05 s`、固定 tick）。该容差依据为
+  解析指数参考与 double 舍入量级，须由维护者在 G1 开工前确认；未确认前标记为候选，
+  不得称为已批准门槛。
 - 用合成 TorqueCommand 夹具验证 limited target 的配对、held command 原 timestamp、
   feedback paired-command timestamp、reset 清除旧缓存，以及 R=1000/R=1001 的局部相位；
   不测试 controller 的首次 dt 实现，那属于 G2/G3。
@@ -113,9 +118,11 @@ G1 只实现并测试 plant/actuator/IMU 自身所需 reset state；估计器/co
 `01_simulation/b0/imu.py`，以及同目录 `tests/`；若资产审计发现更合适的现有路径，须在
 G1 PR 记录映射理由，不搬迁遗留导航代码。
 
-在 Linux 活跃 checkout 的仓库根目录运行未来入口；G1 开始后进入 `01_simulation/b0`：
+G1 开始后在 Linux 活跃 checkout 中明确进入 `01_simulation/b0`，以下命令的相对路径均
+相对于该目录；未实现阶段不运行这些未来入口：
 
 ```text
+cd /home/chi/src/uav-fms-portfolio/01_simulation/b0
 /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q tests
 /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m ruff check .
 git diff --check

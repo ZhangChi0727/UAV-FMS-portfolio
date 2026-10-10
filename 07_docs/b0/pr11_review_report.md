@@ -36,7 +36,8 @@ git diff --check
 ## 追加轮次：`468743e` 之后
 
 - R1：B0 CI checkout 已设置 `fetch-depth: 0`，因此 `origin/main...HEAD` 有真实对象可比较；完整 base..HEAD whitespace 检查在 Windows 退出 0。
-- R2：G1 工作单明确 `q_delta=normalize(q_ref^{-1}⊗q)`、`[w,v]`、`2*atan2(||v||,|w|)`，并保留 identity、q/-q、极小角和已知角度作为纯数学验收例。
+- R2：G1 工作单明确 `q_delta=normalize(q_ref^{-1}⊗q)`、`[w,v]`、`2*atan2(||v||,|w|)`；本轮补入 identity、q/-q、极小角和已知角度的可复算纯数学例，以及零范数非法规则。
 - R3：日期严格匹配 `YYYY-MM-DD` 后再用 `date.fromisoformat` 验证；source 首个分号分隔字段必须精确为 `07_docs/b0/g0_approval_decision.md`，按仓库根定位；新增非法日期、来源和迁移反例。
 - R4：v1/v2 差异测试仅允许 `schema_version` 和 `contract_status`；g0_contract、g0_acceptance、g0_approval、g0_review_resolution 已区分历史 proposed、当前设计批准与性能未执行。
 - R5：WSL 经提升权限后确认初始 HEAD 为 `ab2e6b0` 且 clean；通过明确 refspec 后安全快进至最终 `88f918df475a14d88411e015103d84b4987efc8a`，工作树 clean。Linux 使用 `/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python` 在 `05_integration/b0` 实跑 v1、v2、默认 CLI、pytest 和 Ruff，结果分别通过、通过、通过、`162 passed`、通过；完整 base..HEAD whitespace 检查通过。代码提交 `6868e29` 的远程三项 CI 全部 SUCCESS（run `38057395174`）；最终 `88f918d` 仅更新报告。主会话 PA 复核仍待返回。
+- PA 复核结论：验证通过，但批准来源授权链仍待用户确认；G1 工作单的数学例与执行器容差/目录补充已在本轮加入，容差仍标为待维护者确认，不宣称 G1 ready。
