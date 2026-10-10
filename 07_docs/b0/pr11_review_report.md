@@ -41,3 +41,12 @@ git diff --check
 - R4：v1/v2 差异测试仅允许 `schema_version` 和 `contract_status`；g0_contract、g0_acceptance、g0_approval、g0_review_resolution 已区分历史 proposed、当前设计批准与性能未执行。
 - R5：WSL 经提升权限后确认初始 HEAD 为 `ab2e6b0` 且 clean；通过明确 refspec 后安全快进至最终 `88f918df475a14d88411e015103d84b4987efc8a`，工作树 clean。Linux 使用 `/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python` 在 `05_integration/b0` 实跑 v1、v2、默认 CLI、pytest 和 Ruff，结果分别通过、通过、通过、`162 passed`、通过；完整 base..HEAD whitespace 检查通过。代码提交 `6868e29` 的远程三项 CI 全部 SUCCESS（run `38057395174`）；最终 `88f918d` 仅更新报告。主会话 PA 复核仍待返回。
 - PA 复核结论：验证通过，但批准来源授权链仍待用户确认；G1 工作单的数学例与执行器容差/目录补充已在本轮加入，容差仍标为待维护者确认，不宣称 G1 ready。
+
+## 最终收尾轮次：`12ac298` 之后
+
+- 依据用户“指挥 TC 达成最后关闭”的授权，补入批准主体定位：设计决定来自本任务的
+  Project Administrator 评审任务 `/root/project_administrator`；主会话
+  `019f9ef3-4a0c-79f1-99d4-c8415f62bd29` 负责当前复核，未与最终复审子代理混称。
+- 四元数纯数学检查命令：`python .tmp_quaternion_oracle.py`，结果 `quaternion oracle examples: PASS`；临时脚本随后删除，未进入提交。
+- G1 工作单新增待主会话审阅的数值决策表；四元数定义、解析主惯量、RK4 收敛和精确一阶执行器 oracle 均明确，候选容差未标为已批准。
+- 当前唯一待用户确认事项：是否认可上述授权链摘要作为 v2 决定记录中的真实批准来源。确认前不修改已批准 v2 的主体来源字段，不合并、不宣告 G1 ready。

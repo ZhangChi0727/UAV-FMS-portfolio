@@ -112,6 +112,15 @@ G1 只实现并测试 plant/actuator/IMU 自身所需 reset state；估计器/co
 每项测试保留：配置版本/hash、代码 SHA、seed、dt/tick、解析参考、实际输出、绝对/相对
 误差、单位、容差和终止状态。不要提交 notebook 输出、私有路径、完整文献或 credentials。
 
+### 待主会话审阅的数值决策表
+
+| 项目 | 候选定义 | 依据 | 状态 |
+|---|---|---|---|
+| 四元数范数 | 每个有效 step 后 `abs(norm(q)-1) <= 1e-12` | double 归一化后的直接范数误差 | 待主会话审阅 |
+| 主惯量解析 | x/y/z 各 `+/-0.01 Nm`，`omega0=0`，`dt=0.00025 s`，`T=0.01 s`；分别比较 `omega` (rad/s) 与 `theta` (rad)，绝对误差 `1e-10` | `omega=tau*t/I`、`theta=0.5*tau*t^2/I` 独立解析解 | 待主会话审阅 |
+| RK4 收敛 | `tau=[.01,-.01,.005] Nm`，`T=.05 s`；`dt=.0025` 与 `.00125 s`，参考为同一 RK4 方法 `dt/16`；姿态 `1e-8 rad`、角速率 `1e-8 rad/s` | 参考解用于误差量级，步长差只作收敛证据，不等同独立真值 | 待主会话审阅 |
+| 执行器 | 精确一阶零阶保持 `y_next=target+(y-target)exp(-dt/tau)`，`dt=.0025 s`，`T=.05 s`，误差 `1e-10 Nm` | 与常值输入解析指数完全匹配；容差仍需维护者确认 | 待主会话审阅 |
+
 ## 文件、命令、CI 与交付
 
 建议文件落点：`01_simulation/b0/plant.py`、`01_simulation/b0/actuator.py`、

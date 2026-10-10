@@ -4,6 +4,12 @@
 决定人：Project Administrator（经用户授权交付 PA 评审）
 范围：G0 合同候选冻结与 CTL 适用性；不构成性能合规证明。
 
+授权与主体定位：用户在本任务中明确授权“将 1–3 交 Project Administrator 讨论，PA
+通过则授权执行”；实际作出三项设计决定的评审主体是本任务的 Project Administrator
+评审任务 `/root/project_administrator`。当前主会话 Project Administrator
+`019f9ef3-4a0c-79f1-99d4-c8415f62bd29` 负责本轮收尾复核，不将最终复审子代理
+`01a125e9-a0be-7d60-8209-89a15a66b3d4` 冒充为设计批准人。
+
 基线提交：`046674dcb391983345a33d683331bcf2e155dcb1`
 批准包提交：`ab2e6b05b2d51d851b1c3dfada5b69a66f47b9b0`
 
