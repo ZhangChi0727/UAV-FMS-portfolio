@@ -7,8 +7,10 @@ nor evaluates estimator, controller, or closed-loop performance.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -2926,6 +2928,8 @@ def validate_config(config: dict[str, Any]) -> None:
 
     _mapping(config, "$", ROOT_REQUIRED, ROOT_REQUIRED)
     schema_version = config["schema_version"]
+    if not isinstance(schema_version, str) or not schema_version.strip():
+        _fail("schema_version", "must be a non-empty string")
     if schema_version not in SUPPORTED_SCHEMA_VERSIONS:
         _fail("schema_version", "must be b0-g0-contract/v1 or b0-g0-contract/v2")
 
@@ -2950,6 +2954,27 @@ def validate_config(config: dict[str, Any]) -> None:
             "decision", "decision_date", "decision_source", "baseline_commit",
             "approval_package_commit", "scope", "ctl_applicability",
         })
+        for field in ("decision_source", "scope"):
+            if not isinstance(record[field], str) or not record[field].strip():
+                _fail(f"contract_status.approval_record.{field}", "must be a non-empty string")
+        date_value = record["decision_date"]
+        if not isinstance(date_value, str) or not date_value.strip():
+            _fail("contract_status.approval_record.decision_date", "must be a non-empty YYYY-MM-DD date")
+        try:
+            dt.date.fromisoformat(date_value)
+        except (TypeError, ValueError):
+            _fail("contract_status.approval_record.decision_date", "must be a valid YYYY-MM-DD date")
+        for field in ("baseline_commit", "approval_package_commit"):
+            value = record[field]
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+                _fail(f"contract_status.approval_record.{field}", "must be a 40-character lowercase hexadecimal SHA")
+        source = record["decision_source"]
+        expected_source = "07_docs/b0/g0_approval_decision.md"
+        if expected_source not in source:
+            _fail("contract_status.approval_record.decision_source", f"must reference {expected_source}")
+        approval_path = Path(__file__).resolve().parents[2] / expected_source
+        if not approval_path.is_file():
+            _fail("contract_status.approval_record.decision_source", f"referenced file is missing: {expected_source}")
         if record["decision"] != "approved_by_project_administrator":
             _fail("contract_status.approval_record.decision", "must identify the approving authority")
         if record["ctl_applicability"] != {
