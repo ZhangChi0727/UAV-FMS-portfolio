@@ -27,12 +27,12 @@ EXPECTED_SCENARIOS = {
 }
 
 REQUIRED_SEQUENCE = [
-    "plant_consumes_actual_torque_for_interval",
-    "actuator_advances_previous_limited_target",
+    "plant_consumes_actual_torque_for_interval_k",
+    "actuator_advances_torque_command_k_minus_1_limited_target",
     "imu_samples_interval_end_when_due",
     "estimator_consumes_imu_when_due",
     "controller_consumes_current_estimate_when_due",
-    "controller_publishes_next_limited_target",
+    "controller_publishes_torque_command_k_with_request_limit_and_saturation",
 ]
 
 ROOT_REQUIRED = {
@@ -117,6 +117,20 @@ METRIC_SPECS: dict[str, dict[str, Any]] = {
         "observations": {"q_nb_truth", "q_nb_command"},
         "event_types": {"command_step"},
     },
+    "tilt_error_rad": {
+        "reducers": {"max_abs", "peak"},
+        "unit": "rad",
+        "value_kind": "number",
+        "observations": {"q_nb_truth", "q_nb_command"},
+        "event_types": set(),
+    },
+    "tilt_settling_time_s": {
+        "reducers": {"max"},
+        "unit": "s",
+        "value_kind": "number",
+        "observations": {"q_nb_truth", "q_nb_command"},
+        "event_types": set(),
+    },
     "cross_axis_attitude_error_rad": {
         "reducers": {"max_abs"},
         "unit": "rad",
@@ -187,6 +201,8 @@ METRIC_ALLOWED_OPERATORS: dict[str, set[str]] = {
     "quaternion_norm_error": {"<="},
     "tracking_settling_time_s": {"<="},
     "tracking_overshoot_percent": {"<="},
+    "tilt_error_rad": {"<="},
+    "tilt_settling_time_s": {"<="},
     "cross_axis_attitude_error_rad": {"<="},
     "actuator_saturation_time_s": {"<=", ">="},
     "roll_pitch_estimation_error_rad": {"<="},
@@ -217,13 +233,21 @@ METRIC_DEFINITION_SEMANTICS: dict[str, tuple[str, str]] = {
         "100*maximum_positive_signed_tracking_excursion/abs(signed_command_delta)",
         "per_command_step",
     ),
+    "tilt_error_rad": (
+        "acos(clamp(dot(third_column_R_nb_command,third_column_R_nb_truth),-1,1))",
+        "not_applicable",
+    ),
+    "tilt_settling_time_s": (
+        "settling_policy_tilt_error_from_scenario_tick_zero",
+        "initial_offset_only",
+    ),
     "cross_axis_attitude_error_rad": (
         "maximum_abs_uncommanded_axis_error_relative_to_commanded_step_axis",
         "max_over_noncommanded_axes",
     ),
     "actuator_saturation_time_s": (
-        "sum_dt_where_saturation_trigger_definition_is_true",
-        "sum_over_axes_per_tick_then_time",
+        "sum_dt_where_any_axis_saturation_trigger_is_true",
+        "wall_clock_union_over_axes",
     ),
     "roll_pitch_estimation_error_rad": (
         "roll_pitch_components_of_sign_equivalent_truth_to_estimate_error",
@@ -235,15 +259,16 @@ METRIC_DEFINITION_SEMANTICS: dict[str, tuple[str, str]] = {
     ),
     "controller_integral_Nm": (
         "componentwise_integral_torque_contribution",
-        "max_abs_over_axes",
+        "max_abs_for_declared_axis",
     ),
     "limitation_event_recorded": (
         "all_samples_record_additive_specific_force_event_and_limitation_status",
         "all_over_event_window",
     ),
     "invalid_input_rejection_count": (
-        "count_declared_invalid_events_with_explicit_rejection_reason",
-        "count_over_scenario",
+        "count_each_declared_invalid_event_once_when_sample_validity_false_and_"
+        "rejection_reason_matches_invalid_kind",
+        "count_over_scenario_one_per_declared_invalid_event",
     ),
     "reset_replay_match": (
         "post_reset_trace_matches_same_seed_and_explicit_initialization_replay",
@@ -282,7 +307,7 @@ REQUIRED_SCENARIO_METRICS: dict[str, set[str]] = {
         "body_rate_error_rad_s",
         "quaternion_norm_error",
     },
-    "initial_attitude_offset": {"attitude_settling_time_s", "attitude_error_rad"},
+    "initial_attitude_offset": {"tilt_settling_time_s", "tilt_error_rad"},
     "tri_axis_signed_steps": set(),
     "external_torque_disturbance": {
         "attitude_error_rad",
@@ -334,6 +359,13 @@ METRICS_REQUIRING_EVENT = {
     "cross_axis_attitude_error_rad",
     "limitation_event_recorded",
     "reset_replay_match",
+}
+
+METRICS_REQUIRING_AXIS = {"controller_integral_Nm"}
+
+METRIC_BOOLEAN_SUCCESS_VALUES = {
+    "limitation_event_recorded": True,
+    "reset_replay_match": True,
 }
 
 
@@ -413,6 +445,11 @@ def _list(value: Any, path: str, *, length: int | None = None) -> list[Any]:
     if length is not None and len(value) != length:
         _fail(path, f"must contain exactly {length} item(s)")
     return value
+
+
+def _string_list(value: Any, path: str, *, length: int | None = None) -> list[str]:
+    values = _list(value, path, length=length)
+    return [_string(item, f"{path}[{index}]") for index, item in enumerate(values)]
 
 
 def _vector(
@@ -698,6 +735,7 @@ def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -
             "validity_encoding",
             "messages",
             "component_calls",
+            "torque_flow",
         },
     )
     _source_reference(contract["source_ref"], "interface_contract.source_ref", source_ids)
@@ -729,17 +767,33 @@ def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -
             "omega_b_estimate_rad_s": ("float64", "length_3", "rad/s", "body_frd"),
             "valid": ("bool", "scalar", "bool", "not_applicable"),
         },
-        "torque_request": {
+        "torque_command": {
             "timestamp_s": ("float64", "scalar", "s", "scenario_clock"),
             "requested_torque_body_Nm": ("float64", "length_3", "Nm", "body_frd"),
+            "limited_torque_body_Nm": ("float64", "length_3", "Nm", "body_frd"),
+            "saturated": ("bool", "length_3", "bool", "body_frd"),
         },
         "actuator_feedback": {
             "timestamp_s": ("float64", "scalar", "s", "scenario_clock"),
+            "command_timestamp_s": ("float64", "scalar", "s", "scenario_clock"),
             "limited_torque_body_Nm": ("float64", "length_3", "Nm", "body_frd"),
             "actual_torque_body_Nm": ("float64", "length_3", "Nm", "body_frd"),
             "saturated": ("bool", "length_3", "bool", "body_frd"),
         },
     }
+    torque_validities = {
+        "torque_command": {
+            "requested_torque_body_Nm": "all_finite_pre_limit",
+            "limited_torque_body_Nm": "componentwise_clamp_of_requested_to_actuator_limit",
+            "saturated": "true_exactly_when_abs_requested_exceeds_component_limit",
+        },
+        "actuator_feedback": {
+            "command_timestamp_s": "finite_and_not_later_than_feedback_timestamp",
+            "limited_torque_body_Nm": "paired_command_componentwise_within_limit",
+            "saturated": "echoes_paired_torque_command_saturation_flag",
+        },
+    }
+
     messages = _mapping(
         contract["messages"],
         "interface_contract.messages",
@@ -771,18 +825,106 @@ def _validate_interface_contract(config: dict[str, Any], source_ids: set[str]) -
                 record["frame"],
             ) != expected:
                 _fail(f"{path}.{field_name}", "has an incompatible type, shape, unit, or frame")
-            _string(record["validity"], f"{path}.{field_name}.validity")
+            validity = _string(record["validity"], f"{path}.{field_name}.validity")
+            if (
+                message_name in torque_validities
+                and field_name in torque_validities[message_name]
+                and validity != torque_validities[message_name][field_name]
+            ):
+                _fail(
+                    f"{path}.{field_name}.validity",
+                    "must preserve paired torque-message semantics",
+                )
+
+    torque_flow = _mapping(
+        contract["torque_flow"],
+        "interface_contract.torque_flow",
+        {
+            "limit_authority",
+            "request_producer",
+            "limited_target_producer",
+            "actual_torque_producer",
+            "saturation_flag_producer",
+            "command_message",
+            "feedback_message",
+            "actuator_consumption",
+            "feedback_pairing",
+            "antiwindup_timing",
+        },
+    )
+    expected_torque_flow = {
+        "limit_authority": "controller_componentwise_clamp",
+        "request_producer": "controller",
+        "limited_target_producer": "controller",
+        "actual_torque_producer": "actuator",
+        "saturation_flag_producer": "controller",
+        "command_message": "torque_command",
+        "feedback_message": "actuator_feedback",
+        "actuator_consumption": (
+            "at_tick_k_actuator_advances_torque_command_k_minus_1_limited_target_only"
+        ),
+        "feedback_pairing": (
+            "feedback_at_k_reports_actual_limited_and_saturation_from_command_k_minus_1"
+        ),
+        "antiwindup_timing": (
+            "controller_at_k_uses_new_command_k_request_limit_and_feedback_k_"
+            "actual_minus_limited_k_minus_1"
+        ),
+    }
+    if torque_flow != expected_torque_flow:
+        _fail(
+            "interface_contract.torque_flow",
+            "must close controller-limit, actuator-feedback, and k/k-1 timing ownership",
+        )
 
     calls = _mapping(
         contract["component_calls"],
         "interface_contract.component_calls",
         {"plant", "actuator", "estimator", "controller"},
     )
-    for component, record in calls.items():
+    expected_calls = {
+        "plant": {
+            "reset": (
+                "reset(PlantInitialState, reset_epoch) -> PlantState; invalid input raises "
+                "ContractValidationError without state change"
+            ),
+            "step": "step(actual_torque_body_Nm, dt_s) -> PlantState; advances exactly one base interval",
+        },
+        "actuator": {
+            "reset": (
+                "reset(ActuatorInitialState, reset_epoch) -> ActuatorFeedback; invalid input raises "
+                "ContractValidationError without state change"
+            ),
+            "step": (
+                "step(torque_command, dt_s) -> ActuatorFeedback; advances the previous paired "
+                "limited target exactly one base interval"
+            ),
+        },
+        "estimator": {
+            "reset": (
+                "reset(EstimatorInitialState, reset_epoch, rng_seed) -> StateEstimate; no live truth argument"
+            ),
+            "step": (
+                "step(imu_sample) -> StateEstimate; invalid or stale sample is rejected without state change"
+            ),
+        },
+        "controller": {
+            "reset": (
+                "reset(ControllerInitialState, reset_epoch) -> TorqueCommand; invalid input raises "
+                "ContractValidationError without state change"
+            ),
+            "step": (
+                "step(attitude_command, state_estimate, actuator_feedback, dt_s) -> TorqueCommand; "
+                "computes request, componentwise limit, and saturation flag in the same controller tick; "
+                "no truth argument"
+            ),
+        },
+    }
+    for component, expected_call in expected_calls.items():
         path = f"interface_contract.component_calls.{component}"
-        call = _mapping(record, path, {"reset", "step"})
-        _string(call["reset"], f"{path}.reset")
-        _string(call["step"], f"{path}.step")
+        call = _mapping(calls[component], path, {"reset", "step"})
+        if call != expected_call:
+            _fail(path, "must define the complete paired message reset/step contract")
 
 
 def _validate_quaternion(value: Any, path: str, tolerance: float) -> list[float]:
@@ -914,7 +1056,14 @@ def _validate_initialization_contract(
     offset = _mapping(
         contract["initial_attitude_offset"],
         "initialization_contract.initial_attitude_offset",
-        {"owner", "composition", "rotation_sequence", "estimator_truth_rule"},
+        {
+            "owner",
+            "composition",
+            "rotation_sequence",
+            "estimator_truth_rule",
+            "recovery_metric",
+            "unknown_initial_yaw_policy",
+        },
     )
     expected_offset = {
         "owner": "plant_truth_only",
@@ -925,6 +1074,10 @@ def _validate_initialization_contract(
         "rotation_sequence": "body_frd_intrinsic_x_then_y_then_z",
         "estimator_truth_rule": (
             "estimator_reset_uses_explicit_estimator_q_nb_and_never_receives_live_truth"
+        ),
+        "recovery_metric": "tilt_only_body_z_axis_angle_between_command_and_truth",
+        "unknown_initial_yaw_policy": (
+            "not_an_absolute_recovery_performance_target_without_declared_yaw_reference"
         ),
     }
     if offset != expected_offset:
@@ -992,11 +1145,11 @@ def _validate_plant(config: dict[str, Any], source_ids: set[str]) -> None:
         "plant_contract.truth_visibility",
         {"allowed_consumers", "forbidden_consumers"},
     )
-    allowed = _list(
+    allowed = _string_list(
         visibility["allowed_consumers"],
         "plant_contract.truth_visibility.allowed_consumers",
     )
-    forbidden = _list(
+    forbidden = _string_list(
         visibility["forbidden_consumers"],
         "plant_contract.truth_visibility.forbidden_consumers",
     )
@@ -1027,6 +1180,10 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
             "limits_Nm",
             "antiwindup",
             "parameter_rationale",
+            "limit_authority",
+            "request_limit_pairing",
+            "saturation_status_definition",
+            "dynamics_input",
         },
     )
     _source_reference(actuator["source_ref"], "actuator_contract.source_ref", source_ids)
@@ -1036,6 +1193,15 @@ def _validate_actuator(config: dict[str, Any], source_ids: set[str]) -> list[flo
         "actual_torque": "actual_torque_body_Nm",
         "model": "first_order_bounded",
         "implementation_status": "future_g1_contract_only",
+        "limit_authority": "controller_componentwise_clamp",
+        "request_limit_pairing": (
+            "torque_command_carries_same_tick_requested_limited_and_saturated_fields"
+        ),
+        "saturation_status_definition": (
+            "controller_sets_true_when_abs_requested_exceeds_limit_and_limited_equals_"
+            "componentwise_clamp"
+        ),
+        "dynamics_input": "paired_torque_command_limited_target_only",
     }
     for field, expected in expected_names.items():
         if actuator[field] != expected:
@@ -1267,7 +1433,7 @@ def _validate_estimator(config: dict[str, Any]) -> None:
     for field, expected_value in expected.items():
         if estimator[field] != expected_value:
             _fail(f"estimator_contract.{field}", f"must be {expected_value!r}")
-    if set(_list(estimator["normalize_after"], "estimator_contract.normalize_after")) != {
+    if set(_string_list(estimator["normalize_after"], "estimator_contract.normalize_after")) != {
         "propagation",
         "correction",
     }:
@@ -1315,9 +1481,9 @@ def _validate_controller(
     expected = {
         "implementation_status": "future_g2_contract_only",
         "input": "attitude_command_state_estimate_and_actuator_feedback_only",
-        "output": "requested_torque_body_Nm",
+        "output": "torque_command_with_requested_limited_target_and_saturation_status",
         "truth_inputs_forbidden": True,
-        "output_message": "torque_request",
+        "output_message": "torque_command",
     }
     for field, expected_value in expected.items():
         if controller[field] != expected_value:
@@ -1497,6 +1663,8 @@ def _validate_acceptance_policy(
             "saturation",
             "metric_definitions",
             "outcome_classes",
+            "initial_yaw_observability",
+            "invalid_input",
         },
     )
     _source_reference(policy["source_ref"], "acceptance_policy.source_ref", source_ids)
@@ -1577,7 +1745,12 @@ def _validate_acceptance_policy(
     saturation = _mapping(
         policy["saturation"],
         "acceptance_policy.saturation",
-        {"trigger_definition", "trigger_coverage_rule", "missing_data_action"},
+        {
+            "trigger_definition",
+            "trigger_coverage_rule",
+            "missing_data_action",
+            "time_aggregation",
+        },
     )
     expected_saturation = {
         "trigger_definition": (
@@ -1588,9 +1761,77 @@ def _validate_acceptance_policy(
             "saturation_withdrawal_requires_positive_duration_during_its_command_event"
         ),
         "missing_data_action": "execution_error_inconclusive",
+        "time_aggregation": "wall_clock_union_over_axes_each_saturated_tick_counted_once",
     }
     if saturation != expected_saturation:
         _fail("acceptance_policy.saturation", "must define trigger and coverage semantics")
+
+    yaw_observability = _mapping(
+        policy["initial_yaw_observability"],
+        "acceptance_policy.initial_yaw_observability",
+        {
+            "absolute_yaw_from_six_axis_imu",
+            "initial_offset_recovery_metric",
+            "candidate_initial_yaw_offset_rad",
+            "unknown_initial_yaw_policy",
+            "relative_yaw_tracking_policy",
+        },
+    )
+    expected_yaw_observability = {
+        "absolute_yaw_from_six_axis_imu": "not_observable",
+        "initial_offset_recovery_metric": "tilt_only_body_z_axis_angle_between_command_and_truth",
+        "candidate_initial_yaw_offset_rad": 0.0,
+        "unknown_initial_yaw_policy": (
+            "limitation_characterization_not_absolute_recovery_performance"
+        ),
+        "relative_yaw_tracking_policy": (
+            "three_axis_command_tracking_remains_bound_to_command_events"
+        ),
+    }
+    if yaw_observability != expected_yaw_observability:
+        _fail(
+            "acceptance_policy.initial_yaw_observability",
+            "must distinguish observable tilt recovery from unknown-yaw limitation",
+        )
+
+    invalid_input = _mapping(
+        policy["invalid_input"],
+        "acceptance_policy.invalid_input",
+        {
+            "required_kinds",
+            "injection_rule",
+            "rejection_counter_rule",
+            "visible_evidence",
+            "reset_rule",
+        },
+    )
+    if _string_list(
+        invalid_input["required_kinds"],
+        "acceptance_policy.invalid_input.required_kinds",
+    ) != ["negative_dt", "stale_timestamp"]:
+        _fail(
+            "acceptance_policy.invalid_input.required_kinds",
+            "must require negative_dt and stale_timestamp exactly once each",
+        )
+    if _string_list(
+        invalid_input["visible_evidence"],
+        "acceptance_policy.invalid_input.visible_evidence",
+    ) != ["sample_validity", "rejection_reason"]:
+        _fail(
+            "acceptance_policy.invalid_input.visible_evidence",
+            "must expose sample_validity and rejection_reason",
+        )
+    expected_invalid_rules = {
+        "injection_rule": "exactly_one_declared_invalid_input_event_per_required_kind",
+        "rejection_counter_rule": (
+            "count_one_rejection_per_declared_invalid_event_when_sample_invalid_and_"
+            "reason_matches_kind"
+        ),
+        "reset_rule": "exactly_one_all_components_reset_after_invalid_input_coverage",
+    }
+    for field, expected in expected_invalid_rules.items():
+        if invalid_input[field] != expected:
+            _fail(f"acceptance_policy.invalid_input.{field}", "must define complete coverage")
 
     definitions = _mapping(
         policy["metric_definitions"],
@@ -1604,9 +1845,7 @@ def _validate_acceptance_policy(
             path,
             {"source_signals", "formula", "axis_aggregation", "invalid_data_action"},
         )
-        signals = _list(definition["source_signals"], f"{path}.source_signals")
-        if any(not isinstance(signal, str) for signal in signals):
-            _fail(f"{path}.source_signals", "must contain signal names")
+        signals = _string_list(definition["source_signals"], f"{path}.source_signals")
         if set(signals) != spec["observations"] or len(signals) != len(set(signals)):
             _fail(f"{path}.source_signals", "must match the metric signal dependency set")
         expected_formula, expected_aggregation = METRIC_DEFINITION_SEMANTICS[metric]
@@ -1620,7 +1859,7 @@ def _validate_acceptance_policy(
                 "must classify missing data as execution_error_inconclusive",
             )
 
-    outcomes = _list(policy["outcome_classes"], "acceptance_policy.outcome_classes")
+    outcomes = _string_list(policy["outcome_classes"], "acceptance_policy.outcome_classes")
     expected_outcomes = {
         "performance_pass",
         "performance_fail",
@@ -1746,7 +1985,7 @@ def _validate_criterion(
         "window",
         "evidence_status",
     }
-    record = _mapping(criterion, path, required, required | {"event_id"})
+    record = _mapping(criterion, path, required, required | {"event_id", "axis"})
     _string(record["id"], f"{path}.id")
     metric = record["metric"]
     if not isinstance(metric, str) or metric not in METRIC_SPECS:
@@ -1768,6 +2007,8 @@ def _validate_criterion(
     if spec["value_kind"] == "bool":
         if not isinstance(record["limit"], bool) or record["operator"] != "==":
             _fail(path, "boolean metrics require == and a boolean limit")
+        if record["limit"] is not METRIC_BOOLEAN_SUCCESS_VALUES[metric]:
+            _fail(f"{path}.limit", f"must be true for successful {metric}")
     else:
         _number(record["limit"], f"{path}.limit", nonnegative=True)
         if (
@@ -1793,6 +2034,13 @@ def _validate_criterion(
             _fail(f"{path}.event_id", "must not be attached to an event")
     elif metric in METRICS_REQUIRING_EVENT:
         _fail(f"{path}.event_id", f"must bind {metric} to a specific event")
+
+    if metric in METRICS_REQUIRING_AXIS:
+        axis = record.get("axis")
+        if not isinstance(axis, str) or axis not in {"x", "y", "z"}:
+            _fail(f"{path}.axis", f"must name x, y, or z for {metric}")
+    elif "axis" in record:
+        _fail(f"{path}.axis", "is reserved for axis-qualified metrics")
     return record
 
 
@@ -1821,15 +2069,13 @@ def _validate_event_criterion_timing(
     metric = criterion["metric"]
     window = criterion["window"]
     event_type = event["type"]
-    if metric in {
-        "tracking_settling_time_s",
-        "tracking_overshoot_percent",
-        "cross_axis_attitude_error_rad",
-    }:
+    if metric == "tracking_settling_time_s":
         if window["start_tick"] != event["start_tick"] or window["end_tick"] > event["end_tick"]:
             _fail(f"{path}.window", "must be independently bounded by its command event")
-        if metric == "tracking_settling_time_s":
-            _validate_settling_window(criterion, path, base_period_s, dwell_ticks)
+        _validate_settling_window(criterion, path, base_period_s, dwell_ticks)
+    elif metric in {"tracking_overshoot_percent", "cross_axis_attitude_error_rad"}:
+        if window != {"start_tick": event["start_tick"], "end_tick": event["end_tick"]}:
+            _fail(f"{path}.window", "must exactly cover its command event for peak observation")
     elif metric == "attitude_settling_time_s":
         if event_type not in {"command_step", "external_torque"}:
             _fail(f"{path}.event_id", "must bind settling only to a command or disturbance")
@@ -1874,6 +2120,8 @@ def _validate_required_acceptance(
     scenario_id: str,
     criteria: list[tuple[dict[str, Any], str]],
     events: list[dict[str, Any]],
+    total_ticks: int,
+    integrator_limits: list[float],
 ) -> None:
     metric_set = {criterion["metric"] for criterion, _ in criteria}
     missing_metrics = REQUIRED_SCENARIO_METRICS[scenario_id] - metric_set
@@ -1882,6 +2130,21 @@ def _validate_required_acceptance(
             "scenarios",
             f"{scenario_id} is missing mandatory metric(s): {', '.join(sorted(missing_metrics))}",
         )
+
+    full_window = {"start_tick": 0, "end_tick": total_ticks}
+    if scenario_id == "initial_attitude_offset":
+        expected_metrics = {"tilt_settling_time_s", "tilt_error_rad"}
+        if len(criteria) != 2 or metric_set != expected_metrics:
+            _fail(
+                "scenarios",
+                "initial_attitude_offset must use only the declared tilt recovery criteria",
+            )
+        for criterion, path in criteria:
+            if criterion["window"] != full_window:
+                _fail(
+                    f"{path}.window",
+                    "must cover the full initial-offset scenario",
+                )
 
     criteria_by_event: dict[str, set[str]] = {}
     for criterion, _ in criteria:
@@ -1896,18 +2159,112 @@ def _validate_required_acceptance(
                 "scenarios",
                 "saturation_withdrawal must use a non-zero command excitation",
             )
-        trigger_criteria = [
+        duration_criteria = [
             criterion
             for criterion, _ in criteria
-            if criterion.get("event_id") == command_event["id"]
-            and criterion["metric"] == "actuator_saturation_time_s"
-            and criterion["operator"] == ">="
-            and float(criterion["limit"]) > 0.0
+            if criterion["metric"] == "actuator_saturation_time_s"
         ]
-        if not trigger_criteria:
+        trigger_criteria = [
+            criterion
+            for criterion in duration_criteria
+            if criterion.get("event_id") == command_event["id"]
+            and criterion["operator"] == ">="
+        ]
+        upper_criteria = [
+            criterion
+            for criterion in duration_criteria
+            if "event_id" not in criterion and criterion["operator"] == "<="
+        ]
+        if len(duration_criteria) != 2 or len(trigger_criteria) != 1 or len(upper_criteria) != 1:
             _fail(
                 "scenarios",
-                "saturation_withdrawal requires a positive saturation trigger criterion",
+                "saturation_withdrawal requires one positive saturation trigger criterion and one "
+                "full-scenario upper bound",
+            )
+        trigger = trigger_criteria[0]
+        upper = upper_criteria[0]
+        command_window = {
+            "start_tick": command_event["start_tick"],
+            "end_tick": command_event["end_tick"],
+        }
+        if trigger["window"] != command_window or float(trigger["limit"]) <= 0.0:
+            _fail(
+                "scenarios",
+                "saturation_withdrawal requires a positive saturation trigger criterion over its command event",
+            )
+        if upper["window"] != full_window or float(upper["limit"]) <= 0.0:
+            _fail(
+                "scenarios",
+                "saturation_withdrawal requires a positive full-scenario saturation duration upper bound",
+            )
+        if float(upper["limit"]) < float(trigger["limit"]):
+            _fail(
+                "scenarios",
+                "saturation duration upper bound must not be below its trigger duration",
+            )
+
+        integral_criteria = [
+            (criterion, path)
+            for criterion, path in criteria
+            if criterion["metric"] == "controller_integral_Nm"
+        ]
+        by_axis = {criterion["axis"]: (criterion, path) for criterion, path in integral_criteria}
+        if len(integral_criteria) != 3 or set(by_axis) != {"x", "y", "z"}:
+            _fail(
+                "scenarios",
+                "saturation_withdrawal requires exactly one integral limit for each x, y, and z axis",
+            )
+        for axis_index, axis in enumerate(("x", "y", "z")):
+            criterion, path = by_axis[axis]
+            if criterion["window"] != full_window:
+                _fail(f"{path}.window", "must cover the full saturation scenario")
+            if not math.isclose(
+                float(criterion["limit"]), integrator_limits[axis_index], abs_tol=1e-12
+            ):
+                _fail(
+                    f"{path}.limit",
+                    "must match controller_contract.rate_pid.integrator_limit_Nm for its axis",
+                )
+
+    if scenario_id == "invalid_input_and_reset":
+        invalid_events = [event for event in events if event["type"] == "invalid_input"]
+        kinds = [event["invalid_kind"] for event in invalid_events]
+        if len(invalid_events) != 2 or set(kinds) != {"negative_dt", "stale_timestamp"}:
+            _fail(
+                "scenarios",
+                "invalid_input_and_reset requires exactly one negative_dt and one stale_timestamp event",
+            )
+        reset_events = [event for event in events if event["type"] == "reset"]
+        if len(reset_events) != 1 or reset_events[0]["target"] != "all_components":
+            _fail(
+                "scenarios",
+                "invalid_input_and_reset requires exactly one all_components reset",
+            )
+        if any(event["end_tick"] > reset_events[0]["start_tick"] for event in invalid_events):
+            _fail(
+                "scenarios",
+                "invalid_input coverage must complete before the reset event",
+            )
+        counter_criteria = [
+            criterion
+            for criterion, _ in criteria
+            if criterion["metric"] == "invalid_input_rejection_count"
+        ]
+        if len(counter_criteria) != 1:
+            _fail(
+                "scenarios",
+                "invalid_input_and_reset requires exactly one invalid-input rejection counter",
+            )
+        counter = counter_criteria[0]
+        if (
+            counter["reducer"] != "min"
+            or counter["operator"] != ">="
+            or float(counter["limit"]) != float(len(invalid_events))
+            or counter["window"] != {"start_tick": 0, "end_tick": total_ticks}
+        ):
+            _fail(
+                "scenarios",
+                "invalid-input rejection counter must cover the full scenario and equal required event coverage",
             )
 
     for event in events:
@@ -1977,11 +2334,16 @@ def _validate_scenarios(
         _validate_quaternion(record["initial_q_nb"], f"{path}.initial_q_nb", quaternion_tolerance)
         _vector(record["initial_body_rate_rad_s"], f"{path}.initial_body_rate_rad_s", length=3)
         if scenario_id == "initial_attitude_offset":
-            _vector(
+            offset = _vector(
                 record.get("initial_attitude_offset_rad"),
                 f"{path}.initial_attitude_offset_rad",
                 length=3,
             )
+            if offset[2] != 0.0:
+                _fail(
+                    f"{path}.initial_attitude_offset_rad[2]",
+                    "must be zero because unknown six-axis-IMU yaw is not an absolute recovery target",
+                )
             if record.get("initial_attitude_offset_owner") != "plant_truth_only":
                 _fail(
                     f"{path}.initial_attitude_offset_owner",
@@ -2046,7 +2408,7 @@ def _validate_scenarios(
                     base_period_s,
                     dwell_ticks,
                 )
-            elif validated["metric"] == "attitude_settling_time_s":
+            elif validated["metric"] in {"attitude_settling_time_s", "tilt_settling_time_s"}:
                 if scenario_id != "initial_attitude_offset":
                     _fail(
                         f"{criterion_path}.event_id",
@@ -2066,7 +2428,13 @@ def _validate_scenarios(
             criteria.append((validated, criterion_path))
             criterion_ids.append(validated["id"])
 
-        _validate_required_acceptance(scenario_id, criteria, events)
+        _validate_required_acceptance(
+            scenario_id,
+            criteria,
+            events,
+            total_ticks,
+            config["controller_contract"]["rate_pid"]["integrator_limit_Nm"],
+        )
 
         scenario_ids.append(scenario_id)
         used_seeds.append(seed)
@@ -2122,8 +2490,14 @@ def _validate_operating_envelope(config: dict[str, Any], source_ids: set[str]) -
         length=3,
         nonnegative=True,
     )
-    if any(limit <= 0.0 for limit in command_limit + offset_limit + rate_limit):
-        _fail("operating_envelope", "must provide meaningful positive bounds")
+    if (
+        any(limit <= 0.0 for limit in command_limit + offset_limit[:2] + rate_limit)
+        or offset_limit[2] != 0.0
+    ):
+        _fail(
+            "operating_envelope.max_initial_attitude_offset_rad",
+            "must provide positive roll/pitch bounds and exclude absolute initial yaw recovery",
+        )
 
     controller_rate_limit = _vector(
         config["controller_contract"]["body_rate_target_limit_rad_s"],
@@ -2137,8 +2511,16 @@ def _validate_operating_envelope(config: dict[str, Any], source_ids: set[str]) -
             "must not exceed operating_envelope.max_body_rate_rad_s",
         )
 
-    exclusions = _list(envelope["validity_excludes"], "operating_envelope.validity_excludes")
-    expected_exclusions = {"translation", "aerodynamics", "navigation", "hardware"}
+    exclusions = _string_list(
+        envelope["validity_excludes"], "operating_envelope.validity_excludes"
+    )
+    expected_exclusions = {
+        "translation",
+        "aerodynamics",
+        "navigation",
+        "hardware",
+        "absolute_initial_yaw_recovery_without_reference",
+    }
     if set(exclusions) != expected_exclusions:
         _fail("operating_envelope.validity_excludes", "must state the B0 scope exclusions")
 
@@ -2180,8 +2562,8 @@ def validate_config(config: dict[str, Any]) -> None:
         _fail("contract_status.state", "must remain proposed pending maintainer approval")
     if status["freeze_prohibited"] is not True:
         _fail("contract_status.freeze_prohibited", "must be true until approval")
-    approvals = _list(status["approval_required"], "contract_status.approval_required")
-    if not approvals or any(not isinstance(item, str) or not item for item in approvals):
+    approvals = _string_list(status["approval_required"], "contract_status.approval_required")
+    if not approvals:
         _fail("contract_status.approval_required", "must list concrete approval decisions")
     transition = _mapping(
         status["approval_transition"],
