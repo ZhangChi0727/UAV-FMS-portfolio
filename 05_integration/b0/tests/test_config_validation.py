@@ -25,6 +25,7 @@ from validate_config import (  # noqa: E402
 CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v1.json"
 V2_CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v2.json"
 SCHEMA_PATH = TRACK_ROOT / "schema" / "b0_g0_contract.schema.json"
+V2_SCHEMA_PATH = TRACK_ROOT / "schema" / "b0_g0_contract.v2.schema.json"
 
 
 def default_config() -> dict:
@@ -82,6 +83,16 @@ def test_approved_v2_contract_is_valid_and_distinct_from_v1() -> None:
         "CTL-REQ-001": "not_applicable_to_current_B0",
         "CTL-REQ-002": "not_applicable_to_current_B0",
     }
+
+
+def test_v2_schema_describes_approved_v2_contract() -> None:
+    schema = json.loads(V2_SCHEMA_PATH.read_text(encoding="utf-8"))
+    assert schema["$id"].endswith("b0_g0_contract.v2.schema.json")
+    assert schema["properties"]["schema_version"]["const"] == "b0-g0-contract/v2"
+    status = schema["properties"]["contract_status"]["properties"]
+    assert status["state"]["const"] == "approved"
+    assert status["freeze_prohibited"]["const"] is False
+    assert "approval_record" in schema["properties"]["contract_status"]["required"]
 
 
 def test_v2_rejects_missing_approval_record() -> None:

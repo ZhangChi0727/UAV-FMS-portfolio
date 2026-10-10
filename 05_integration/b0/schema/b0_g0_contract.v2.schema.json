@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/main/05_integration/b0/schema/b0_g0_contract.schema.json",
+  "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/main/05_integration/b0/schema/b0_g0_contract.v2.schema.json",
   "title": "B0 G0 contract configuration",
   "description": "Documentation-only top-level structural index for the approved B0 G0 v2 contract. It is not an executable validation entry; validate_config.py is the authoritative strict structural, cross-field, physical, scheduling, and acceptance validator.",
   "x-b0-validation-role": "top_level_documentation_index_only",
@@ -35,18 +35,19 @@
         "state",
         "freeze_prohibited",
         "approval_required",
-        "approval_transition"
+        "approval_transition",
+        "approval_record"
       ],
       "properties": {
         "state": {
-          "const": "proposed_pending_maintainer_approval"
+          "const": "approved"
         },
         "freeze_prohibited": {
-          "const": true
+          "const": false
         },
         "approval_required": {
           "type": "array",
-          "minItems": 1,
+          "maxItems": 0,
           "items": {
             "type": "string",
             "minLength": 1
@@ -54,6 +55,36 @@
         },
         "approval_transition": {
           "type": "object"
+        },
+        "approval_record": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "decision",
+            "decision_date",
+            "decision_source",
+            "baseline_commit",
+            "approval_package_commit",
+            "scope",
+            "ctl_applicability"
+          ],
+          "properties": {
+            "decision": {"const": "approved_by_project_administrator"},
+            "decision_date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+            "decision_source": {"type": "string", "minLength": 1},
+            "baseline_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "approval_package_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "scope": {"type": "string", "minLength": 1},
+            "ctl_applicability": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["CTL-REQ-001", "CTL-REQ-002"],
+              "properties": {
+                "CTL-REQ-001": {"const": "not_applicable_to_current_B0"},
+                "CTL-REQ-002": {"const": "not_applicable_to_current_B0"}
+              }
+            }
+          }
         }
       }
     },
