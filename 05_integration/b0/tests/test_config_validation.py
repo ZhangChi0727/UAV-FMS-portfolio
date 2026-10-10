@@ -1046,3 +1046,142 @@ def test_torque_message_validity_cannot_disconnect_saturation_from_request() -> 
         ).__setitem__("validity", "any_bool_is_acceptable"),
         "must preserve paired torque-message semantics",
     )
+
+
+def test_round4_held_command_contract_is_explicit() -> None:
+    config = default_config()
+    timing = config["timing"]
+    assert timing["first_due_tick"] == {
+        "plant": 1,
+        "actuator": 1,
+        "imu": 2,
+        "estimator": 2,
+        "controller": 2,
+    }
+    assert timing["torque_command_hold"] == {
+        "reset_command": "pre_tick_zero_zero_torque_command_timestamped_zero",
+        "controller_publication": (
+            "at_each_due_controller_base_tick_timestamp_equals_base_tick_times_base_period"
+        ),
+        "actuator_consumption": (
+            "at_base_tick_k_consume_most_recent_torque_command_published_strictly_before_k"
+        ),
+        "hold_between_controller_updates": (
+            "reuse_same_command_and_preserve_original_timestamp_without_synthetic_publication"
+        ),
+        "feedback_pairing": (
+            "actuator_feedback_tags_timestamp_of_the_command_actually_advanced"
+        ),
+        "startup_rule": "hold_reset_command_until_first_due_controller_publication",
+    }
+    reset_command = config["initialization_contract"]["reset_torque_command"]
+    assert reset_command["timestamp_s"] == 0.0
+    assert reset_command["hold_until_base_tick"] == timing["first_due_tick"]["controller"]
+
+
+@pytest.mark.parametrize(
+    ("mutator", "match"),
+    [
+        (
+            lambda config: config["timing"]["first_due_tick"].__setitem__(
+                "controller", 1
+            ),
+            "must start plant/actuator at tick 1",
+        ),
+        (
+            lambda config: config["timing"]["torque_command_hold"].__setitem__(
+                "hold_between_controller_updates",
+                "publish_a_new_timestamp_on_each_base_tick",
+            ),
+            "must close startup, held-command, original-timestamp, and feedback pairing semantics",
+        ),
+        (
+            lambda config: config["initialization_contract"]["reset_torque_command"].__setitem__(
+                "hold_until_base_tick", 1
+            ),
+            "must equal timing.first_due_tick.controller",
+        ),
+    ],
+)
+def test_round4_rejects_ambiguous_multirate_command_handoff(mutator, match: str) -> None:
+    assert_invalid(mutator, match)
+
+
+def test_round4_saturation_trigger_equal_to_command_window_is_valid() -> None:
+    config = default_config()
+    command = event(config, "saturation_withdrawal", "saturation_command")
+    command_duration_s = (
+        command["end_tick"] - command["start_tick"]
+    ) * config["timing"]["base_period_s"]
+    criterion(
+        config,
+        "saturation_withdrawal",
+        "saturation_triggered_duration",
+    )["limit"] = command_duration_s
+    validate_config(config)
+
+
+def test_round4_rejects_saturation_trigger_longer_than_command_window() -> None:
+    def mutate(config: dict) -> None:
+        command = event(config, "saturation_withdrawal", "saturation_command")
+        command_duration_s = (
+            command["end_tick"] - command["start_tick"]
+        ) * config["timing"]["base_period_s"]
+        criterion(
+            config,
+            "saturation_withdrawal",
+            "saturation_triggered_duration",
+        )["limit"] = command_duration_s + config["timing"]["base_period_s"]
+
+    assert_invalid(mutate, "must not exceed its command-event window duration")
+
+
+def test_round4_rejects_initial_offset_with_nonidentity_base_attitude() -> None:
+    assert_invalid(
+        lambda config: scenario(config, "initial_attitude_offset").__setitem__(
+            "initial_q_nb", [0, 1, 0, 0]
+        ),
+        "must be the identity base attitude",
+    )
+
+
+def test_round4_reset_replay_window_with_two_due_updates_is_valid() -> None:
+    config = default_config()
+    reset = event(config, "invalid_input_and_reset", "deterministic_all_component_reset")
+    schedule = config["timing"]["schedules"]["estimator_every_ticks"]
+    first_due = config["timing"]["first_due_tick"]["estimator"]
+    earliest = max(reset["start_tick"], first_due)
+    first_post_reset_due_tick = earliest + (first_due - earliest) % schedule
+    criterion(
+        config,
+        "invalid_input_and_reset",
+        "reset_is_deterministic",
+    )["window"]["end_tick"] = first_post_reset_due_tick + schedule + 1
+    validate_config(config)
+
+
+def test_round4_rejects_reset_replay_window_without_two_due_updates() -> None:
+    assert_invalid(
+        lambda config: criterion(
+            config,
+            "invalid_input_and_reset",
+            "reset_is_deterministic",
+        )["window"].__setitem__(
+            "end_tick",
+            event(
+                config,
+                "invalid_input_and_reset",
+                "deterministic_all_component_reset",
+            )["end_tick"],
+        ),
+        "must cover at least two post-reset due estimator updates",
+    )
+
+
+def test_round4_rejects_reset_replay_tolerance_weaker_than_contract() -> None:
+    assert_invalid(
+        lambda config: config["acceptance_policy"]["reset_replay"].__setitem__(
+            "q_nb_component_abs_tolerance", 1e-9
+        ),
+        "must be 1e-12",
+    )

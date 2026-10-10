@@ -34,7 +34,7 @@
 | 估计误差与偏航漂移 | truth 与 estimate 相对误差；偏航仅是初始参考下的相对漂移 | q_nb_truth、q_nb_estimate |
 | 积分器 | 按声明轴的最大绝对 integral torque contribution；x/y/z 分别限于 0.15/0.15/0.10 Nm | controller_integral_Nm |
 | 加速度污染限制 | event 内 specific-force、limitation status 与 truth/estimate 均须记录 | imu_specific_force_m_s2、limitation_status、q_nb_truth、q_nb_estimate |
-| 无效输入/reset | 每个声明的 invalid event 只有在 invalid 与匹配 rejection reason 时才计一次；相同 seed 和显式初态下比较 post-reset trace | sample_validity、rejection_reason、reset_epoch、q_nb_estimate |
+| 无效输入/reset | 每个声明的 invalid event 只有在 invalid 与匹配 rejection reason 时才计一次；reset 前先重置组件，再用相同输入/seed/draw index 比较至少两次 reset-relative due estimator updates 的 q_nb_estimate 分量（abs tol 1e-12） | imu_gyro_rad_s、imu_specific_force_m_s2、q_nb_command、sample_validity、reset_epoch、q_nb_estimate |
 
 初始偏差场景的候选恢复指标只衡量 tilt，不把未知绝对 yaw 当成六轴 IMU 能保证恢复的
 性能。静止时，对 NED 竖直轴的等价 yaw 变换保持重力量测不变；因此未知初始 yaw 是
@@ -49,7 +49,7 @@ performance_fail；不允许返回一个虚构的有限稳定时间。
 | 场景 | 类别 | 事件与观察规则 | 候选准则与未来责任 |
 |---|---|---|---|
 | stationary_zero_command | 包线内性能 | 无事件；记录 truth、estimate、command、角速度和 actual torque | 姿态误差、角速度误差、四元数范数；G1/G2/G3 |
-| initial_attitude_offset | 包线内性能 | 偏差只施加到 plant truth；estimate 从显式自身初态 reset | tick 0 起的稳定时间和峰值姿态误差；G1/G2/G3 |
+| initial_attitude_offset | 包线内性能 | initial_q_nb 固定为单位四元数；声明的 roll/pitch 偏差只施加到 plant truth；estimate 从显式自身初态 reset | tick 0 起的 tilt 稳定时间和峰值倾斜误差；G1/G2/G3 |
 | tri_axis_signed_steps | 包线内性能 | 六个有 ID 的 x/y/z 正负 step，各自半开区间、结束后该轴归零 | 每个 event 单独有稳定、超调和跨轴准则；G2 控制器/G3 |
 | external_torque_disturbance | 包线内性能 | 有界机体系外力矩 event；恢复从 event end 起算 | 峰值误差、独立恢复、饱和持续时间；G1/G2/G3 |
 | imu_noise_and_bias | 包线内性能 | 每样本噪声、替换式偏置 event 和固定 seed | 横滚/俯仰 RMS、相对偏航漂移；G1/G2 估计器/G3 |
@@ -84,23 +84,33 @@ dwell 容量校验；超调和跨轴峰值则必须恰好覆盖整个 [start_tic
 饱和撤回不是“非零 command 即认为会饱和”。它需要：
 
 1. event 内的 actuator_saturation_time_s 使用大于零的下界，作为未来 G3 的实际
-   触发证据；
+   触发证据；该下界不得大于该 command event 的 wall-clock 时长（相等允许）；
 2. 同时保留覆盖完整场景的正上界，防止持续饱和被当作通过；下界与上界是独立必需
    角色，不能相互替代；
 3. 以“任意轴饱和”的 wall-clock 并集计时；三个轴同时饱和 0.1 s 仍是 0.1 s；
 4. 将恢复稳定时间绑定到 command event 的结束 tick；
 5. 记录 x/y/z 三个独立 integral torque contribution 限值、request、limited 与 actual；
 6. 让 controller 作为唯一限幅责任方，向 actuator 传递带 timestamp 的成对
-   request/limited/saturated TorqueCommand，feedback 再携带配对命令时间戳。
+   request/limited/saturated TorqueCommand；actuator 在每个 base tick 推进严格早于该
+   tick 发布的 held command，feedback 保留该 command 的原 timestamp。
 
 因此，未来动态运行若从未触发饱和，必须按合同得到失败或 inconclusive，而不能借由
 上界为零而通过。abs(I_z)=0.12 Nm 对候选 z 限值 0.10 Nm 必须失败；这些是合同
 例子，绝非已经获得的运行结果。
 
+## 无效输入与确定性 reset 重放
+
 无效输入/reset 也不是一个可任意凑数的计数：场景必须恰有 negative dt 和 stale
 timestamp 各一次，每次只有可见的 invalid/reason 证据匹配时才计一次，随后才有一个
 all-components reset。计数下界固定为两个已声明注入，删掉或重复一种事件、或把阈值
 改为零都会被配置校验拒绝。
+
+reset event 的开始先于同 tick 的任何 due scheduled work。重放从 reset-relative tick zero
+开始，必须使用相同 timestamped IMU、attitude command、场景 seed 以及 post-reset noise
+draw index；在匹配的 reset-relative due estimator tick 比较 q_nb_estimate 的每个分量，
+绝对容差固定为 1e-12。acceptance window 至少需要容纳两次 post-reset due estimator
+updates；因此 [reset_start, reset_start+1) 之类没有有效 estimator update 的窗口不是
+“确定性重放”证据。
 
 ## CTL-REQ 适用性审查
 
