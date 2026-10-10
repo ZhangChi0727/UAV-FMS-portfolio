@@ -33,7 +33,7 @@
 |---|---|---|
 | python validate_config.py --config configs/b0_g0_contract.v1.json | WSL Ubuntu，B0 track | 通过；只证明默认候选合同可加载 |
 | python -m ruff check . | WSL Ubuntu，05_integration/b0 | 通过；只检查 G0 Python 合同 track |
-| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 76 passed；包含评审列出的反例及每类事件的缺字段、未知字段、错误类型和边界反例 |
+| /home/chi/src/uav-fms-portfolio/.venv-b0/bin/python -m pytest -q | WSL Ubuntu，05_integration/b0 | 79 passed；包含评审列出的反例、逐事件结构反例，以及公式和判定方向篡改反例 |
 | cmake/build/ctest preset development-readiness-debug | WSL Ubuntu，开发就绪 probe | 2/2 CTest 通过；仅为工具链/绑定探针 |
 | python -m pytest --tb=short -v | WSL Ubuntu，02_estimation/python | 9 xfailed、1 skipped；已执行但不是 B0 完成证据 |
 
