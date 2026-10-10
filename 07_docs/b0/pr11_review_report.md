@@ -51,3 +51,12 @@ git diff --check
 - G1 工作单新增待主会话审阅的数值决策表；四元数定义、解析主惯量、RK4 收敛和精确一阶执行器 oracle 均明确，候选容差未标为已批准。
 - 在用户追认前，唯一待确认事项是授权链摘要的真实性；该事项已由用户在 PA 主会话追认关闭。
 - 用户已在 PA 主会话明确追认上述三项 G0 设计决定（2026-10-10，Australia/Perth）；该追认不倒签历史决定，不授权合并/G1。批准链缺口已关闭。
+
+## 最终验证：`7db08cf`
+
+- G1 工作单现为条件定稿：补齐恒定 target 的精确 ZOH 公式、`y0=0` fixture、
+  q/-q/极小角/90°数学例、初态和终点/收敛判据；数值表仍标为待主会话审阅。
+- Linux 工作区已安全快进至 `7db08cfedfd393c0e64959e50f19a41f9347c4ac`，clean。
+  绝对 venv 在 `05_integration/b0` 实跑 v1/v2/default CLI、pytest `162 passed`、
+  Ruff、base..HEAD diff check，全部通过。最新三项 CI 全部 SUCCESS（run `38058536057`）。
+- PR 仍未合并；G1 尚未实现，Issue #4 尚未标记 ready，等待主会话 PA 对本轮提交复核。
