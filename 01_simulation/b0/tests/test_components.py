@@ -254,6 +254,7 @@ def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
     assert after.timestamp_s == before.timestamp_s
     with pytest.raises(ContractValidationError, match="backwards"):
         actuator.reset(ActuatorInitialState(), 0.5)
+    actuator.reset(ActuatorInitialState(), 8.0)
     actuator.step(_command(np.zeros(3), timestamp=8.0), dt)
     with pytest.raises(ContractValidationError, match="backwards"):
         actuator.reset(ActuatorInitialState(), 8.0 + dt / 2.0)
@@ -385,10 +386,12 @@ def test_imu_seed_reproducibility_and_reset() -> None:
     replay_reference = IMU(PARAMETERS)
     replay_reference.reset(IMUInitialState(), 0.0, 123)
     assert not np.array_equal(different.gyro_b_rad_s, replay_reference.sample(truth, 0.005).gyro_b_rad_s)
-    first.reset(IMUInitialState(), 0.0, 123)
-    replay = first.sample(truth, 0.005)
-    second.reset(IMUInitialState(), 0.0, 123)
-    assert np.array_equal(replay.gyro_b_rad_s, second.sample(truth, 0.005).gyro_b_rad_s)
+    replay_first = IMU(PARAMETERS)
+    replay_second = IMU(PARAMETERS)
+    replay_first.reset(IMUInitialState(), 0.0, 123)
+    replay_second.reset(IMUInitialState(), 0.0, 123)
+    replay = replay_first.sample(truth, 0.005)
+    assert np.array_equal(replay.gyro_b_rad_s, replay_second.sample(truth, 0.005).gyro_b_rad_s)
 
 
 def test_imu_invalid_timestamp_does_not_consume_rng() -> None:
