@@ -6,17 +6,30 @@ from typing import Any
 
 import numpy as np
 
-from contract import (
-    ContractValidationError,
-    G1Parameters,
-    IMUInitialState,
-    IMUSample,
-    IMUState,
-    SensorTruth,
-    _scalar,
-    load_g1_parameters,
-)
-from quaternion import rotate_ned_to_body
+try:
+    from .contract import (
+        ContractValidationError,
+        G1Parameters,
+        IMUInitialState,
+        IMUSample,
+        IMUState,
+        SensorTruth,
+        _scalar,
+        load_g1_parameters,
+    )
+    from .quaternion import rotate_ned_to_body
+except ImportError:  # pragma: no cover - supports direct track execution
+    from contract import (
+        ContractValidationError,
+        G1Parameters,
+        IMUInitialState,
+        IMUSample,
+        IMUState,
+        SensorTruth,
+        _scalar,
+        load_g1_parameters,
+    )
+    from quaternion import rotate_ned_to_body
 
 
 class IMU:

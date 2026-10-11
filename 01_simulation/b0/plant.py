@@ -6,16 +6,28 @@ from typing import Any
 
 import numpy as np
 
-from contract import (
-    ContractValidationError,
-    G1Parameters,
-    PlantInitialState,
-    PlantState,
-    _scalar,
-    _vector,
-    load_g1_parameters,
-)
-from quaternion import normalize_quaternion, quaternion_multiply
+try:
+    from .contract import (
+        ContractValidationError,
+        G1Parameters,
+        PlantInitialState,
+        PlantState,
+        _scalar,
+        _vector,
+        load_g1_parameters,
+    )
+    from .quaternion import normalize_quaternion, quaternion_multiply
+except ImportError:  # pragma: no cover - supports direct track execution
+    from contract import (
+        ContractValidationError,
+        G1Parameters,
+        PlantInitialState,
+        PlantState,
+        _scalar,
+        _vector,
+        load_g1_parameters,
+    )
+    from quaternion import normalize_quaternion, quaternion_multiply
 
 
 class Plant:
