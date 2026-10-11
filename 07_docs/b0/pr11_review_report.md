@@ -66,6 +66,10 @@ git diff --check
 - PR #11 已按用户授权合并，实际 merge SHA 为 `3741cb1cef9353b64021aeeeb058e9917f3596cd`。
 - Windows 与 Ubuntu 均已同步至该 main 基点并 clean；Issue #3 已关闭，Issue #4 已登记为
   ready 的未来 G1 实施交接，不代表 G1 已实现或性能已验证。
+- 合并后 Ubuntu main 的 B0 v1/v2/default CLI、162 项测试、Ruff 和交接提交 diff 检查均通过。
+  尝试本地 CMake configure/build/CTest 时 WSL 返回 `cmake: command not found`；未安装或修改
+  工具链。合并前同一代码基点的远程 development-readiness toolchain probe CI 已成功，
+  因此该本地 CMake 缺失不被夸大为仓库故障。
 
 ## 最终文本修正轮次（授权于 2026-10-11）
 
