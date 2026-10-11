@@ -143,7 +143,7 @@ def test_actuator_signed_limits_and_no_hidden_clamp() -> None:
     feedback = actuator.step(_command(requested), 0.01)
     assert np.allclose(feedback.limited_torque_body_Nm, limits * [1.0, -1.0, 1.0])
     assert np.all(np.abs(feedback.actual_torque_body_Nm) <= limits)
-    malicious = TorqueCommand(requested, [0.4, 0.0, 0.0], 0.01, limits_Nm=[1.0, 1.0, 1.0])
+    malicious = TorqueCommand([0.4, 0.0, 0.0], [0.4, 0.0, 0.0], 0.01, limits_Nm=[1.0, 1.0, 1.0])
     with pytest.raises(ContractValidationError, match="does not clamp"):
         actuator.step(malicious, 0.01)
 
