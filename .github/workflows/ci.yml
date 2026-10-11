@@ -95,6 +95,46 @@ jobs:
 
       - name: Check complete PR diff whitespace
         run: git diff --check origin/main...HEAD
+
+  b0-g1-components:
+    name: B0 G1 plant actuator IMU components (3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements/b0-dev.txt
+
+      - name: Install isolated B0 development tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/b0-dev.txt
+
+      - name: Lint G1 component track
+        run: python -m ruff check .
+        working-directory: 01_simulation/b0
+
+      - name: Run G1 component tests
+        run: python -m pytest -q tests
+        working-directory: 01_simulation/b0
+
+      - name: Emit deterministic component evidence
+        run: python evidence.py --output g1_component_evidence.json
+        working-directory: 01_simulation/b0
+
+      - name: Upload deterministic component evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: b0-g1-component-evidence
+          path: 01_simulation/b0/g1_component_evidence.json
+
   navigation-baseline:
     name: Python navigation baseline (3.11)
     runs-on: ubuntu-latest
