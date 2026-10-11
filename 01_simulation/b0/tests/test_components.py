@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import json
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -26,7 +28,7 @@ from quaternion import (
     quaternion_from_axis_angle,
     quaternion_inverse,
     quaternion_multiply,
-    rotate_ned_to_body,
+    rotate_body_to_ned,
 )
 
 
@@ -36,7 +38,14 @@ IDENTITY = np.array([1.0, 0.0, 0.0, 0.0])
 
 def _command(requested: np.ndarray, timestamp: float = 0.0) -> TorqueCommand:
     limited = np.clip(requested, -PARAMETERS.actuator_limits_Nm, PARAMETERS.actuator_limits_Nm)
-    return TorqueCommand(requested, limited, timestamp, limits_Nm=PARAMETERS.actuator_limits_Nm)
+    saturated = np.abs(requested) > PARAMETERS.actuator_limits_Nm
+    return TorqueCommand(
+        requested,
+        limited,
+        timestamp,
+        saturated,
+        limits_Nm=PARAMETERS.actuator_limits_Nm,
+    )
 
 
 @pytest.mark.parametrize("axis", range(3))
@@ -97,6 +106,32 @@ def test_quaternion_oracle_is_sign_invariant_and_normalizes() -> None:
         normalize_quaternion([1.0, 0.0, np.nan, 0.0])
 
 
+@pytest.mark.parametrize(
+    ("angle", "body_vector", "expected_ned"),
+    [
+        (math.pi / 2.0, [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]),
+        (-math.pi / 2.0, [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]),
+    ],
+)
+def test_signed_x_rotation_has_independent_vector_oracle(
+    angle: float, body_vector: list[float], expected_ned: list[float]
+) -> None:
+    quaternion = quaternion_from_axis_angle([1.0, 0.0, 0.0], angle)
+    assert np.allclose(rotate_body_to_ned(quaternion, body_vector), expected_ned, atol=1e-15)
+
+
+def test_y_and_z_rotation_and_noncommutative_hamilton_product_oracles() -> None:
+    q_y = quaternion_from_axis_angle([0.0, 1.0, 0.0], math.pi / 2.0)
+    q_z = quaternion_from_axis_angle([0.0, 0.0, 1.0], math.pi / 2.0)
+    assert np.allclose(rotate_body_to_ned(q_y, [0.0, 0.0, 1.0]), [1.0, 0.0, 0.0], atol=1e-15)
+    assert np.allclose(rotate_body_to_ned(q_z, [1.0, 0.0, 0.0]), [0.0, 1.0, 0.0], atol=1e-15)
+    q_x = quaternion_from_axis_angle([1.0, 0.0, 0.0], math.pi / 2.0)
+    xy = quaternion_multiply(q_x, q_y)
+    yx = quaternion_multiply(q_y, q_x)
+    assert np.allclose(xy, [0.5, 0.5, 0.5, 0.5], atol=1e-15)
+    assert np.allclose(yx, [0.5, 0.5, 0.5, -0.5], atol=1e-15)
+
+
 def test_plant_rejects_invalid_step_without_mutating_state() -> None:
     plant = Plant(PARAMETERS)
     plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), 4.0)
@@ -125,14 +160,17 @@ def test_actuator_exact_zoh_and_zero_target() -> None:
     actuator = Actuator(PARAMETERS)
     actuator.reset(ActuatorInitialState(), 0.0)
     target = np.array([0.1, -0.1, 0.05])
-    dt = 0.015
-    feedback = actuator.step(_command(target), dt)
+    dt = PARAMETERS.base_period_s
+    actuator.step(_command(np.zeros(3), timestamp=0.0), dt)
+    feedback = actuator.step(_command(target, timestamp=dt), dt)
     expected = target * (1.0 - math.exp(-dt / PARAMETERS.actuator_time_constant_s))
     assert np.allclose(feedback.actual_torque_body_Nm, expected, rtol=0.0, atol=1e-14)
-    feedback = actuator.step(_command(np.zeros(3), timestamp=0.015), dt)
+    feedback = actuator.step(_command(np.zeros(3), timestamp=2.0 * dt), dt)
     expected = expected * math.exp(-dt / PARAMETERS.actuator_time_constant_s)
     assert np.allclose(feedback.actual_torque_body_Nm, expected, rtol=0.0, atol=1e-14)
     assert np.allclose(feedback.limited_torque_body_Nm, np.zeros(3))
+    assert np.array_equal(feedback.saturated, np.zeros(3, dtype=bool))
+    assert feedback.timestamp_s == pytest.approx(3.0 * dt)
 
 
 def test_actuator_signed_limits_and_no_hidden_clamp() -> None:
@@ -140,26 +178,64 @@ def test_actuator_signed_limits_and_no_hidden_clamp() -> None:
     actuator.reset(ActuatorInitialState(), 0.0)
     limits = PARAMETERS.actuator_limits_Nm
     requested = np.array([2.0, -2.0, 2.0])
-    feedback = actuator.step(_command(requested), 0.01)
+    dt = PARAMETERS.base_period_s
+    actuator.step(_command(np.zeros(3), timestamp=0.0), dt)
+    feedback = actuator.step(_command(requested, timestamp=dt), dt)
     assert np.allclose(feedback.limited_torque_body_Nm, limits * [1.0, -1.0, 1.0])
+    assert np.array_equal(feedback.saturated, np.array([True, True, True]))
     assert np.all(np.abs(feedback.actual_torque_body_Nm) <= limits)
-    malicious = TorqueCommand([0.4, 0.0, 0.0], [0.4, 0.0, 0.0], 0.01, limits_Nm=[1.0, 1.0, 1.0])
+    malicious = TorqueCommand(
+        [0.4, 0.0, 0.0],
+        [0.4, 0.0, 0.0],
+        2.0 * dt,
+        [False, False, False],
+        limits_Nm=[1.0, 1.0, 1.0],
+    )
     with pytest.raises(ContractValidationError, match="does not clamp"):
-        actuator.step(malicious, 0.01)
+        actuator.step(malicious, dt)
 
 
 def test_actuator_timestamp_pairing_and_reset() -> None:
     actuator = Actuator(PARAMETERS)
     actuator.reset(ActuatorInitialState(), 1.0)
-    actuator.step(_command(np.array([0.1, 0.0, 0.0]), timestamp=1.0), 0.01)
+    dt = PARAMETERS.base_period_s
+    actuator.step(_command(np.zeros(3), timestamp=1.0), dt)
+    before = actuator.feedback
+    with pytest.raises(ContractValidationError, match="different command"):
+        actuator.step(_command(np.array([0.1, 0.0, 0.0]), timestamp=1.0), dt)
+    assert np.array_equal(actuator.feedback.actual_torque_body_Nm, before.actual_torque_body_Nm)
+    actuator.step(_command(np.array([0.1, 0.0, 0.0]), timestamp=1.0 + dt), dt)
     with pytest.raises(ContractValidationError, match="future"):
-        actuator.step(_command(np.zeros(3), timestamp=2.0), 0.01)
+        actuator.step(_command(np.zeros(3), timestamp=2.0), dt)
     with pytest.raises(ContractValidationError, match="non-decreasing"):
-        actuator.step(_command(np.zeros(3), timestamp=0.5), 0.01)
+        actuator.step(_command(np.zeros(3), timestamp=0.5), dt)
     feedback = actuator.reset(ActuatorInitialState(), 8.0)
     assert np.allclose(feedback.actual_torque_body_Nm, np.zeros(3))
     assert np.allclose(feedback.limited_torque_body_Nm, np.zeros(3))
-    assert feedback.feedback_timestamp_s == pytest.approx(8.0)
+    assert np.array_equal(feedback.saturated, np.zeros(3, dtype=bool))
+    assert feedback.timestamp_s == pytest.approx(8.0)
+
+
+def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
+    actuator = Actuator(PARAMETERS)
+    actuator.reset(ActuatorInitialState(), 1.0)
+    actuator.step(_command(np.zeros(3), timestamp=1.0), PARAMETERS.base_period_s)
+    before = actuator.feedback
+    with pytest.raises(ContractValidationError, match="reset command timestamp"):
+        actuator.reset(
+            ActuatorInitialState(
+                actual_torque_body_Nm=[0.2, 0.0, 0.0],
+                held_limited_torque_body_Nm=[0.2, 0.0, 0.0],
+                held_command_timestamp_s=99.0,
+            ),
+            1.0,
+        )
+    after = actuator.feedback
+    assert np.array_equal(after.actual_torque_body_Nm, before.actual_torque_body_Nm)
+    assert np.array_equal(after.limited_torque_body_Nm, before.limited_torque_body_Nm)
+    assert after.timestamp_s == before.timestamp_s
+    with pytest.raises(ContractValidationError, match="backwards"):
+        actuator.reset(ActuatorInitialState(), 0.5)
 
 
 def _zero_noise_parameters() -> G1Parameters:
@@ -180,7 +256,8 @@ def test_imu_stationary_and_known_acceleration_without_noise() -> None:
     imu = IMU(parameters)
     imu.reset(IMUInitialState(), 0.0, 42)
     truth = SensorTruth(IDENTITY, np.zeros(3), np.zeros(3))
-    sample = imu.sample(truth, 0.002)
+    sample = imu.sample(truth, PARAMETERS.imu_period_s)
+    assert sample.valid is True
     assert np.allclose(sample.gyro_b_rad_s, parameters.gyro_bias_rad_s)
     assert np.allclose(
         sample.specific_force_b_m_s2,
@@ -188,10 +265,35 @@ def test_imu_stationary_and_known_acceleration_without_noise() -> None:
     )
     q = quaternion_from_axis_angle([1.0, 0.0, 0.0], math.pi / 2.0)
     acceleration = np.array([1.0, 2.0, 3.0])
-    expected = rotate_ned_to_body(q, acceleration - parameters.gravity_n_m_s2)
-    sample = imu.sample(SensorTruth(q, [0.1, 0.2, 0.3], acceleration), 0.004)
+    expected = np.array([1.0, -6.80665, -2.0])
+    sample = imu.sample(SensorTruth(q, [0.1, 0.2, 0.3], acceleration), 2.0 * PARAMETERS.imu_period_s)
     assert np.allclose(sample.gyro_b_rad_s, np.array([0.1, 0.2, 0.3]) + parameters.gyro_bias_rad_s)
     assert np.allclose(sample.specific_force_b_m_s2, expected + parameters.accelerometer_bias_m_s2)
+
+
+def test_imu_only_noise_uses_independent_axis_scales_and_known_rng() -> None:
+    parameters = G1Parameters(
+        inertia_kg_m2=PARAMETERS.inertia_kg_m2,
+        actuator_time_constant_s=PARAMETERS.actuator_time_constant_s,
+        actuator_limits_Nm=PARAMETERS.actuator_limits_Nm,
+        gravity_n_m_s2=PARAMETERS.gravity_n_m_s2,
+        gyro_noise_std_rad_s=np.array([0.1, 0.2, 0.3]),
+        gyro_bias_rad_s=np.zeros(3),
+        accelerometer_noise_std_m_s2=np.array([0.4, 0.5, 0.6]),
+        accelerometer_bias_m_s2=np.zeros(3),
+    )
+    seed = 77
+    truth = SensorTruth(IDENTITY, [0.1, 0.2, 0.3], [1.0, -2.0, 0.5])
+    imu = IMU(parameters)
+    imu.reset(IMUInitialState(), 0.0, seed)
+    sample = imu.sample(truth, parameters.imu_period_s)
+    rng = np.random.default_rng(seed)
+    expected_gyro = truth.omega_b_rad_s + rng.normal(0.0, parameters.gyro_noise_std_rad_s)
+    expected_force = (
+        truth.acceleration_n_m_s2 - parameters.gravity_n_m_s2
+    ) + rng.normal(0.0, parameters.accelerometer_noise_std_m_s2)
+    assert np.array_equal(sample.gyro_b_rad_s, expected_gyro)
+    assert np.array_equal(sample.specific_force_b_m_s2, expected_force)
 
 
 def test_imu_seed_reproducibility_and_reset() -> None:
@@ -200,19 +302,21 @@ def test_imu_seed_reproducibility_and_reset() -> None:
     second = IMU(PARAMETERS)
     first.reset(IMUInitialState(), 0.0, 123)
     second.reset(IMUInitialState(), 0.0, 123)
-    for timestamp in (0.002, 0.004, 0.006):
+    for timestamp in (0.005, 0.010, 0.015):
         a = first.sample(truth, timestamp)
         b = second.sample(truth, timestamp)
         assert np.array_equal(a.gyro_b_rad_s, b.gyro_b_rad_s)
         assert np.array_equal(a.specific_force_b_m_s2, b.specific_force_b_m_s2)
     third = IMU(PARAMETERS)
     third.reset(IMUInitialState(), 0.0, 124)
-    different = third.sample(truth, 0.002)
-    assert not np.array_equal(different.gyro_b_rad_s, first.sample(truth, 0.008).gyro_b_rad_s)
+    different = third.sample(truth, 0.005)
+    replay_reference = IMU(PARAMETERS)
+    replay_reference.reset(IMUInitialState(), 0.0, 123)
+    assert not np.array_equal(different.gyro_b_rad_s, replay_reference.sample(truth, 0.005).gyro_b_rad_s)
     first.reset(IMUInitialState(), 0.0, 123)
-    replay = first.sample(truth, 0.002)
+    replay = first.sample(truth, 0.005)
     second.reset(IMUInitialState(), 0.0, 123)
-    assert np.array_equal(replay.gyro_b_rad_s, second.sample(truth, 0.002).gyro_b_rad_s)
+    assert np.array_equal(replay.gyro_b_rad_s, second.sample(truth, 0.005).gyro_b_rad_s)
 
 
 def test_imu_invalid_timestamp_does_not_consume_rng() -> None:
@@ -225,12 +329,12 @@ def test_imu_invalid_timestamp_does_not_consume_rng() -> None:
         trial.sample(truth, 1.0)
     with pytest.raises(ContractValidationError):
         trial.sample(truth, float("nan"))
-    expected = control.sample(truth, 1.002)
-    actual = trial.sample(truth, 1.002)
+    expected = control.sample(truth, 1.005)
+    actual = trial.sample(truth, 1.005)
     assert np.array_equal(expected.gyro_b_rad_s, actual.gyro_b_rad_s)
     assert np.array_equal(expected.specific_force_b_m_s2, actual.specific_force_b_m_s2)
-    with pytest.raises(ContractValidationError, match="strictly increasing"):
-        trial.sample(truth, 1.001)
+    with pytest.raises(ContractValidationError, match="G0 IMU period"):
+        trial.sample(truth, 1.005)
 
 
 def test_imu_rejects_invalid_reset_seed_without_mutating_state() -> None:
@@ -240,3 +344,25 @@ def test_imu_rejects_invalid_reset_seed_without_mutating_state() -> None:
     with pytest.raises(ContractValidationError):
         imu.reset(IMUInitialState(), 2.0, -1)
     assert imu.state == before
+
+
+def test_g1_parameter_loader_uses_authoritative_g0_validation(tmp_path: Path) -> None:
+    source = Path(PARAMETERS.config_path)
+    document = json.loads(source.read_text(encoding="utf-8"))
+    document["contract_status"]["state"] = "unapproved"
+    unapproved = tmp_path / "unapproved.json"
+    unapproved.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(ContractValidationError):
+        load_g1_parameters(unapproved)
+
+    document = json.loads(source.read_text(encoding="utf-8"))
+    document["timing"]["base_period_s"] = 0.0
+    invalid_timing = tmp_path / "invalid_timing.json"
+    invalid_timing.write_text(json.dumps(document), encoding="utf-8")
+    with pytest.raises(ContractValidationError):
+        load_g1_parameters(invalid_timing)
+
+    non_object = tmp_path / "non_object.json"
+    non_object.write_text("[]", encoding="utf-8")
+    with pytest.raises(ContractValidationError, match="JSON object"):
+        load_g1_parameters(non_object)

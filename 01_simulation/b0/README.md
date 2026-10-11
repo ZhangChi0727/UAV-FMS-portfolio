@@ -14,4 +14,9 @@ Run the track from this directory so Python test collection stays scoped:
 
 The parameter loader reads the approved
 `05_integration/b0/configs/b0_g0_contract.v2.json`. The IMU accepts truth only
-at its explicit sensor boundary; no estimator or controller consumes truth.
+at its explicit sensor boundary and accepts samples only at the contract
+period (`base_period_s * imu_every_ticks = 0.005 s`); no estimator or
+controller consumes truth. `Plant.step` and `Actuator.step` are explicit
+numerical/ZOH component oracles that accept a positive interval for analytic
+checks. `step_base` on each component is the G0 scheduling adapter and rejects
+intervals other than the configured 0.0025 s base period.

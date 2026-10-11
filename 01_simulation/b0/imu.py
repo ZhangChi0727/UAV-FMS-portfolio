@@ -14,6 +14,7 @@ try:
         IMUSample,
         IMUState,
         SensorTruth,
+        _integer,
         _scalar,
         load_g1_parameters,
     )
@@ -26,6 +27,7 @@ except ImportError:  # pragma: no cover - supports direct track execution
         IMUSample,
         IMUState,
         SensorTruth,
+        _integer,
         _scalar,
         load_g1_parameters,
     )
@@ -42,6 +44,7 @@ class IMU:
         self._last_sample_timestamp: float | None = None
         self._samples_emitted = 0
         self._rng_seed = 0
+        self._last_reset_epoch: float | None = None
         self._reset = False
 
     @property
@@ -63,9 +66,9 @@ class IMU:
         if not isinstance(initial_state, IMUInitialState):
             raise ContractValidationError("reset requires IMUInitialState")
         epoch = _scalar(reset_epoch, "reset_epoch")
-        if isinstance(rng_seed, bool) or int(rng_seed) != rng_seed or int(rng_seed) < 0:
-            raise ContractValidationError("rng_seed must be an integer")
-        seed = int(rng_seed)
+        seed = _integer(rng_seed, "rng_seed", nonnegative=True)
+        if self._last_reset_epoch is not None and epoch < self._last_reset_epoch - 1e-12:
+            raise ContractValidationError("reset epoch cannot move the scenario clock backwards")
         try:
             rng = np.random.default_rng(seed)
         except (TypeError, ValueError, OverflowError) as exc:
@@ -75,6 +78,7 @@ class IMU:
         self._samples_emitted = 0
         self._rng_seed = seed
         self._rng = rng
+        self._last_reset_epoch = epoch
         self._reset = True
         return self.state
 
@@ -84,10 +88,13 @@ class IMU:
         if not isinstance(truth_state, SensorTruth):
             raise ContractValidationError("sample requires SensorTruth at the sensor boundary")
         timestamp = _scalar(sample_timestamp_s, "sample_timestamp_s")
-        if timestamp <= self._reset_epoch:
-            raise ContractValidationError("sample timestamp must be after reset epoch")
-        if self._last_sample_timestamp is not None and timestamp <= self._last_sample_timestamp:
-            raise ContractValidationError("sample timestamps must be strictly increasing")
+        expected_timestamp = (
+            self._reset_epoch + self._parameters.imu_period_s
+            if self._last_sample_timestamp is None
+            else self._last_sample_timestamp + self._parameters.imu_period_s
+        )
+        if abs(timestamp - expected_timestamp) > 1e-12:
+            raise ContractValidationError("sample timestamp must match the G0 IMU period")
         q = truth_state.q_nb
         omega = truth_state.omega_b_rad_s
         acceleration_n = truth_state.acceleration_n_m_s2
@@ -102,7 +109,7 @@ class IMU:
             0.0,
             self._parameters.accelerometer_noise_std_m_s2,
         )
-        sample = IMUSample(timestamp, gyro, specific_force_b)
+        sample = IMUSample(timestamp, gyro, specific_force_b, True)
         self._last_sample_timestamp = timestamp
         self._samples_emitted += 1
         return sample
