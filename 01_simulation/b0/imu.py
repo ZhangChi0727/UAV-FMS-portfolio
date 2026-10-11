@@ -63,13 +63,18 @@ class IMU:
         if not isinstance(initial_state, IMUInitialState):
             raise ContractValidationError("reset requires IMUInitialState")
         epoch = _scalar(reset_epoch, "reset_epoch")
-        if isinstance(rng_seed, bool) or int(rng_seed) != rng_seed:
+        if isinstance(rng_seed, bool) or int(rng_seed) != rng_seed or int(rng_seed) < 0:
             raise ContractValidationError("rng_seed must be an integer")
+        seed = int(rng_seed)
+        try:
+            rng = np.random.default_rng(seed)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ContractValidationError("rng_seed must be a non-negative integer") from exc
         self._reset_epoch = epoch
         self._last_sample_timestamp = None
         self._samples_emitted = 0
-        self._rng_seed = int(rng_seed)
-        self._rng = np.random.default_rng(self._rng_seed)
+        self._rng_seed = seed
+        self._rng = rng
         self._reset = True
         return self.state
 

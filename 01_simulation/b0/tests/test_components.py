@@ -231,3 +231,12 @@ def test_imu_invalid_timestamp_does_not_consume_rng() -> None:
     assert np.array_equal(expected.specific_force_b_m_s2, actual.specific_force_b_m_s2)
     with pytest.raises(ContractValidationError, match="strictly increasing"):
         trial.sample(truth, 1.001)
+
+
+def test_imu_rejects_invalid_reset_seed_without_mutating_state() -> None:
+    imu = IMU(PARAMETERS)
+    imu.reset(IMUInitialState(), 1.0, 99)
+    before = imu.state
+    with pytest.raises(ContractValidationError):
+        imu.reset(IMUInitialState(), 2.0, -1)
+    assert imu.state == before
