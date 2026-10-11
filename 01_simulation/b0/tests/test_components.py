@@ -201,14 +201,18 @@ def test_actuator_signed_limits_and_no_hidden_clamp() -> None:
     with pytest.raises(ContractValidationError, match="does not clamp"):
         actuator.step(malicious, dt)
     alternate_limit_command = TorqueCommand(
-        [0.3, 0.0, 0.0],
         [0.2, 0.0, 0.0],
+        [0.1, 0.0, 0.0],
         2.0 * dt,
         [True, False, False],
-        limits_Nm=[0.2, 1.0, 1.0],
+        limits_Nm=[0.1, 1.0, 1.0],
     )
+    before = actuator.feedback
     with pytest.raises(ContractValidationError, match="different actuator limit"):
         actuator.step(alternate_limit_command, dt)
+    after = actuator.feedback
+    assert np.array_equal(after.actual_torque_body_Nm, before.actual_torque_body_Nm)
+    assert after.timestamp_s == before.timestamp_s
 
 
 def test_actuator_timestamp_pairing_and_reset() -> None:
