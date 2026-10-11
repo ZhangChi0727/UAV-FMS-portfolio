@@ -7,7 +7,10 @@ from typing import Any
 
 import numpy as np
 
-from contract import ContractValidationError, _vector
+try:
+    from .contract import ContractValidationError, _vector
+except ImportError:  # pragma: no cover - supports direct track execution
+    from contract import ContractValidationError, _vector
 
 
 def _normalizable(value: Any, name: str = "quaternion") -> np.ndarray:

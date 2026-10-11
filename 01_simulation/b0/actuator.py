@@ -7,15 +7,26 @@ from typing import Any
 
 import numpy as np
 
-from contract import (
-    ActuatorFeedback,
-    ActuatorInitialState,
-    ContractValidationError,
-    G1Parameters,
-    TorqueCommand,
-    _scalar,
-    load_g1_parameters,
-)
+try:
+    from .contract import (
+        ActuatorFeedback,
+        ActuatorInitialState,
+        ContractValidationError,
+        G1Parameters,
+        TorqueCommand,
+        _scalar,
+        load_g1_parameters,
+    )
+except ImportError:  # pragma: no cover - supports direct track execution
+    from contract import (
+        ActuatorFeedback,
+        ActuatorInitialState,
+        ContractValidationError,
+        G1Parameters,
+        TorqueCommand,
+        _scalar,
+        load_g1_parameters,
+    )
 
 
 class Actuator:

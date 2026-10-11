@@ -1,7 +1,7 @@
 """B0 G1 component model package."""
 
-from actuator import Actuator
-from contract import (
+from .actuator import Actuator
+from .contract import (
     ActuatorFeedback,
     ActuatorInitialState,
     ContractValidationError,
@@ -15,8 +15,8 @@ from contract import (
     TorqueCommand,
     load_g1_parameters,
 )
-from imu import IMU
-from plant import Plant
+from .imu import IMU
+from .plant import Plant
 
 __all__ = [
     "Actuator",
