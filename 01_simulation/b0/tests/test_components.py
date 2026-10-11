@@ -89,8 +89,10 @@ def test_rk4_step_halving_against_fine_reference() -> None:
     assert half_attitude_error <= 1e-8
     assert coarse_rate_error <= 1e-8
     assert half_rate_error <= 1e-8
-    assert half_attitude_error < coarse_attitude_error
-    assert half_rate_error < coarse_rate_error
+    attitude_indistinguishable = max(coarse_attitude_error, half_attitude_error) <= 1e-15
+    rate_indistinguishable = max(coarse_rate_error, half_rate_error) <= 1e-15
+    assert attitude_indistinguishable or half_attitude_error < coarse_attitude_error
+    assert rate_indistinguishable or half_rate_error < coarse_rate_error
 
 
 def test_quaternion_oracle_is_sign_invariant_and_normalizes() -> None:
@@ -145,6 +147,8 @@ def test_plant_rejects_invalid_step_without_mutating_state() -> None:
         assert after.timestamp_s == before.timestamp_s
     with pytest.raises(ContractValidationError):
         plant.reset(PlantInitialState([0.0, 0.0, 0.0, 0.0], np.zeros(3)), 4.0)
+    with pytest.raises(ContractValidationError, match="backwards"):
+        plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), 3.0)
 
 
 def test_plant_outputs_are_copies() -> None:
@@ -237,6 +241,17 @@ def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
     assert after.timestamp_s == before.timestamp_s
     with pytest.raises(ContractValidationError, match="backwards"):
         actuator.reset(ActuatorInitialState(), 0.5)
+
+
+def test_base_step_adapter_rejects_non_base_intervals() -> None:
+    plant = Plant(PARAMETERS)
+    plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), 0.0)
+    with pytest.raises(ContractValidationError, match="base_period_s"):
+        plant.step_base(np.zeros(3), PARAMETERS.base_period_s / 2.0)
+    actuator = Actuator(PARAMETERS)
+    actuator.reset(ActuatorInitialState(), 0.0)
+    with pytest.raises(ContractValidationError, match="base_period_s"):
+        actuator.step_base(_command(np.zeros(3), timestamp=0.0), PARAMETERS.base_period_s / 2.0)
 
 
 def _zero_noise_parameters() -> G1Parameters:
@@ -334,6 +349,8 @@ def test_imu_invalid_timestamp_does_not_consume_rng() -> None:
         trial.sample(truth, 1.0)
     with pytest.raises(ContractValidationError):
         trial.sample(truth, float("nan"))
+    with pytest.raises(ContractValidationError, match="G0 IMU period"):
+        trial.sample(truth, 1.002)
     expected = control.sample(truth, 1.005)
     actual = trial.sample(truth, 1.005)
     assert np.array_equal(expected.gyro_b_rad_s, actual.gyro_b_rad_s)
@@ -349,6 +366,8 @@ def test_imu_rejects_invalid_reset_seed_without_mutating_state() -> None:
     with pytest.raises(ContractValidationError):
         imu.reset(IMUInitialState(), 2.0, -1)
     assert imu.state == before
+    with pytest.raises(ContractValidationError, match="backwards"):
+        imu.reset(IMUInitialState(), 0.5, 99)
 
 
 def test_g1_parameter_loader_uses_authoritative_g0_validation(tmp_path: Path) -> None:
