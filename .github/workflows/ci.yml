@@ -52,6 +52,49 @@ jobs:
           cmake --build --preset development-readiness-debug
           ctest --preset development-readiness-debug
 
+  b0-g0-contracts:
+    name: B0 G0 contract validation (3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements/b0-dev.txt
+
+      - name: Install isolated B0 development tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/b0-dev.txt
+
+      - name: Lint B0 G0 contract track
+        run: python -m ruff check .
+        working-directory: 05_integration/b0
+
+      - name: Validate historical B0 G0 v1 contract
+        run: python validate_config.py --config configs/b0_g0_contract.v1.json
+        working-directory: 05_integration/b0
+
+      - name: Validate approved B0 G0 v2 contract
+        run: python validate_config.py --config configs/b0_g0_contract.v2.json
+        working-directory: 05_integration/b0
+
+      - name: Validate default approved B0 G0 contract
+        run: python validate_config.py
+        working-directory: 05_integration/b0
+
+      - name: Run B0 G0 contract tests
+        run: python -m pytest -v
+        working-directory: 05_integration/b0
+
+      - name: Check complete PR diff whitespace
+        run: git diff --check origin/main...HEAD
   navigation-baseline:
     name: Python navigation baseline (3.11)
     runs-on: ubuntu-latest
