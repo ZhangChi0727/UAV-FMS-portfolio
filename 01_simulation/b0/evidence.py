@@ -104,6 +104,8 @@ def _imu_evidence(parameters) -> dict[str, object]:
         accelerometer_bias_m_s2=np.zeros(3),
         base_period_s=parameters.base_period_s,
         imu_period_ticks=parameters.imu_period_ticks,
+        base_period_s=parameters.base_period_s,
+        imu_period_ticks=parameters.imu_period_ticks,
     )
     imu = IMU(zero_noise_parameters)
     imu.reset(IMUInitialState(), 0.0, 7)

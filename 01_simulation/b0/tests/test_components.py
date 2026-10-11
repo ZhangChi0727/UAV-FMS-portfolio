@@ -227,6 +227,7 @@ def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
                 actual_torque_body_Nm=[0.2, 0.0, 0.0],
                 held_limited_torque_body_Nm=[0.2, 0.0, 0.0],
                 held_command_timestamp_s=99.0,
+                held_requested_torque_body_Nm=[0.2, 0.0, 0.0],
             ),
             1.0,
         )
@@ -248,6 +249,8 @@ def _zero_noise_parameters() -> G1Parameters:
         gyro_bias_rad_s=PARAMETERS.gyro_bias_rad_s,
         accelerometer_noise_std_m_s2=np.zeros(3),
         accelerometer_bias_m_s2=PARAMETERS.accelerometer_bias_m_s2,
+        base_period_s=PARAMETERS.base_period_s,
+        imu_period_ticks=PARAMETERS.imu_period_ticks,
     )
 
 
@@ -281,6 +284,8 @@ def test_imu_only_noise_uses_independent_axis_scales_and_known_rng() -> None:
         gyro_bias_rad_s=np.zeros(3),
         accelerometer_noise_std_m_s2=np.array([0.4, 0.5, 0.6]),
         accelerometer_bias_m_s2=np.zeros(3),
+        base_period_s=PARAMETERS.base_period_s,
+        imu_period_ticks=PARAMETERS.imu_period_ticks,
     )
     seed = 77
     truth = SensorTruth(IDENTITY, [0.1, 0.2, 0.3], [1.0, -2.0, 0.5])
