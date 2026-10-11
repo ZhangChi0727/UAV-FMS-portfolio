@@ -149,6 +149,9 @@ def test_plant_rejects_invalid_step_without_mutating_state() -> None:
         plant.reset(PlantInitialState([0.0, 0.0, 0.0, 0.0], np.zeros(3)), 4.0)
     with pytest.raises(ContractValidationError, match="backwards"):
         plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), 3.0)
+    plant.step(np.zeros(3), 0.01)
+    with pytest.raises(ContractValidationError, match="backwards"):
+        plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), 4.005)
 
 
 def test_plant_outputs_are_copies() -> None:
@@ -197,6 +200,15 @@ def test_actuator_signed_limits_and_no_hidden_clamp() -> None:
     )
     with pytest.raises(ContractValidationError, match="does not clamp"):
         actuator.step(malicious, dt)
+    alternate_limit_command = TorqueCommand(
+        [0.3, 0.0, 0.0],
+        [0.2, 0.0, 0.0],
+        2.0 * dt,
+        [True, False, False],
+        limits_Nm=[0.2, 1.0, 1.0],
+    )
+    with pytest.raises(ContractValidationError, match="different actuator limit"):
+        actuator.step(alternate_limit_command, dt)
 
 
 def test_actuator_timestamp_pairing_and_reset() -> None:
@@ -241,6 +253,9 @@ def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
     assert after.timestamp_s == before.timestamp_s
     with pytest.raises(ContractValidationError, match="backwards"):
         actuator.reset(ActuatorInitialState(), 0.5)
+    actuator.step(_command(np.zeros(3), timestamp=8.0), dt)
+    with pytest.raises(ContractValidationError, match="backwards"):
+        actuator.reset(ActuatorInitialState(), 8.0 + dt / 2.0)
 
 
 def test_base_step_adapter_rejects_non_base_intervals() -> None:
@@ -252,6 +267,42 @@ def test_base_step_adapter_rejects_non_base_intervals() -> None:
     actuator.reset(ActuatorInitialState(), 0.0)
     with pytest.raises(ContractValidationError, match="base_period_s"):
         actuator.step_base(_command(np.zeros(3), timestamp=0.0), PARAMETERS.base_period_s / 2.0)
+
+
+def test_g0_tick_paths_use_epoch_origin_and_reject_oracle_mixing() -> None:
+    epoch = 10.0
+    plant = Plant(PARAMETERS)
+    plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), epoch)
+    for tick in range(1, 101):
+        state = plant.step_base(np.zeros(3))
+        assert state.timestamp_s == pytest.approx(epoch + tick * PARAMETERS.base_period_s)
+        assert plant.local_tick == tick
+    oracle_plant = Plant(PARAMETERS)
+    oracle_plant.reset(PlantInitialState(IDENTITY, np.zeros(3)), epoch)
+    oracle_plant.step(np.zeros(3), PARAMETERS.base_period_s / 2.0)
+    with pytest.raises(ContractValidationError, match="mix"):
+        oracle_plant.step_base(np.zeros(3))
+
+    actuator = Actuator(PARAMETERS)
+    actuator.reset(ActuatorInitialState(), epoch)
+    for tick in range(1, 101):
+        feedback = actuator.step_base(_command(np.zeros(3), timestamp=epoch))
+        assert feedback.timestamp_s == pytest.approx(epoch + tick * PARAMETERS.base_period_s)
+        assert actuator.local_tick == tick
+    oracle_actuator = Actuator(PARAMETERS)
+    oracle_actuator.reset(ActuatorInitialState(), epoch)
+    oracle_actuator.step(_command(np.zeros(3), timestamp=epoch), PARAMETERS.base_period_s / 2.0)
+    with pytest.raises(ContractValidationError, match="mix"):
+        oracle_actuator.step_base(_command(np.zeros(3), timestamp=epoch))
+
+    imu = IMU(PARAMETERS)
+    imu.reset(IMUInitialState(), epoch, 5)
+    truth = SensorTruth(IDENTITY, np.zeros(3), np.zeros(3))
+    for expected_tick in range(2, 201, PARAMETERS.imu_period_ticks):
+        sample = imu.sample(truth, epoch + expected_tick * PARAMETERS.base_period_s)
+        assert sample.timestamp_s == pytest.approx(epoch + expected_tick * PARAMETERS.base_period_s)
+        assert imu.local_tick == expected_tick
+        assert imu.next_sample_tick == expected_tick + PARAMETERS.imu_period_ticks
 
 
 def _zero_noise_parameters() -> G1Parameters:
@@ -368,6 +419,9 @@ def test_imu_rejects_invalid_reset_seed_without_mutating_state() -> None:
     assert imu.state == before
     with pytest.raises(ContractValidationError, match="backwards"):
         imu.reset(IMUInitialState(), 0.5, 99)
+    imu.sample(SensorTruth(IDENTITY, np.zeros(3), np.zeros(3)), 1.0 + PARAMETERS.imu_period_s)
+    with pytest.raises(ContractValidationError, match="backwards"):
+        imu.reset(IMUInitialState(), 1.0 + PARAMETERS.imu_period_s / 2.0, 99)
 
 
 def test_g1_parameter_loader_uses_authoritative_g0_validation(tmp_path: Path) -> None:
