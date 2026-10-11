@@ -1,6 +1,6 @@
 # B0 G1 对象与传感器实施子工作单（条件定稿）
 
-状态：`条件定稿，G0 授权已追认；依赖 PR #11 合并后启动`。本文件仅为 Issue #4 的实施交接规划，
+状态：`条件定稿，G0 授权已追认；PR #11 已合并，待独立 G1 实施启动`。本文件仅为 Issue #4 的实施交接规划，
 不表示 G1 已开始、对象/IMU 已实现或任何性能通过。对应未来一个独立 G1 实施 PR；建议分支
 `codex/b0-g1-plant-imu`，以 G0 合并后的 `main` 为起点。
 
@@ -13,7 +13,7 @@
   `046674dcb391983345a33d683331bcf2e155dcb1` 不是批准 v2 的依据。
 - schema 只作顶层文档索引；`05_integration/b0/validate_config.py` 的字段/跨字段规则和
   v2 决定记录是实施前必须核对的合同入口。
-- 依赖：G0 v2 合并后的准确 merge SHA、批准包、`requirements/b0-dev.txt`、WSL venv
+- 依赖：G0 v2 merge SHA `3741cb1cef9353b64021aeeeb058e9917f3596cd`、批准包、`requirements/b0-dev.txt`、WSL venv
   `/home/chi/src/uav-fms-portfolio/.venv-b0/bin/python`。禁止实现者自行重填或静默修改参数。
 
 ## 范围与边界
