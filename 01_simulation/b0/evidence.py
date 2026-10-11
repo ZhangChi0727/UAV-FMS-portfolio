@@ -14,7 +14,17 @@ from pathlib import Path
 
 import numpy as np
 
-from contract import PlantInitialState, load_g1_parameters
+from actuator import Actuator
+from contract import (
+    ActuatorInitialState,
+    G1Parameters,
+    IMUInitialState,
+    PlantInitialState,
+    SensorTruth,
+    TorqueCommand,
+    load_g1_parameters,
+)
+from imu import IMU
 from plant import Plant
 from quaternion import quaternion_distance_rad, quaternion_from_axis_angle
 
@@ -64,6 +74,43 @@ def main() -> None:
     coarse_q, coarse_omega = _integrate(parameters, 0.0025)
     half_q, half_omega = _integrate(parameters, 0.00125)
     reference_q, reference_omega = _integrate(parameters, 0.00015625)
+    actuator = Actuator(parameters)
+    actuator.reset(ActuatorInitialState(), 0.0)
+    target = np.array([0.1, -0.1, 0.05])
+    actuator_dt = 0.015
+    command = TorqueCommand(
+        target,
+        target,
+        0.0,
+        limits_Nm=parameters.actuator_limits_Nm,
+    )
+    actuator_feedback = actuator.step(command, actuator_dt)
+    actuator_reference = target * (
+        1.0 - np.exp(-actuator_dt / parameters.actuator_time_constant_s)
+    )
+    zero_noise_parameters = G1Parameters(
+        inertia_kg_m2=parameters.inertia_kg_m2,
+        actuator_time_constant_s=parameters.actuator_time_constant_s,
+        actuator_limits_Nm=parameters.actuator_limits_Nm,
+        gravity_n_m_s2=parameters.gravity_n_m_s2,
+        gyro_noise_std_rad_s=np.zeros(3),
+        gyro_bias_rad_s=np.zeros(3),
+        accelerometer_noise_std_m_s2=np.zeros(3),
+        accelerometer_bias_m_s2=np.zeros(3),
+    )
+    imu = IMU(zero_noise_parameters)
+    imu.reset(IMUInitialState(), 0.0, 7)
+    stationary = imu.sample(
+        SensorTruth([1.0, 0.0, 0.0, 0.0], np.zeros(3), np.zeros(3)),
+        0.002,
+    )
+    imu_a = IMU(parameters)
+    imu_b = IMU(parameters)
+    imu_a.reset(IMUInitialState(), 0.0, 7)
+    imu_b.reset(IMUInitialState(), 0.0, 7)
+    replay_truth = SensorTruth([1.0, 0.0, 0.0, 0.0], [0.1, 0.2, 0.3], [1.0, -2.0, 0.5])
+    replay_a = imu_a.sample(replay_truth, 0.002)
+    replay_b = imu_b.sample(replay_truth, 0.002)
     evidence = {
         "record": "b0-g1-component-evidence",
         "scope": ["plant", "actuator_contract_consumption", "imu_contract_boundary"],
@@ -80,6 +127,19 @@ def main() -> None:
             "half_attitude_error_rad": quaternion_distance_rad(reference_q, half_q),
             "coarse_rate_error_rad_s": float(np.linalg.norm(coarse_omega - reference_omega)),
             "half_rate_error_rad_s": float(np.linalg.norm(half_omega - reference_omega)),
+        },
+        "actuator": {
+            "zoh_dt_s": actuator_dt,
+            "zoh_max_error_Nm": float(np.max(np.abs(actuator_feedback.actual_torque_body_Nm - actuator_reference))),
+        },
+        "imu": {
+            "stationary_specific_force_error_m_s2": float(
+                np.max(np.abs(stationary.specific_force_b_m_s2 - [0.0, 0.0, -9.80665]))
+            ),
+            "same_seed_replay_equal": bool(
+                np.array_equal(replay_a.gyro_b_rad_s, replay_b.gyro_b_rad_s)
+                and np.array_equal(replay_a.specific_force_b_m_s2, replay_b.specific_force_b_m_s2)
+            ),
         },
         "tolerances": {
             "principal_axis_omega_rad_s": 1e-10,
