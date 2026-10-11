@@ -43,11 +43,26 @@ class Actuator:
         self._command_timestamp = 0.0
         self._timestamp = 0.0
         self._last_reset_epoch: float | None = None
+        self._epoch_origin_s: float | None = None
+        self._local_tick = 0
+        self._mode: str | None = None
         self._reset = False
 
     @property
     def parameters(self) -> G1Parameters:
         return self._parameters
+
+    @property
+    def epoch_origin_s(self) -> float:
+        if not self._reset or self._epoch_origin_s is None:
+            raise ContractValidationError("actuator must be reset before use")
+        return self._epoch_origin_s
+
+    @property
+    def local_tick(self) -> int:
+        if not self._reset:
+            raise ContractValidationError("actuator must be reset before use")
+        return self._local_tick
 
     @property
     def feedback(self) -> ActuatorFeedback:
@@ -82,7 +97,8 @@ class Actuator:
         command_timestamp = epoch if command_timestamp is None else command_timestamp
         if abs(command_timestamp - epoch) > 1e-12:
             raise ContractValidationError("reset command timestamp must equal reset epoch")
-        if self._last_reset_epoch is not None and epoch < self._last_reset_epoch - 1e-12:
+        current_timestamp = self._timestamp if self._reset else self._last_reset_epoch
+        if current_timestamp is not None and epoch < current_timestamp - 1e-12:
             raise ContractValidationError("reset epoch cannot move the scenario clock backwards")
         self._actual = actual.copy()
         self._target = target.copy()
@@ -91,6 +107,9 @@ class Actuator:
         self._command_timestamp = command_timestamp
         self._timestamp = epoch
         self._last_reset_epoch = epoch
+        self._epoch_origin_s = epoch
+        self._local_tick = 0
+        self._mode = None
         self._reset = True
         return self.feedback
 
@@ -99,12 +118,19 @@ class Actuator:
             raise ContractValidationError("actuator must be reset before use")
         if not isinstance(torque_command, TorqueCommand):
             raise ContractValidationError("step requires TorqueCommand")
+        if self._mode == "g0":
+            raise ContractValidationError("cannot mix G0 tick steps with oracle ZOH steps")
         dt = _scalar(dt_s, "dt_s")
         if dt <= 0.0:
             raise ContractValidationError("dt_s must be strictly positive")
         target = torque_command.limited_torque_body_Nm
         if np.any(np.abs(target) > self._limits + 1e-12):
             raise ContractValidationError("limited torque exceeds actuator limits; actuator does not clamp")
+        expected_target = np.clip(torque_command.requested_torque_body_Nm, -self._limits, self._limits)
+        if not np.allclose(target, expected_target, rtol=0.0, atol=1e-12):
+            raise ContractValidationError("torque command was paired with a different actuator limit")
+        if not np.array_equal(torque_command.saturated, np.abs(torque_command.requested_torque_body_Nm) > self._limits):
+            raise ContractValidationError("torque command saturation flag uses a different actuator limit")
         timestamp = torque_command.timestamp_s
         if timestamp < self._command_timestamp - 1e-12:
             raise ContractValidationError("command timestamps must be non-decreasing")
@@ -126,6 +152,7 @@ class Actuator:
         self._saturated = torque_command.saturated
         self._command_timestamp = timestamp
         self._timestamp += dt
+        self._mode = "oracle"
         return self.feedback
 
     def step_base(self, torque_command: TorqueCommand, dt_s: Any | None = None) -> ActuatorFeedback:
@@ -134,7 +161,22 @@ class Actuator:
         dt = self._parameters.base_period_s if dt_s is None else _scalar(dt_s, "dt_s")
         if abs(dt - self._parameters.base_period_s) > 1e-12:
             raise ContractValidationError("G0 actuator step must use base_period_s")
-        return self.step(torque_command, dt)
+        if not self._reset:
+            raise ContractValidationError("actuator must be reset before use")
+        if self._mode == "oracle":
+            raise ContractValidationError("cannot mix oracle ZOH steps with G0 tick steps")
+        current_tick = self._local_tick
+        previous_mode = self._mode
+        self._mode = None
+        try:
+            self.step(torque_command, dt)
+        except Exception:
+            self._mode = previous_mode
+            raise
+        self._mode = "g0"
+        self._local_tick = current_tick + 1
+        self._timestamp = self.epoch_origin_s + self._local_tick * self._parameters.base_period_s
+        return self.feedback
 
 
 __all__ = ["Actuator"]

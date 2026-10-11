@@ -45,11 +45,32 @@ class IMU:
         self._samples_emitted = 0
         self._rng_seed = 0
         self._last_reset_epoch: float | None = None
+        self._epoch_origin_s: float | None = None
+        self._local_tick = 0
+        self._next_sample_tick = 0
         self._reset = False
 
     @property
     def parameters(self) -> G1Parameters:
         return self._parameters
+
+    @property
+    def epoch_origin_s(self) -> float:
+        if not self._reset or self._epoch_origin_s is None:
+            raise ContractValidationError("IMU must be reset before use")
+        return self._epoch_origin_s
+
+    @property
+    def local_tick(self) -> int:
+        if not self._reset:
+            raise ContractValidationError("IMU must be reset before use")
+        return self._local_tick
+
+    @property
+    def next_sample_tick(self) -> int:
+        if not self._reset:
+            raise ContractValidationError("IMU must be reset before use")
+        return self._next_sample_tick
 
     @property
     def state(self) -> IMUState:
@@ -67,7 +88,8 @@ class IMU:
             raise ContractValidationError("reset requires IMUInitialState")
         epoch = _scalar(reset_epoch, "reset_epoch")
         seed = _integer(rng_seed, "rng_seed", nonnegative=True)
-        if self._last_reset_epoch is not None and epoch < self._last_reset_epoch - 1e-12:
+        current_timestamp = self._last_sample_timestamp if self._last_sample_timestamp is not None else self._last_reset_epoch
+        if current_timestamp is not None and epoch < current_timestamp - 1e-12:
             raise ContractValidationError("reset epoch cannot move the scenario clock backwards")
         try:
             rng = np.random.default_rng(seed)
@@ -79,6 +101,9 @@ class IMU:
         self._rng_seed = seed
         self._rng = rng
         self._last_reset_epoch = epoch
+        self._epoch_origin_s = epoch
+        self._local_tick = 0
+        self._next_sample_tick = self._parameters.imu_period_ticks
         self._reset = True
         return self.state
 
@@ -88,11 +113,7 @@ class IMU:
         if not isinstance(truth_state, SensorTruth):
             raise ContractValidationError("sample requires SensorTruth at the sensor boundary")
         timestamp = _scalar(sample_timestamp_s, "sample_timestamp_s")
-        expected_timestamp = (
-            self._reset_epoch + self._parameters.imu_period_s
-            if self._last_sample_timestamp is None
-            else self._last_sample_timestamp + self._parameters.imu_period_s
-        )
+        expected_timestamp = self.epoch_origin_s + self._next_sample_tick * self._parameters.base_period_s
         if abs(timestamp - expected_timestamp) > 1e-12:
             raise ContractValidationError("sample timestamp must match the G0 IMU period")
         q = truth_state.q_nb
@@ -112,6 +133,8 @@ class IMU:
         sample = IMUSample(timestamp, gyro, specific_force_b, True)
         self._last_sample_timestamp = timestamp
         self._samples_emitted += 1
+        self._local_tick = self._next_sample_tick
+        self._next_sample_tick += self._parameters.imu_period_ticks
         return sample
 
 
