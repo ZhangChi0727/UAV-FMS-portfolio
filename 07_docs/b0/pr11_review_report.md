@@ -59,7 +59,13 @@ git diff --check
 - Linux 工作区已安全快进至 `7db08cfedfd393c0e64959e50f19a41f9347c4ac`，clean。
   绝对 venv 在 `05_integration/b0` 实跑 v1/v2/default CLI、pytest `162 passed`、
   Ruff、base..HEAD diff check，全部通过。最新三项 CI 全部 SUCCESS（run `38058536057`）。
-- PR 仍未合并；G1 尚未实现，Issue #4 尚未标记 ready，等待主会话 PA 对本轮提交复核。
+- 在该轮复核时 PR 尚未合并；随后已按授权完成合并。G1 尚未实现，Issue #4 仍需独立实施。
+
+## 合并后交接
+
+- PR #11 已按用户授权合并，实际 merge SHA 为 `3741cb1cef9353b64021aeeeb058e9917f3596cd`。
+- Windows 与 Ubuntu 均已同步至该 main 基点并 clean；Issue #3 已关闭，Issue #4 已登记为
+  ready 的未来 G1 实施交接，不代表 G1 已实现或性能已验证。
 
 ## 最终文本修正轮次（授权于 2026-10-11）
 
