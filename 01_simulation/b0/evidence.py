@@ -144,22 +144,24 @@ def _build_evidence() -> dict[str, object]:
     config_hash = hashlib.sha256(config_path.read_bytes()).hexdigest()
     principal_axis_errors = []
     for axis in range(3):
-        torque = np.zeros(3)
-        torque[axis] = 0.01
-        plant = Plant(parameters)
-        plant.reset(PlantInitialState([1.0, 0.0, 0.0, 0.0], np.zeros(3)), 0.0)
-        for _ in range(40):
-            state = plant.step(torque, 0.00025)
-        expected_omega = torque[axis] * 0.01 / parameters.inertia_kg_m2[axis, axis]
-        expected_angle = 0.5 * torque[axis] * 0.01**2 / parameters.inertia_kg_m2[axis, axis]
-        expected_q = quaternion_from_axis_angle(np.eye(3)[axis], expected_angle)
-        principal_axis_errors.append(
-            {
-                "axis": axis,
-                "omega_error_rad_s": abs(state.omega_b_rad_s[axis] - expected_omega),
-                "attitude_error_rad": quaternion_distance_rad(expected_q, state.q_nb),
-            }
-        )
+        for sign in (-1.0, 1.0):
+            torque = np.zeros(3)
+            torque[axis] = sign * 0.01
+            plant = Plant(parameters)
+            plant.reset(PlantInitialState([1.0, 0.0, 0.0, 0.0], np.zeros(3)), 0.0)
+            for _ in range(40):
+                state = plant.step(torque, 0.00025)
+            expected_omega = torque[axis] * 0.01 / parameters.inertia_kg_m2[axis, axis]
+            expected_angle = 0.5 * torque[axis] * 0.01**2 / parameters.inertia_kg_m2[axis, axis]
+            expected_q = quaternion_from_axis_angle(np.eye(3)[axis], expected_angle)
+            principal_axis_errors.append(
+                {
+                    "axis": axis,
+                    "sign": sign,
+                    "omega_error_rad_s": abs(state.omega_b_rad_s[axis] - expected_omega),
+                    "attitude_error_rad": quaternion_distance_rad(expected_q, state.q_nb),
+                }
+            )
     coarse_q, coarse_omega = _integrate(parameters, 0.0025)
     half_q, half_omega = _integrate(parameters, 0.00125)
     reference_q, reference_omega = _integrate(parameters, 0.00015625)
@@ -171,17 +173,17 @@ def _build_evidence() -> dict[str, object]:
     half_rate_error = float(np.linalg.norm(half_omega - reference_omega))
     rounding_floor = 1e-15
     attitude_refinement = (
-        "reduced"
-        if half_attitude_error < coarse_attitude_error
-        else "indistinguishable_roundoff"
+        "indistinguishable_roundoff"
         if max(coarse_attitude_error, half_attitude_error) <= rounding_floor
+        else "reduced"
+        if half_attitude_error < coarse_attitude_error
         else "not_reduced"
     )
     rate_refinement = (
-        "reduced"
-        if half_rate_error < coarse_rate_error
-        else "indistinguishable_roundoff"
+        "indistinguishable_roundoff"
         if max(coarse_rate_error, half_rate_error) <= rounding_floor
+        else "reduced"
+        if half_rate_error < coarse_rate_error
         else "not_reduced"
     )
     evidence = {
@@ -191,6 +193,7 @@ def _build_evidence() -> dict[str, object]:
         "git_sha": _git_sha(),
         "config_sha256": config_hash,
         "python": sys.version.split()[0],
+        "numpy": np.__version__,
         "parameters": {
             "base_period_s": parameters.base_period_s,
             "imu_period_ticks": parameters.imu_period_ticks,
