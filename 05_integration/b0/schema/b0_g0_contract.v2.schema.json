@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/main/05_integration/b0/schema/b0_g0_contract.v2.schema.json",
+  "title": "B0 G0 contract configuration",
+  "description": "Documentation-only top-level structural index for the approved B0 G0 v2 contract. It is not an executable validation entry; validate_config.py is the authoritative strict structural, cross-field, physical, scheduling, and acceptance validator.",
+  "x-b0-validation-role": "top_level_documentation_index_only",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_status",
+    "sources",
+    "conventions",
+    "timing",
+    "interface_contract",
+    "initialization_contract",
+    "plant_contract",
+    "actuator_contract",
+    "imu_contract",
+    "estimator_contract",
+    "controller_contract",
+    "seed_policy",
+    "operating_envelope",
+    "acceptance_policy",
+    "scenarios"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "b0-g0-contract/v2"
+    },
+    "contract_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "state",
+        "freeze_prohibited",
+        "approval_required",
+        "approval_transition",
+        "approval_record"
+      ],
+      "properties": {
+        "state": {
+          "const": "approved"
+        },
+        "freeze_prohibited": {
+          "const": false
+        },
+        "approval_required": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "approval_transition": {
+          "type": "object"
+        },
+        "approval_record": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "decision",
+            "decision_date",
+            "decision_source",
+            "baseline_commit",
+            "approval_package_commit",
+            "scope",
+            "ctl_applicability"
+          ],
+          "properties": {
+            "decision": {"const": "approved_by_project_administrator"},
+            "decision_date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+            "decision_source": {"type": "string", "minLength": 1},
+            "baseline_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "approval_package_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+            "scope": {"type": "string", "minLength": 1},
+            "ctl_applicability": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["CTL-REQ-001", "CTL-REQ-002"],
+              "properties": {
+                "CTL-REQ-001": {"const": "not_applicable_to_current_B0"},
+                "CTL-REQ-002": {"const": "not_applicable_to_current_B0"}
+              }
+            }
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "locator",
+          "use"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9-]+$"
+          },
+          "kind": {
+            "enum": [
+              "repository",
+              "historical_literature_record",
+              "synthetic_assumption"
+            ]
+          },
+          "status": {
+            "type": "string"
+          },
+          "locator": {
+            "type": "string",
+            "minLength": 1
+          },
+          "use": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "conventions": {
+      "type": "object"
+    },
+    "timing": {
+      "type": "object"
+    },
+    "interface_contract": {
+      "type": "object"
+    },
+    "initialization_contract": {
+      "type": "object"
+    },
+    "plant_contract": {
+      "type": "object"
+    },
+    "actuator_contract": {
+      "type": "object"
+    },
+    "imu_contract": {
+      "type": "object"
+    },
+    "estimator_contract": {
+      "type": "object"
+    },
+    "controller_contract": {
+      "type": "object"
+    },
+    "seed_policy": {
+      "type": "object"
+    },
+    "operating_envelope": {
+      "type": "object"
+    },
+    "acceptance_policy": {
+      "type": "object"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
