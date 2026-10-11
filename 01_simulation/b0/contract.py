@@ -38,9 +38,10 @@ def _integer(value: Any, name: str, *, nonnegative: bool = False) -> int:
         raise ContractValidationError(f"{name} must be an integer")
     try:
         converted = int(value)
+        exact = converted == value
     except (TypeError, ValueError, OverflowError) as exc:
         raise ContractValidationError(f"{name} must be an integer") from exc
-    if converted != value or (nonnegative and converted < 0):
+    if not isinstance(exact, (bool, np.bool_)) or not bool(exact) or (nonnegative and converted < 0):
         suffix = " and non-negative" if nonnegative else ""
         raise ContractValidationError(f"{name} must be an integer{suffix}")
     return converted
@@ -365,8 +366,8 @@ class G1Parameters:
         gyro_bias_rad_s: Any,
         accelerometer_noise_std_m_s2: Any,
         accelerometer_bias_m_s2: Any,
-        base_period_s: Any = 0.0025,
-        imu_period_ticks: Any = 2,
+        base_period_s: Any,
+        imu_period_ticks: Any,
         config_path: str = "<explicit>",
     ) -> None:
         inertia = _matrix(inertia_kg_m2, (3, 3), "inertia_kg_m2")

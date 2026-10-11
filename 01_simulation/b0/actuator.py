@@ -73,6 +73,11 @@ class Actuator:
             raise ContractValidationError("initial actual torque exceeds actuator limits")
         if np.any(np.abs(target) > self._limits + 1e-12):
             raise ContractValidationError("initial limited torque exceeds actuator limits")
+        expected_target = np.clip(requested, -self._limits, self._limits)
+        if not np.allclose(target, expected_target, rtol=0.0, atol=1e-12):
+            raise ContractValidationError("initial reset torque fields are not paired")
+        if not np.array_equal(saturated, np.abs(requested) > self._limits):
+            raise ContractValidationError("initial reset saturation flag is not paired")
         command_timestamp = initial_state.held_command_timestamp_s
         command_timestamp = epoch if command_timestamp is None else command_timestamp
         if abs(command_timestamp - epoch) > 1e-12:
