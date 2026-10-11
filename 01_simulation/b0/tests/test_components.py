@@ -235,7 +235,8 @@ def test_actuator_timestamp_pairing_and_reset() -> None:
 def test_actuator_reset_failure_is_atomic_and_epoch_cannot_rewind() -> None:
     actuator = Actuator(PARAMETERS)
     actuator.reset(ActuatorInitialState(), 1.0)
-    actuator.step(_command(np.zeros(3), timestamp=1.0), PARAMETERS.base_period_s)
+    dt = PARAMETERS.base_period_s
+    actuator.step(_command(np.zeros(3), timestamp=1.0), dt)
     before = actuator.feedback
     with pytest.raises(ContractValidationError, match="reset command timestamp"):
         actuator.reset(
