@@ -1,0 +1,133 @@
+{
+  "schema_version": "g1.5-a-governance/v1",
+  "required_files": [
+    "systems_engineering/README.md",
+    "systems_engineering/models/architecture.md",
+    "systems_engineering/models/g0_contract.md",
+    "systems_engineering/models/system_views.md",
+    "systems_engineering/requirements/legacy_requirements.md",
+    "systems_engineering/verification/verification_plan.md",
+    "systems_engineering/reports/current_status.md",
+    "systems_engineering/reports/v_and_v_report.md",
+    "docs/roadmap.md",
+    "docs/migration_g15a.md",
+    "docs/work_orders/B0_G1_5_A_work_order.md"
+  ],
+  "model_views": [
+    {
+      "id": "SE-MODEL-CONTEXT-001",
+      "file": "systems_engineering/models/system_views.md",
+      "anchor": "SE-MODEL-CONTEXT-001",
+      "maturity": "accepted"
+    },
+    {
+      "id": "SE-MODEL-ARCH-001",
+      "file": "systems_engineering/models/system_views.md",
+      "anchor": "SE-MODEL-ARCH-001",
+      "maturity": "accepted"
+    },
+    {
+      "id": "SE-MODEL-INTERFACE-001",
+      "file": "systems_engineering/models/system_views.md",
+      "anchor": "SE-MODEL-INTERFACE-001",
+      "maturity": "approved/planned"
+    },
+    {
+      "id": "SE-MODEL-BEHAVIOR-001",
+      "file": "systems_engineering/models/system_views.md",
+      "anchor": "SE-MODEL-BEHAVIOR-001",
+      "maturity": "approved/planned"
+    },
+    {
+      "id": "SE-MODEL-DEPLOY-001",
+      "file": "systems_engineering/models/system_views.md",
+      "anchor": "SE-MODEL-DEPLOY-001",
+      "maturity": "approved/planned"
+    }
+  ],
+  "obligations": [
+    {
+      "key": "g0_frames_units_and_quaternion",
+      "source": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "model_ref": "SE-MODEL-INTERFACE-001",
+      "allocation": "G0 contract / 05_integration/b0",
+      "verification": "systems_engineering/verification/verification_plan.md",
+      "applicability": "B0 approved contract",
+      "evidence": {
+        "status": "accepted",
+        "ref": "systems_engineering/reports/b0/g0_approval_decision.md"
+      }
+    },
+    {
+      "key": "g1_plant_actuator_imu_components",
+      "source": "01_simulation/b0/evidence.py",
+      "model_ref": "SE-MODEL-ARCH-001",
+      "allocation": "01_simulation/b0",
+      "verification": "systems_engineering/verification/verification_plan.md",
+      "applicability": "B0 G1 component gate",
+      "evidence": {
+        "status": "accepted",
+        "ref": "CI 38119306904 artifact b0-g1-component-evidence"
+      }
+    },
+    {
+      "key": "g2_estimator_and_controller",
+      "source": "systems_engineering/development_baseline.md",
+      "model_ref": "SE-MODEL-ARCH-001",
+      "allocation": "02_estimation/b0 and planned 03_control/b0",
+      "verification": "systems_engineering/verification/verification_plan.md",
+      "applicability": "B0 G2 planned",
+      "evidence": {
+        "status": "planned",
+        "ref": "G2 work item; no execution evidence claimed"
+      }
+    },
+    {
+      "key": "ext_nav_legacy_applicability",
+      "source": "systems_engineering/requirements/legacy_requirements.md",
+      "model_ref": "SE-MODEL-DEPLOY-001",
+      "allocation": "EXT-NAV",
+      "verification": "systems_engineering/verification/verification_plan.md",
+      "applicability": "EXT-NAV only; not B0 release evidence",
+      "evidence": {
+        "status": "not_active",
+        "ref": "Retained legacy contract tests; B0 claims none"
+      }
+    }
+  ],
+  "migration": [
+    {"source": "07_docs/project_charter.md", "target": "systems_engineering/project_charter.md"},
+    {"source": "07_docs/development_baseline.md", "target": "systems_engineering/development_baseline.md"},
+    {"source": "07_docs/architecture.md", "target": "systems_engineering/models/architecture.md"},
+    {"source": "07_docs/requirements.md", "target": "systems_engineering/requirements/legacy_requirements.md"},
+    {"source": "07_docs/verification/verification_plan.md", "target": "systems_engineering/verification/verification_plan.md"},
+    {"source": "07_docs/v_and_v_report.md", "target": "systems_engineering/reports/v_and_v_report.md"},
+    {"source": "07_docs/development_readiness_report.md", "target": "systems_engineering/reports/development_readiness_report.md"},
+    {"source": "07_docs/b0/g0_contract.md", "target": "systems_engineering/models/g0_contract.md"},
+    {"source": "07_docs/b0/g0_acceptance.md", "target": "systems_engineering/verification/g0_acceptance.md"},
+    {"source": "07_docs/b0/g0_approval.md", "target": "systems_engineering/reports/b0/g0_approval.md"},
+    {"source": "07_docs/b0/g0_approval_decision.md", "target": "systems_engineering/reports/b0/g0_approval_decision.md"},
+    {"source": "07_docs/b0/g0_review_resolution.md", "target": "systems_engineering/reports/b0/g0_review_resolution.md"},
+    {"source": "07_docs/b0/pr11_review_report.md", "target": "systems_engineering/reports/b0/pr11_review_report.md"},
+    {"source": "07_docs/roadmap.md", "target": "docs/roadmap.md"},
+    {"source": "07_docs/development_environment.md", "target": "docs/development_environment.md"},
+    {"source": "07_docs/work_orders/B0_G0_PR11_repair_work_order.md", "target": "docs/work_orders/B0_G0_PR11_repair_work_order.md"},
+    {"source": "07_docs/work_orders/B0_G0_PR11_round2_repair.md", "target": "docs/work_orders/B0_G0_PR11_round2_repair.md"},
+    {"source": "07_docs/work_orders/B0_G0_work_order.md", "target": "docs/work_orders/B0_G0_work_order.md"},
+    {"source": "07_docs/work_orders/B0_G1_development_readiness.md", "target": "docs/work_orders/B0_G1_development_readiness.md"},
+    {"source": "07_docs/work_orders/B0_G1_work_order.md", "target": "docs/work_orders/B0_G1_work_order.md"},
+    {"source": "07_docs/work_orders/B0_PR11_v2_G1_closeout.md", "target": "docs/work_orders/B0_PR11_v2_G1_closeout.md"},
+    {"source": "07_docs/work_orders/B0_work_order.md", "target": "docs/work_orders/B0_work_order.md"},
+    {"source": "07_docs/work_orders/development_readiness.md", "target": "docs/work_orders/development_readiness.md"}
+  ],
+  "preserved_identifiers": [
+    "NAV-REQ-001",
+    "NAV-REQ-002",
+    "CTL-REQ-001",
+    "CTL-REQ-002",
+    "CTL-REQ-003",
+    "FDI-REQ-001",
+    "FDI-REQ-002",
+    "FDI-REQ-003"
+  ]
+}

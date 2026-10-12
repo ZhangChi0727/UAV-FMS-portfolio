@@ -1,6 +1,6 @@
 # B0 G0 集中批准包（已批准，v1 保留）
 
-状态：`已批准用于生成 v2`。PA 决定记录见 `07_docs/b0/g0_approval_decision.md`。
+状态：`已批准用于生成 v2`。PA 决定记录见 [g0_approval_decision.md](g0_approval_decision.md)；v2 中保留的历史来源字符串仍为 `07_docs/b0/g0_approval_decision.md`。
 本文不代表性能、SIL/HIL、飞行或 G0 完成。
 
 准备基点：PR #11 分支 `codex/b0-g0-contracts`，技术基点

@@ -3,11 +3,11 @@
 日期：2026-10-09。状态：开发就绪后的执行工作单；G0 合同及验收参数仍需审查冻结。
 负责人：Chi Zhang。执行状态以 GitHub Issues 为准。
 
-本工作单将 [B0 v0.2](../development_baseline.md) 分解为可执行工作。
+本工作单将 [B0 v0.2](../../systems_engineering/development_baseline.md) 分解为可执行工作。
 目标是交付可复现的姿态估计与级联控制闭环。工作单完成不代表算法、
 验证门槛或性能要求已经完成。本文不新增系统需求编号。
 
-开发前提引用 [开发就绪报告](../development_readiness_report.md) 和
+开发前提引用 [开发就绪报告](../../systems_engineering/reports/development_readiness_report.md) 和
 [环境说明](../development_environment.md)：工具链、绑定及 IDE 调试已验证。
 这些探针不计入 B0 算法验收；仅在环境或依赖改变时重验受影响部分。
 工程目标是在声明的旋转实验包线内完成可测试、可复现的估计状态反馈闭环，

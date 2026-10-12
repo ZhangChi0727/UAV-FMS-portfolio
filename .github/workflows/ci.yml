@@ -164,3 +164,26 @@ jobs:
       - name: Run navigation contract tests
         run: python -m pytest --tb=short -v
         working-directory: 02_estimation/python
+
+  systems-engineering-governance:
+    name: G1.5-A systems-engineering governance
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install isolated B0 test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/b0-dev.txt
+
+      - name: Check migration, model allocation and evidence references
+        run: python tools/systems_engineering/check_governance.py
+
+      - name: Run positive and negative governance fixtures
+        run: python -m pytest -q tools/systems_engineering/tests

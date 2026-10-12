@@ -309,7 +309,7 @@ python validate_config.py --config configs/b0_g0_contract.v1.json
 python -m pytest -v
 ~~~
 
-详见 [g0_review_resolution.md](g0_review_resolution.md) 中的评审发现到测试映射。
+详见 [g0_review_resolution.md](../reports/b0/g0_review_resolution.md) 中的评审发现到测试映射。
 
 维护者仍须集中批准：合成包线、惯量/限幅/IMU/增益候选、离散抗饱和设计、指标和阈值、
 CTL-REQ-001/002 适用性，以及批准后版本策略。当前 v1 校验器故意只接受 proposed

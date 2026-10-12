@@ -8,6 +8,9 @@ No calendar duration or numerical result is implied.
 
 Execution detail: [B0 work order](work_orders/B0_work_order.md).
 Environment handoff: [development readiness work order](work_orders/development_readiness.md).
+Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md)
+and [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md). G1.5-A establishes
+the document/model structure; G1.5-B and G1.5-C remain planned and are not active.
 
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
@@ -16,18 +19,31 @@ implement the six rows below in dependency order. Their live status is authorita
 
 Execute in dependency order; G0 is the first implementation increment.
 
-| Work item | Dependency | Acceptance |
-|---|---|---|
-| Define B0 contracts and metrics | None | G0 in development baseline |
-| Implement rotational plant and IMU | G0 | G1 |
-| Implement basic attitude estimator | G1 sensor fixtures | Estimator part of G2 |
-| Implement C++ cascaded controller | G0 | Controller part of G2 |
-| Integrate estimated-state loop | G1, G2 | G3 |
-| Release evidence and defect checks | G3 | G4 |
+The governance sequence is an explicit release gate in addition to each
+component's technical prerequisite: **G1 → G1.5-A → G1.5-B → G1.5-C → G2 →
+G3**. G1.5-A establishes the structure and first model views, G1.5-B freezes
+the joint requirements/model baseline, and G1.5-C completes verification
+traceability and report presentation. G2 estimator/controller work may begin
+only after all three G1.5 increments are accepted; G3 integration also retains
+the G1/G2 technical prerequisites. This ordering does not change the
+component-level dependencies shown below.
+
+| Work item | Technical dependency | Governance gate | Acceptance |
+|---|---|---|---|
+| Define B0 contracts and metrics | None | Before G1 | G0 in development baseline |
+| Implement rotational plant and IMU | G0 | Before G1.5-A | G1 |
+| Establish systems-engineering structure and model views | G1 | G1.5-A | G1.5-A (governance increment; not a new product baseline) |
+| Establish requirements/model joint baseline | G1.5-A | G1.5-B | G1.5-B (planned) |
+| Establish verification traceability and report presentation | G1.5-B | G1.5-C | G1.5-C (planned) |
+| Implement basic attitude estimator | G1 sensor fixtures | After G1.5-C; estimator part of G2 | Estimator part of G2 |
+| Implement C++ cascaded controller | G0 | After G1.5-C; controller part of G2 | Controller part of G2 |
+| Integrate estimated-state loop | G1, G2 | After G1.5-C | G3 |
+| Release evidence and defect checks | G3 | After G1.5-C | G4 |
 
 ## Extension registry
 
-These identifiers name work packages, not system requirements.
+These identifiers name work packages, not system requirements. G1.5 is an
+internal governance increment and does not create or renumber NAV/CTL/FDI IDs.
 
 | Package | Responsibility | Minimum dependency | Independent exit |
 |---|---|---|---|

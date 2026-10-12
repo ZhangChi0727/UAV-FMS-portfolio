@@ -1,0 +1,20 @@
+{
+  "schema_version": "g1.5-a-governance/v1",
+  "required_files": ["README.md", "models.md", "source.md", "verification.md"],
+  "model_views": [
+    {"id": "SE-MODEL-TEST-001", "file": "models.md", "anchor": "SE-MODEL-TEST-001", "maturity": "accepted"}
+  ],
+  "obligations": [
+    {
+      "key": "test-obligation",
+      "source": "source.md",
+      "model_ref": "SE-MODEL-TEST-001",
+      "allocation": "test/component",
+      "verification": "verification.md",
+      "applicability": "B0 test fixture",
+      "evidence": {"status": "planned", "ref": "planned only"}
+    }
+  ],
+  "migration": [{"source": "07_docs/example.md", "target": "missing.md"}],
+  "preserved_identifiers": ["NAV-REQ-001"]
+}
