@@ -44,6 +44,7 @@ class PilotRecord:
     status: str
     title: str
     statement: str
+    rationale: str
     parent: str
     source_locators: str
     applicability: str
@@ -118,6 +119,7 @@ def parse_sdoc_records(text: str) -> list[PilotRecord]:
                 status=_scalar(block, "STATUS"),
                 title=_scalar(block, "TITLE"),
                 statement=_multiline(block, "STATEMENT"),
+                rationale=_multiline(block, "RATIONALE"),
                 parent=_parent_from_sdoc(block),
                 source_locators=metadata["source locators"],
                 applicability=metadata["applicability"],
@@ -154,7 +156,13 @@ def parse_markdown_records(text: str) -> list[PilotRecord]:
             block,
             re.MULTILINE | re.DOTALL,
         )
+        rationale = re.search(
+            r"^### Rationale\s*\n\s*(?P<value>.*?)\s*\Z",
+            block,
+            re.MULTILINE | re.DOTALL,
+        )
         _require(statement is not None, f"{heading.group(1)} is missing Statement")
+        _require(rationale is not None, f"{heading.group(1)} is missing Rationale")
         records.append(
             PilotRecord(
                 key=heading.group(1),
@@ -162,6 +170,7 @@ def parse_markdown_records(text: str) -> list[PilotRecord]:
                 status=values["status"],
                 title=values["title"],
                 statement=_normalise(statement.group("value")),
+                rationale=_normalise(rationale.group("value")),
                 parent=values["parent"],
                 source_locators=values["source locators"],
                 applicability=values["applicability"],

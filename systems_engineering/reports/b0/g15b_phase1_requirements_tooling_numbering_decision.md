@@ -126,7 +126,7 @@ scoped commands there.
 /tmp/uav-fms-g15b-strictdoc/bin/python -m pytest -q \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_phase1_pilot.py \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_native_strictdoc.py
-# exit 0; 17 passed in 9.73s
+# exit 0; 18 passed (timing recorded in the PR validation evidence)
 ```
 
 The native test suite proves that the evaluated StrictDoc CLI rejects a
