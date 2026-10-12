@@ -1,0 +1,373 @@
+{
+  "schema_version": "1.0",
+  "pilot_status": "non_authoritative_phase_one",
+  "record_source": {
+    "authoritative_edit_source": "tools/systems_engineering/g15b_pilot/contract/pilot_structure.json",
+    "generated_outputs": [
+      "tools/systems_engineering/g15b_pilot/strictdoc/b0_phase1_pilot.sdoc",
+      "tools/systems_engineering/g15b_pilot/lightweight/b0_phase1_pilot.md",
+      "tools/systems_engineering/g15b_pilot/model/b0_truth_control_slice_view.md"
+    ]
+  },
+  "records": [
+    {
+      "key": "PILOT-ONLY-NEED-01",
+      "level": "user_need",
+      "status": "pilot_only_candidate",
+      "tags": ["phase_one", "non_authoritative"],
+      "title": "Bounded attitude experiment use",
+      "statement": "The B0 system shall support a configured, repeatable bounded attitude experiment for engineering review without claiming full-flight capability.",
+      "rationale": "This is a source-format trial of a user-need record. It is not a formal B0 requirement and is not part of coverage accounting.",
+      "candidate_only": true,
+      "parent": null,
+      "source_locator_ids": ["PILOT-SRC-CHARTER-PURPOSE-01", "PILOT-SRC-BASELINE-OBJECTIVE-01"],
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions"
+      },
+      "acceptance_condition": "Planned inspection confirms the declared experiment boundary and exclusions are present.",
+      "evidence_status": "planned/not_run",
+      "decomposition_note": "No further decomposition is proposed in phase one; a later formal baseline may separate boundary and exclusion concerns only after governance review."
+    },
+    {
+      "key": "PILOT-ONLY-INTERFACE-02",
+      "level": "system_constraint",
+      "status": "pilot_only_candidate",
+      "tags": ["phase_one", "interface", "truth_boundary"],
+      "title": "Runtime truth isolation",
+      "statement": "After explicit reset initialization, the estimator and controller shall not receive live truth as a runtime input; truth is limited to plant, sensor, and evaluation responsibilities.",
+      "rationale": "This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.",
+      "candidate_only": true,
+      "parent": "PILOT-ONLY-NEED-01",
+      "source_locator_ids": ["PILOT-SRC-TRUTH-VISIBILITY-01", "PILOT-SRC-TRUTH-FORBIDDEN-01", "PILOT-SRC-ARCH-MODULAR-01"],
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 after explicit reset initialization"
+      },
+      "acceptance_condition": "Planned inspection verifies declared runtime inputs exclude live truth and evaluation remains independent.",
+      "evidence_status": "planned/not_run",
+      "decomposition_note": "A later formal baseline may separate the live-truth prohibition from responsibility allocation, but this pilot preserves the original combined interface statement."
+    },
+    {
+      "key": "PILOT-ONLY-ACCEPTANCE-03",
+      "level": "system_constraint",
+      "status": "pilot_only_candidate",
+      "tags": ["phase_one", "acceptance", "configuration_reference"],
+      "title": "Frozen acceptance-field reference",
+      "statement": "Any assessment of the signed three-axis step scenario shall cite the approved G0 v2 configuration fields for its event window and metrics instead of copying numerical thresholds into a second requirement source.",
+      "rationale": "This trial represents a performance/acceptance reference while preserving the JSON contract as the sole parameter source and avoiding a false performance result.",
+      "candidate_only": true,
+      "parent": "PILOT-ONLY-NEED-01",
+      "source_locator_ids": ["PILOT-SRC-G0-METRICS-01", "PILOT-SRC-G0-SCENARIO-ID-01", "PILOT-SRC-G0-SCENARIO-ACCEPTANCE-01"],
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed"
+      },
+      "acceptance_condition": "Planned inspection verifies each assessment points to a versioned JSON field and does not duplicate a numeric threshold.",
+      "evidence_status": "planned/not_run",
+      "decomposition_note": "No threshold is decomposed here; future formalization must keep each field reference tied to the approved G0 contract."
+    },
+    {
+      "key": "PILOT-ONLY-LEGACY-04",
+      "level": "applicability_record",
+      "status": "pilot_only_candidate",
+      "tags": ["phase_one", "legacy", "not_applicable"],
+      "title": "Preserved legacy control applicability",
+      "statement": "For current B0, the applicability record shall preserve CTL-REQ-001 and CTL-REQ-002 unchanged and record their approved not-applicable status without claiming that either legacy performance threshold is satisfied.",
+      "rationale": "This trial represents a non-applicable legacy relationship. The legacy identifiers remain references only and are never candidate identifiers for reuse.",
+      "candidate_only": true,
+      "parent": "PILOT-ONLY-NEED-01",
+      "source_locator_ids": ["PILOT-SRC-LEGACY-CONTROL-01", "PILOT-SRC-G0-APPROVAL-01", "PILOT-SRC-G0-CTL-APPLICABILITY-01"],
+      "applicability": {
+        "state": "not_applicable",
+        "scope": "current B0 only; CTL-REQ-001 and CTL-REQ-002 remain preserved for their historical scopes under the approved disposition",
+        "approval_ref": "PILOT-SRC-G0-APPROVAL-01"
+      },
+      "acceptance_condition": "Planned inspection verifies both legacy identifiers, their decision locator, and the absence of a satisfaction claim.",
+      "evidence_status": "planned/not_run",
+      "decomposition_note": "A future formal applicability register may make separate entries for CTL-REQ-001 and CTL-REQ-002 without changing either historical identifier."
+    },
+    {
+      "key": "PILOT-ONLY-G2-05",
+      "level": "component_constraint",
+      "status": "pilot_only_candidate",
+      "tags": ["phase_one", "g2_planned", "controller"],
+      "title": "Planned controller interface boundary",
+      "statement": "The planned G2 controller shall consume the declared command, state estimate, and paired actuator feedback; it shall expose requested torque, limited target, and saturation status under the approved reset and step contract.",
+      "rationale": "This is a planned component candidate used to test truthful planned/not-run status. It does not claim a G2 implementation or closed-loop evidence.",
+      "candidate_only": true,
+      "parent": "PILOT-ONLY-INTERFACE-02",
+      "source_locator_ids": ["PILOT-SRC-CONTROLLER-CONTRACT-01", "PILOT-SRC-TORQUE-COMMAND-01", "PILOT-SRC-CONTROLLER-CALL-01"],
+      "applicability": {
+        "state": "applicable",
+        "scope": "planned G2 controller only; not an implemented or accepted component"
+      },
+      "acceptance_condition": "Planned G2 verification defines inputs, reset and step behavior, an independent oracle, and execution evidence before any pass claim.",
+      "evidence_status": "planned/not_run",
+      "decomposition_note": "A future G2 specification may split controller input, output, reset, and step obligations only after its approved interface contract and implementation scope exist."
+    }
+  ],
+  "source_locators": [
+    {
+      "id": "PILOT-SRC-CHARTER-PURPOSE-01",
+      "locator": "systems_engineering/project_charter.md#purpose",
+      "role": "source",
+      "description": "B0 engineering purpose."
+    },
+    {
+      "id": "PILOT-SRC-BASELINE-OBJECTIVE-01",
+      "locator": "systems_engineering/development_baseline.md#single-objective",
+      "role": "source",
+      "description": "Current bounded B0 objective."
+    },
+    {
+      "id": "PILOT-SRC-TRUTH-VISIBILITY-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility",
+      "role": "g0_contract",
+      "description": "Approved truth visibility field."
+    },
+    {
+      "id": "PILOT-SRC-TRUTH-FORBIDDEN-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden",
+      "role": "g0_contract",
+      "description": "Approved controller truth-input prohibition."
+    },
+    {
+      "id": "PILOT-SRC-ARCH-MODULAR-01",
+      "locator": "systems_engineering/models/architecture.md#modular-boundaries",
+      "role": "source",
+      "description": "B0 modular boundary rationale."
+    },
+    {
+      "id": "PILOT-SRC-G0-METRICS-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions",
+      "role": "g0_contract",
+      "description": "G0 acceptance metric definitions."
+    },
+    {
+      "id": "PILOT-SRC-G0-SCENARIO-ID-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id",
+      "role": "g0_contract",
+      "description": "Signed three-axis step scenario identity."
+    },
+    {
+      "id": "PILOT-SRC-G0-SCENARIO-ACCEPTANCE-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance",
+      "role": "g0_contract",
+      "description": "Signed three-axis step acceptance field."
+    },
+    {
+      "id": "PILOT-SRC-LEGACY-CONTROL-01",
+      "locator": "systems_engineering/requirements/legacy_requirements.md#control-requirements",
+      "role": "source",
+      "description": "Preserved legacy control identifiers."
+    },
+    {
+      "id": "PILOT-SRC-G0-APPROVAL-01",
+      "locator": "systems_engineering/reports/b0/g0_approval_decision.md#决定",
+      "role": "approval",
+      "description": "Approved legacy applicability disposition."
+    },
+    {
+      "id": "PILOT-SRC-G0-CTL-APPLICABILITY-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability",
+      "role": "g0_contract",
+      "description": "G0 contract legacy-control applicability record."
+    },
+    {
+      "id": "PILOT-SRC-VER-B0-CHECKS-01",
+      "locator": "systems_engineering/verification/verification_plan.md#b0-checks",
+      "role": "verification_plan",
+      "description": "B0 planned verification checks."
+    },
+    {
+      "id": "PILOT-SRC-VER-EVIDENCE-CHAIN-01",
+      "locator": "systems_engineering/verification/verification_plan.md#evidence-chain",
+      "role": "verification_plan",
+      "description": "Evidence-chain review plan."
+    },
+    {
+      "id": "PILOT-SRC-G0-ACCEPTANCE-REVIEW-01",
+      "locator": "systems_engineering/verification/g0_acceptance.md#ctl-req-适用性审查",
+      "role": "verification_plan",
+      "description": "Legacy applicability review plan."
+    },
+    {
+      "id": "PILOT-SRC-CONTROLLER-CONTRACT-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract",
+      "role": "g0_contract",
+      "description": "Controller contract source."
+    },
+    {
+      "id": "PILOT-SRC-TORQUE-COMMAND-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command",
+      "role": "g0_contract",
+      "description": "Torque command message source."
+    },
+    {
+      "id": "PILOT-SRC-CONTROLLER-CALL-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller",
+      "role": "g0_contract",
+      "description": "Controller component-call source."
+    },
+    {
+      "id": "PILOT-SRC-COMMAND-PAIRING-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/actuator_contract/request_limit_pairing",
+      "role": "g0_contract",
+      "description": "Same-due-tick requested, limited, and saturation field pairing."
+    },
+    {
+      "id": "PILOT-SRC-ACTUATOR-DYNAMICS-01",
+      "locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/actuator_contract/dynamics_input",
+      "role": "g0_contract",
+      "description": "Limited target is the sole actuator dynamics input."
+    }
+  ],
+  "model_elements": [
+    {"id": "PILOT-MODEL-ITEM-COMMAND-01", "display_name": "Command item", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "item_definition", "intended_role": "Command item exposed to the planned controller."},
+    {"id": "PILOT-MODEL-ITEM-IMU-SAMPLE-01", "display_name": "IMU sample item", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "item_definition", "intended_role": "Sensor sample item provided to the estimator."},
+    {"id": "PILOT-MODEL-ITEM-STATE-ESTIMATE-01", "display_name": "State estimate item", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "Estimated state item provided to the controller."},
+    {"id": "PILOT-MODEL-ITEM-TORQUE-REQUEST-01", "display_name": "Torque request item", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "Requested torque field retained inside the paired command for review; it is not the actuator dynamics input."},
+    {"id": "PILOT-MODEL-ITEM-ACTUATOR-FEEDBACK-01", "display_name": "Actuator feedback item", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "Paired actuator feedback item provided to the controller."},
+    {"id": "PILOT-MODEL-ITEM-LIMITED-TARGET-01", "display_name": "Limited target item", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "Limited actuator target and sole dynamics-input field within the paired command."},
+    {"id": "PILOT-MODEL-ITEM-SATURATION-STATUS-01", "display_name": "Saturation status item", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "Saturation-status field paired with request and limited target at the same due tick."},
+    {"id": "PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "display_name": "Paired torque command", "scope": "planned G2 controller interface boundary", "sysml_kind": "item_definition", "intended_role": "One-due-tick bundle of requested torque, limited target, and saturation status; actuator dynamics consume only the limited target."},
+    {"id": "PILOT-MODEL-ITEM-PLANT-TRUTH-01", "display_name": "Plant truth item", "scope": "current B0 truth-isolation boundary", "sysml_kind": "item_definition", "intended_role": "Plant truth item restricted to plant, sensor, and evaluator responsibilities."},
+    {"id": "PILOT-MODEL-COMMAND-SOURCE-01", "display_name": "Command source", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "part_definition", "intended_role": "Bounded experiment command source."},
+    {"id": "PILOT-MODEL-PLANT-01", "display_name": "Plant", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "part_definition", "intended_role": "B0 plant role."},
+    {"id": "PILOT-MODEL-IMU-01", "display_name": "IMU", "scope": "current B0 truth-isolation boundary", "sysml_kind": "part_definition", "intended_role": "B0 sensor role."},
+    {"id": "PILOT-MODEL-ESTIMATOR-01", "display_name": "Estimator", "scope": "current B0 truth-isolation boundary", "sysml_kind": "part_definition", "intended_role": "B0 estimator role."},
+    {"id": "PILOT-MODEL-CONTROLLER-01", "display_name": "Planned controller", "scope": "planned G2 controller interface boundary", "sysml_kind": "part_definition", "intended_role": "Planned G2 controller boundary only."},
+    {"id": "PILOT-MODEL-ACTUATOR-01", "display_name": "Actuator", "scope": "planned G2 controller interface boundary", "sysml_kind": "part_definition", "intended_role": "B0 actuator role."},
+    {"id": "PILOT-MODEL-EVALUATOR-01", "display_name": "Independent evaluator", "scope": "current B0 truth-isolation boundary", "sysml_kind": "part_definition", "intended_role": "Independent evaluation role."},
+    {"id": "PILOT-MODEL-B0-BOUNDARY-01", "display_name": "B0 phase-one boundary", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "part_definition", "intended_role": "Bounded phase-one attitude experiment boundary."},
+    {"id": "PILOT-MODEL-IF-COMMAND-CONTROLLER-01", "display_name": "Command to controller interface", "scope": "planned G2 controller interface boundary", "sysml_kind": "interface_definition", "intended_role": "Command-to-controller interface."},
+    {"id": "PILOT-MODEL-IF-IMU-ESTIMATOR-01", "display_name": "IMU to estimator interface", "scope": "current B0 truth-isolation boundary", "sysml_kind": "interface_definition", "intended_role": "IMU-sample-to-estimator interface."},
+    {"id": "PILOT-MODEL-IF-ESTIMATE-CONTROLLER-01", "display_name": "Estimate to controller interface", "scope": "planned G2 controller interface boundary", "sysml_kind": "interface_definition", "intended_role": "State-estimate-to-controller interface."},
+    {"id": "PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01", "display_name": "Controller to actuator interface", "scope": "planned G2 controller interface boundary", "sysml_kind": "interface_definition", "intended_role": "Paired-command interface; the actuator uses limited target as its dynamics input."},
+    {"id": "PILOT-MODEL-IF-ACTUATOR-CONTROLLER-01", "display_name": "Actuator to controller interface", "scope": "planned G2 controller interface boundary", "sysml_kind": "interface_definition", "intended_role": "Paired-feedback-to-controller interface."},
+    {"id": "PILOT-MODEL-IF-TRUTH-EVALUATOR-01", "display_name": "Truth to evaluator interface", "scope": "current B0 truth-isolation boundary", "sysml_kind": "interface_definition", "intended_role": "Plant-truth-to-evaluator interface."},
+    {"id": "PILOT-MODEL-REQ-PROXY-G2-05", "display_name": "G2 record proxy", "scope": "planned G2 controller interface boundary", "sysml_kind": "requirement_definition", "intended_role": "Reference-only proxy for the planned G2 pilot record."},
+    {"id": "PILOT-MODEL-VER-BOUNDARY-01", "display_name": "Boundary verification definition", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "verification_definition", "intended_role": "Planned boundary review definition."},
+    {"id": "PILOT-MODEL-VER-TRUTH-01", "display_name": "Truth verification definition", "scope": "current B0 truth-isolation boundary", "sysml_kind": "verification_definition", "intended_role": "Planned truth-isolation review definition."},
+    {"id": "PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01", "display_name": "B0 structure view definition", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "view_definition", "intended_role": "Standard SysML v2 textual view definition for the bounded structure review."},
+    {"id": "PILOT-MODEL-VIEW-B0-STRUCTURE-01", "display_name": "B0 structure view usage", "scope": "current B0 phase-one bounded attitude experiment", "sysml_kind": "view_usage", "intended_role": "Standard SysML v2 textual view usage exposing the same B0 boundary modeled in this source."}
+  ],
+  "development_objects": [
+    {
+      "id": "PILOT-DEV-INTEGRATION-ADAPTER-01",
+      "kind": "integration_adapter",
+      "responsible_component": "planned B0 integration execution adapter",
+      "lifecycle": "planned",
+      "allocation_statement": "Planned integration execution adapter preserving the reviewed boundary.",
+      "implementation_path": null,
+      "symbol": null,
+      "version_ref": null
+    },
+    {
+      "id": "PILOT-DEV-CONTROLLER-CORE-01",
+      "kind": "controller_core",
+      "responsible_component": "planned G2 C++ controller core",
+      "lifecycle": "planned",
+      "allocation_statement": "Planned G2 controller core; no implementation is asserted.",
+      "implementation_path": null,
+      "symbol": null,
+      "version_ref": null
+    },
+    {
+      "id": "PILOT-DEV-REVIEW-BOUNDARY-01",
+      "kind": "review_boundary",
+      "responsible_component": "phase-one systems-engineering review boundary",
+      "lifecycle": "planned",
+      "allocation_statement": "Planned review boundary used only for the phase-one structural trial.",
+      "implementation_path": null,
+      "symbol": null,
+      "version_ref": null
+    }
+  ],
+  "verification_provisions": [
+    {
+      "id": "PILOT-VER-BOUNDARY-01",
+      "method": "inspection",
+      "planning_status": "planned",
+      "execution_status": "not_run",
+      "preconditions": ["The authoritative pilot contract and the parsed model slice are available at one reviewed commit."],
+      "inputs": ["PILOT-MODEL-B0-BOUNDARY-01", "PILOT-ONLY-NEED-01"],
+      "steps": ["Inspect the declared boundary and exclusions in the authoritative pilot record and model slice."],
+      "independent_oracle": "The approved charter/baseline locators and the bounded-model identity set.",
+      "acceptance_condition": "The declared experiment boundary and exclusions are present without a full-flight claim.",
+      "evidence_ids": []
+    },
+    {
+      "id": "PILOT-VER-TRUTH-01",
+      "method": "interface_review",
+      "planning_status": "planned",
+      "execution_status": "not_run",
+      "preconditions": ["The approved G0 truth-input locators resolve and the model parser has produced a flow index."],
+      "inputs": ["PILOT-MODEL-IF-TRUTH-EVALUATOR-01", "PILOT-MODEL-ESTIMATOR-01", "PILOT-MODEL-CONTROLLER-01"],
+      "steps": ["Inspect parsed model flow endpoints and the approved truth-input fields for live-truth exclusions."],
+      "independent_oracle": "The approved G0 truth-visibility and forbidden-input locators.",
+      "acceptance_condition": "Live plant truth has no declared flow endpoint at estimator or controller runtime inputs.",
+      "evidence_ids": []
+    },
+    {
+      "id": "PILOT-VER-G0-REFERENCE-01",
+      "method": "configuration_review",
+      "planning_status": "planned",
+      "execution_status": "not_run",
+      "preconditions": ["The approved G0 v2 configuration is available without a copied threshold in the pilot body."],
+      "inputs": ["PILOT-ONLY-ACCEPTANCE-03"],
+      "steps": ["Resolve each G0 locator and inspect the record body for copied numeric thresholds."],
+      "independent_oracle": "The approved G0 v2 JSON field values at the declared locators.",
+      "acceptance_condition": "The assessment cites its versioned fields and does not duplicate a numeric threshold.",
+      "evidence_ids": []
+    },
+    {
+      "id": "PILOT-VER-LEGACY-01",
+      "method": "inspection",
+      "planning_status": "planned",
+      "execution_status": "not_run",
+      "preconditions": ["The G0 approval decision and preserved legacy requirements record resolve at their declared locators."],
+      "inputs": ["PILOT-ONLY-LEGACY-04", "PILOT-SRC-G0-APPROVAL-01"],
+      "steps": ["Inspect the legacy identifiers, approval locator, and absence of a satisfaction claim."],
+      "independent_oracle": "The G0 approval decision and preserved legacy requirements record.",
+      "acceptance_condition": "Both legacy IDs retain the approved not-applicable disposition without a satisfaction assertion.",
+      "evidence_ids": []
+    },
+    {
+      "id": "PILOT-VER-G2-INTERFACE-01",
+      "method": "interface_review",
+      "planning_status": "planned",
+      "execution_status": "not_run",
+      "preconditions": ["A future G2 implementation and independent oracle are approved; neither exists in this phase-one pilot."],
+      "inputs": ["PILOT-MODEL-CONTROLLER-01", "PILOT-ONLY-G2-05"],
+      "steps": ["Inspect the declared controller inputs and outputs and confirm that execution evidence is absent."],
+      "independent_oracle": "The approved controller contract and independent future test oracle defined at G2 execution time.",
+      "acceptance_condition": "The planned interface is explicit and no pass claim exists before real G2 execution evidence.",
+      "evidence_ids": []
+    }
+  ],
+  "execution_evidence": [],
+  "relations": [
+    {"id": "PILOT-REL-NEED-MODEL-01", "type": "models", "source_id": "PILOT-ONLY-NEED-01", "source_kind": "record", "target_id": "PILOT-MODEL-B0-BOUNDARY-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The charter and baseline bound the candidate need to the B0 experiment model boundary.", "source_locator_id": "PILOT-SRC-CHARTER-PURPOSE-01"},
+    {"id": "PILOT-REL-INTERFACE-MODEL-01", "type": "models", "source_id": "PILOT-ONLY-INTERFACE-02", "source_kind": "record", "target_id": "PILOT-MODEL-IF-TRUTH-EVALUATOR-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The approved truth-visibility field supports the truth-to-evaluator boundary review.", "source_locator_id": "PILOT-SRC-TRUTH-VISIBILITY-01"},
+    {"id": "PILOT-REL-INTERFACE-MODEL-02", "type": "models", "source_id": "PILOT-ONLY-INTERFACE-02", "source_kind": "record", "target_id": "PILOT-MODEL-CONTROLLER-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The forbidden live-truth controller input constrains the planned controller boundary.", "source_locator_id": "PILOT-SRC-TRUTH-FORBIDDEN-01"},
+    {"id": "PILOT-REL-ACCEPTANCE-MODEL-01", "type": "models", "source_id": "PILOT-ONLY-ACCEPTANCE-03", "source_kind": "record", "target_id": "PILOT-MODEL-VER-BOUNDARY-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The G0 metric fields are reviewed by a planned boundary verification definition without copying thresholds.", "source_locator_id": "PILOT-SRC-G0-METRICS-01"},
+    {"id": "PILOT-REL-LEGACY-MODEL-01", "type": "models", "source_id": "PILOT-ONLY-LEGACY-04", "source_kind": "record", "target_id": "PILOT-MODEL-B0-BOUNDARY-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The approved legacy disposition is scoped to the current B0 boundary only.", "source_locator_id": "PILOT-SRC-G0-APPROVAL-01"},
+    {"id": "PILOT-REL-G2-MODEL-01", "type": "models", "source_id": "PILOT-ONLY-G2-05", "source_kind": "record", "target_id": "PILOT-MODEL-CONTROLLER-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The G0 controller contract identifies the planned controller interface boundary.", "source_locator_id": "PILOT-SRC-CONTROLLER-CONTRACT-01"},
+    {"id": "PILOT-REL-G2-MODEL-02", "type": "models", "source_id": "PILOT-ONLY-G2-05", "source_kind": "record", "target_id": "PILOT-MODEL-REQ-PROXY-G2-05", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The proxy supplies a stable model-side reference without duplicating the pilot record body.", "source_locator_id": "PILOT-SRC-CONTROLLER-CALL-01"},
+    {"id": "PILOT-REL-G2-MODEL-03", "type": "models", "source_id": "PILOT-ONLY-G2-05", "source_kind": "record", "target_id": "PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The paired command carries request, limited target, and saturation status from one due tick; actuator dynamics consume only the limited target.", "source_locator_id": "PILOT-SRC-ACTUATOR-DYNAMICS-01"},
+    {"id": "PILOT-REL-NEED-VIEW-01", "type": "models", "source_id": "PILOT-ONLY-NEED-01", "source_kind": "record", "target_id": "PILOT-MODEL-VIEW-B0-STRUCTURE-01", "target_kind": "model_element", "direction": "forward", "origin": "project_extension", "basis": "The standard textual view usage exposes the bounded B0 structure defined in the same SysML source.", "source_locator_id": "PILOT-SRC-BASELINE-OBJECTIVE-01"},
+    {"id": "PILOT-REL-NEED-ALLOC-01", "type": "allocated_to", "source_id": "PILOT-ONLY-NEED-01", "source_kind": "record", "target_id": "PILOT-DEV-REVIEW-BOUNDARY-01", "target_kind": "development_object", "direction": "forward", "origin": "project_extension", "basis": "The bounded experiment need is owned by the planned review-boundary work object.", "source_locator_id": "PILOT-SRC-BASELINE-OBJECTIVE-01"},
+    {"id": "PILOT-REL-INTERFACE-ALLOC-01", "type": "allocated_to", "source_id": "PILOT-ONLY-INTERFACE-02", "source_kind": "record", "target_id": "PILOT-DEV-INTEGRATION-ADAPTER-01", "target_kind": "development_object", "direction": "forward", "origin": "project_extension", "basis": "The integration adapter is the planned consumer of the reviewed truth-isolation boundary.", "source_locator_id": "PILOT-SRC-TRUTH-FORBIDDEN-01"},
+    {"id": "PILOT-REL-G2-ALLOC-01", "type": "allocated_to", "source_id": "PILOT-ONLY-G2-05", "source_kind": "record", "target_id": "PILOT-DEV-CONTROLLER-CORE-01", "target_kind": "development_object", "direction": "forward", "origin": "project_extension", "basis": "The controller candidate is allocated to a planned controller-core object, not an implementation claim.", "source_locator_id": "PILOT-SRC-CONTROLLER-CONTRACT-01"},
+    {"id": "PILOT-REL-NEED-VERIFY-01", "type": "specified_by", "source_id": "PILOT-ONLY-NEED-01", "source_kind": "record", "target_id": "PILOT-VER-BOUNDARY-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The verification plan defines a planned inspection of the declared B0 boundary.", "source_locator_id": "PILOT-SRC-VER-B0-CHECKS-01"},
+    {"id": "PILOT-REL-INTERFACE-VERIFY-01", "type": "specified_by", "source_id": "PILOT-ONLY-INTERFACE-02", "source_kind": "record", "target_id": "PILOT-VER-TRUTH-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The evidence-chain plan supports independent truth-isolation inspection.", "source_locator_id": "PILOT-SRC-VER-EVIDENCE-CHAIN-01"},
+    {"id": "PILOT-REL-ACCEPTANCE-VERIFY-01", "type": "specified_by", "source_id": "PILOT-ONLY-ACCEPTANCE-03", "source_kind": "record", "target_id": "PILOT-VER-G0-REFERENCE-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The verification plan governs field-reference inspection without a performance result.", "source_locator_id": "PILOT-SRC-VER-B0-CHECKS-01"},
+    {"id": "PILOT-REL-LEGACY-VERIFY-01", "type": "specified_by", "source_id": "PILOT-ONLY-LEGACY-04", "source_kind": "record", "target_id": "PILOT-VER-LEGACY-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The G0 acceptance plan locates the planned legacy-applicability review.", "source_locator_id": "PILOT-SRC-G0-ACCEPTANCE-REVIEW-01"},
+    {"id": "PILOT-REL-G2-VERIFY-01", "type": "specified_by", "source_id": "PILOT-ONLY-G2-05", "source_kind": "record", "target_id": "PILOT-VER-G2-INTERFACE-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The controller candidate needs a planned independent interface review before any pass claim.", "source_locator_id": "PILOT-SRC-VER-B0-CHECKS-01"},
+    {"id": "PILOT-REL-DEV-BOUNDARY-VERIFY-01", "type": "development_checked_by", "source_id": "PILOT-DEV-REVIEW-BOUNDARY-01", "source_kind": "development_object", "target_id": "PILOT-VER-BOUNDARY-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The planned review-boundary object is checked by its planned boundary provision.", "source_locator_id": "PILOT-SRC-VER-B0-CHECKS-01"},
+    {"id": "PILOT-REL-DEV-ADAPTER-VERIFY-01", "type": "development_checked_by", "source_id": "PILOT-DEV-INTEGRATION-ADAPTER-01", "source_kind": "development_object", "target_id": "PILOT-VER-TRUTH-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The planned adapter boundary is checked by a planned truth-isolation provision.", "source_locator_id": "PILOT-SRC-VER-EVIDENCE-CHAIN-01"},
+    {"id": "PILOT-REL-DEV-CONTROLLER-VERIFY-01", "type": "development_checked_by", "source_id": "PILOT-DEV-CONTROLLER-CORE-01", "source_kind": "development_object", "target_id": "PILOT-VER-G2-INTERFACE-01", "target_kind": "verification_provision", "direction": "forward", "origin": "project_extension", "basis": "The planned controller core needs an independent planned interface provision before execution evidence exists.", "source_locator_id": "PILOT-SRC-VER-B0-CHECKS-01"}
+  ]
+}

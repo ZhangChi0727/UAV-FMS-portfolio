@@ -8,9 +8,12 @@ No calendar duration or numerical result is implied.
 
 Execution detail: [B0 work order](work_orders/B0_work_order.md).
 Environment handoff: [development readiness work order](work_orders/development_readiness.md).
-Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md)
-and [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md). G1.5-A establishes
-the document/model structure; G1.5-B and G1.5-C remain planned and are not active.
+Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md),
+[G1.5-A work order](work_orders/B0_G1_5_A_work_order.md), and the active
+[G1.5-B structured phase-one pilot](work_orders/B0_G1_5_B_structured_sysml_pilot_work_order.md).
+G1.5-A establishes the document/model structure. The G1.5-B pilot is a
+non-authoritative review increment; the formal G1.5-B joint baseline and
+G1.5-C remain planned.
 
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
@@ -33,7 +36,7 @@ component-level dependencies shown below.
 | Define B0 contracts and metrics | None | Before G1 | G0 in development baseline |
 | Implement rotational plant and IMU | G0 | Before G1.5-A | G1 |
 | Establish systems-engineering structure and model views | G1 | G1.5-A | G1.5-A (governance increment; not a new product baseline) |
-| Establish requirements/model joint baseline | G1.5-A | G1.5-B | G1.5-B (planned) |
+| Establish requirements/model joint baseline | G1.5-A | G1.5-B | G1.5-B formal joint baseline (planned; structured phase-one pilot active) |
 | Establish verification traceability and report presentation | G1.5-B | G1.5-C | G1.5-C (planned) |
 | Implement basic attitude estimator | G1 sensor fixtures | After G1.5-C; estimator part of G2 | Estimator part of G2 |
 | Implement C++ cascaded controller | G0 | After G1.5-C; controller part of G2 | Controller part of G2 |
