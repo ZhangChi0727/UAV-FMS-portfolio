@@ -43,14 +43,23 @@ HIL, generic verification-suite integration, and papers.
 |---|---|---|
 | G0 | Executable contracts and scenario definitions | Frames, signs, time, inertia, actuator limits, estimator assumptions and metric definitions reviewed |
 | G1 | Plant and sensors | Analytical rotation cases, specific-force signs, sampling and seed tests pass independently |
-| G2 | Estimator and controller components | Quaternion, feedback sign, anti-windup, reset and invalid-input tests pass |
-| G3 | Estimated-state closed loop | Required scenario suite runs; truth cannot enter controller inputs; bounded cases recover |
+| G1.5 | Systems-engineering governance (A → B → C) | G1.5-A, G1.5-B and G1.5-C are accepted sequentially; structure, joint baseline and verification traceability/report presentation are all available |
+| G2 | Estimator and controller components | G1.5-A/B/C accepted in order, then quaternion, feedback sign, anti-windup, reset and invalid-input tests pass |
+| G3 | Estimated-state closed loop | G1.5-A/B/C accepted, G1 and G2 technical prerequisites pass, and the required scenario suite runs; truth cannot enter controller inputs; bounded cases recover |
 | G4 | Reproducible release evidence | Clean-checkout command, raw artifacts, plots, manifest, report and defect-detection demonstration retained |
 
 G0 must define settling band/dwell, overshoot interpretation, rate/torque limits,
 simulation horizon, tolerances, and comparison procedures before tuning.
 Existing CTL thresholds are legacy candidates; their applicability must be reviewed
 under [legacy requirements](requirements/legacy_requirements.md). No new performance value is invented here.
+
+The governance sequence is a release gate between component acceptance and later
+B0 implementation: **G1 → G1.5-A → G1.5-B → G1.5-C → G2 → G3**. The three
+G1.5 increments are accepted in order. G1.5-A establishes the systems-engineering
+structure and first model views; G1.5-B freezes the joint requirements/model
+baseline; G1.5-C completes verification traceability and report presentation.
+This gate is additional to, and does not replace, the technical dependencies
+listed below.
 
 ## Definition of ready
 

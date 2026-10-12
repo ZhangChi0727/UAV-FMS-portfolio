@@ -19,17 +19,26 @@ implement the six rows below in dependency order. Their live status is authorita
 
 Execute in dependency order; G0 is the first implementation increment.
 
-| Work item | Dependency | Acceptance |
-|---|---|---|
-| Define B0 contracts and metrics | None | G0 in development baseline |
-| Implement rotational plant and IMU | G0 | G1 |
-| Establish systems-engineering structure and model views | G1 | G1.5-A (governance increment; not a new product baseline) |
-| Establish requirements/model joint baseline | G1.5-A | G1.5-B (planned) |
-| Establish verification traceability and report presentation | G1.5-B | G1.5-C (planned) |
-| Implement basic attitude estimator | G1 sensor fixtures | Estimator part of G2 |
-| Implement C++ cascaded controller | G0 | Controller part of G2 |
-| Integrate estimated-state loop | G1, G2 | G3 |
-| Release evidence and defect checks | G3 | G4 |
+The governance sequence is an explicit release gate in addition to each
+component's technical prerequisite: **G1 → G1.5-A → G1.5-B → G1.5-C → G2 →
+G3**. G1.5-A establishes the structure and first model views, G1.5-B freezes
+the joint requirements/model baseline, and G1.5-C completes verification
+traceability and report presentation. G2 estimator/controller work may begin
+only after all three G1.5 increments are accepted; G3 integration also retains
+the G1/G2 technical prerequisites. This ordering does not change the
+component-level dependencies shown below.
+
+| Work item | Technical dependency | Governance gate | Acceptance |
+|---|---|---|---|
+| Define B0 contracts and metrics | None | Before G1 | G0 in development baseline |
+| Implement rotational plant and IMU | G0 | Before G1.5-A | G1 |
+| Establish systems-engineering structure and model views | G1 | G1.5-A | G1.5-A (governance increment; not a new product baseline) |
+| Establish requirements/model joint baseline | G1.5-A | G1.5-B | G1.5-B (planned) |
+| Establish verification traceability and report presentation | G1.5-B | G1.5-C | G1.5-C (planned) |
+| Implement basic attitude estimator | G1 sensor fixtures | After G1.5-C; estimator part of G2 | Estimator part of G2 |
+| Implement C++ cascaded controller | G0 | After G1.5-C; controller part of G2 | Controller part of G2 |
+| Integrate estimated-state loop | G1, G2 | After G1.5-C | G3 |
+| Release evidence and defect checks | G3 | After G1.5-C | G4 |
 
 ## Extension registry
 
