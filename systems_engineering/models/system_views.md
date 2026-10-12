@@ -139,7 +139,7 @@ stateDiagram-v2
     Ready --> Update: due sample and valid timestamp
     Update --> Ready: component step completes
     Ready --> Reject: invalid dt, stale or malformed input
-    Reject --> Ready: rejection recorded; state unchanged
+    Reject --> Ready: rejection recorded, state unchanged
     Ready --> Reset: explicit runtime reset
     Reset --> Startup: clear state and restart local phase
     Update --> PlannedLoop: G2/G3 estimate/control integration
