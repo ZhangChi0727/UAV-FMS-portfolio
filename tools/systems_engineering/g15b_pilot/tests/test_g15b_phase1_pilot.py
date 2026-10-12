@@ -142,3 +142,16 @@ def test_cross_format_drift_fails_closed() -> None:
             parse_sdoc_records(SDOC_SOURCE.read_text(encoding="utf-8")),
             parse_markdown_records(changed_markdown),
         )
+
+
+def test_cross_format_rationale_drift_fails_closed() -> None:
+    changed_markdown = MARKDOWN_SOURCE.read_text(encoding="utf-8").replace(
+        "This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.",
+        "A deliberately different rationale must not be concealed by the text-format comparison.",
+        1,
+    )
+    with pytest.raises(PilotError, match="trial source formats drift"):
+        validate_equivalence(
+            parse_sdoc_records(SDOC_SOURCE.read_text(encoding="utf-8")),
+            parse_markdown_records(changed_markdown),
+        )
