@@ -16,7 +16,9 @@ execution adapters, scenario evaluation, and reproducible evidence. It does not
 aim to replace a complete autopilot, simulator, or generic verification framework.
 
 The first release is B0, the attitude closed loop defined in
-[the development baseline](development_baseline.md).
+[the development baseline](development_baseline.md). G1 plant/actuator/IMU
+component acceptance is complete; the G1.5 governance sequence organizes the
+system-engineering baseline without changing the product scope.
 Extensions are optional capability packages, not a mandatory sequence.
 Research packages select only the capabilities needed to test their hypotheses.
 
@@ -44,4 +46,4 @@ The former parallel EKF/UKF, geometric/LQR, and TCN portfolio is reorganized aro
 one shared closed loop. Existing navigation contracts are retained for EXT-NAV.
 C++ control, basic estimation, and deterministic verification take priority.
 PX4, embedded execution, fixed-wing control, and research are separately gated.
-See [the roadmap](roadmap.md) for the authoritative capability registry.
+See [the roadmap](../docs/roadmap.md) for the authoritative capability registry.

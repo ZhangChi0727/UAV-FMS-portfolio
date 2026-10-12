@@ -8,6 +8,9 @@ No calendar duration or numerical result is implied.
 
 Execution detail: [B0 work order](work_orders/B0_work_order.md).
 Environment handoff: [development readiness work order](work_orders/development_readiness.md).
+Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md)
+and [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md). G1.5-A establishes
+the document/model structure; G1.5-B and G1.5-C remain planned and are not active.
 
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
@@ -20,6 +23,9 @@ Execute in dependency order; G0 is the first implementation increment.
 |---|---|---|
 | Define B0 contracts and metrics | None | G0 in development baseline |
 | Implement rotational plant and IMU | G0 | G1 |
+| Establish systems-engineering structure and model views | G1 | G1.5-A (governance increment; not a new product baseline) |
+| Establish requirements/model joint baseline | G1.5-A | G1.5-B (planned) |
+| Establish verification traceability and report presentation | G1.5-B | G1.5-C (planned) |
 | Implement basic attitude estimator | G1 sensor fixtures | Estimator part of G2 |
 | Implement C++ cascaded controller | G0 | Controller part of G2 |
 | Integrate estimated-state loop | G1, G2 | G3 |
@@ -27,7 +33,8 @@ Execute in dependency order; G0 is the first implementation increment.
 
 ## Extension registry
 
-These identifiers name work packages, not system requirements.
+These identifiers name work packages, not system requirements. G1.5 is an
+internal governance increment and does not create or renumber NAV/CTL/FDI IDs.
 
 | Package | Responsibility | Minimum dependency | Independent exit |
 |---|---|---|---|

@@ -1,8 +1,10 @@
 # Development baseline B0 v0.2
 
 Adopted 2026-10-09. This is a planning baseline, not an implementation release.
+G0 is approved and G1 plant/actuator/IMU component acceptance is recorded;
+G2-G4 and overall B0 completion remain open.
 It supersedes v0.1 as the project-level priority. The previous navigation contract
-is retained in [architecture](architecture.md) and assigned to EXT-NAV.
+is retained in [architecture](models/architecture.md) and assigned to EXT-NAV.
 
 ## Single objective
 
@@ -48,7 +50,7 @@ HIL, generic verification-suite integration, and papers.
 G0 must define settling band/dwell, overshoot interpretation, rate/torque limits,
 simulation horizon, tolerances, and comparison procedures before tuning.
 Existing CTL thresholds are legacy candidates; their applicability must be reviewed
-under [requirements](requirements.md). No new performance value is invented here.
+under [legacy requirements](requirements/legacy_requirements.md). No new performance value is invented here.
 
 ## Definition of ready
 

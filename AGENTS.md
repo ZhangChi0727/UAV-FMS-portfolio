@@ -1,7 +1,8 @@
 # Repository working rules
 
-Read README.md and 07_docs/project_charter.md, development_baseline.md,
-architecture.md and roadmap.md before implementation.
+Read README.md and systems_engineering/project_charter.md,
+systems_engineering/development_baseline.md,
+systems_engineering/models/architecture.md and docs/roadmap.md before implementation.
 B0 v0.2 is the active planning baseline: attitude estimation and cascaded control.
 Navigation, geometric-control and TCN files remain legacy scaffolds.
 Research candidates do not automatically expand B0.

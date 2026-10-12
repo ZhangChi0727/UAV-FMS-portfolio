@@ -3,18 +3,20 @@
 A modular experimental platform for flight-control development, state estimation,
 embedded implementation, and reproducible verification.
 
-**Current status:** planning baseline B0 v0.2 adopted; implementation remains
-scaffold code. No completed flight, hardware, performance, or research results
-are claimed. The repository name is retained for URL compatibility.
+**Current status:** planning baseline B0 v0.2 is active. G0 contracts are approved
+and G1 plant/actuator/IMU component acceptance is complete; G2/G3/G4 and overall
+B0 completion remain open. No completed flight, hardware, broad performance, or
+research results are claimed. The repository name is retained for URL compatibility.
 
 ## Start here
 
-- [Project charter](07_docs/project_charter.md): purpose, scope, and completion rules.
-- [B0 development baseline](07_docs/development_baseline.md): first deliverable.
-- [Architecture](07_docs/architecture.md): interfaces and numerical conventions.
-- [Roadmap and backlog](07_docs/roadmap.md): dependency-ordered work and extensions.
+- [Systems-engineering entry](systems_engineering/README.md): models, requirements status, development and verification route.
+- [Project charter](systems_engineering/project_charter.md): purpose, scope, and completion rules.
+- [B0 development baseline](systems_engineering/development_baseline.md): first deliverable.
+- [Architecture and model views](systems_engineering/models/architecture.md): interfaces and numerical conventions.
+- [Roadmap and backlog](docs/roadmap.md): dependency-ordered work and extensions.
 - [Research packages](research/README.md): independent questions and publication gates.
-- [Verification plan](07_docs/verification/verification_plan.md) and [results](RESULTS.md).
+- [Verification plan](systems_engineering/verification/verification_plan.md) and [results](RESULTS.md).
 - [Literature record](literature/README.md): discovery, screening, and claim evidence.
 
 ## First baseline: attitude closed loop
@@ -37,7 +39,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| 07_docs/ | Governing engineering and management documents | B0 v0.2 planning baseline |
+| systems_engineering/ | Models, requirements status, verification and reports | G0 approved; G1 component acceptance complete; B0 incomplete |
+| docs/ | Roadmap, environment and work orders | G1.5-A migration and execution records |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
@@ -68,6 +71,6 @@ small reproducible scenario suite before declaring B0 complete.
 Use one coherent issue and pull request per increment. Record assumptions,
 acceptance checks, validation commands, and evidence. Numerical results must
 link retained artifacts; pending behavior and limitations must remain visible.
-See [management rules](07_docs/roadmap.md#work-management).
+See [management rules](docs/roadmap.md#work-management).
 
 MIT license. Maintainer: Chi Zhang.
