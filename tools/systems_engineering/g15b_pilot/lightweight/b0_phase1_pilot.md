@@ -1,24 +1,25 @@
-# B0 G1.5-B phase-one lightweight-text pilot
+# G1.5-B phase-one structured pilot
 
-**Status:** non-authoritative comparison fixture. This file duplicates five
-`PILOT-ONLY-*` records solely to compare source formats. It is not an active
-requirements source, a coverage basis, or an allocation of formal B0 IDs.
+**Generated review projection.** Edit `contract/pilot_structure.json`; do not edit this Markdown file.
+
+This is a non-authoritative five-record trial. It does not freeze formal requirements, assert G2/G3 implementation, or claim execution evidence.
 
 ## PILOT-ONLY-NEED-01
 
-- **Level:** user_need
-- **Status:** pilot_only_candidate
 - **Title:** Bounded attitude experiment use
-- **Parent:** none
-- **Source locators:** systems_engineering/project_charter.md#purpose; systems_engineering/development_baseline.md#single-objective
+- **Record type:** user_need
+- **Approval status:** candidate_only
 - **Applicability:** applicable
 - **Scope:** current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions
-- **Allocation:** integration execution adapter and reader-facing system boundary
-- **Model refs:** SE-MODEL-CONTEXT-001:B0
-- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
-- **Acceptance condition:** planned inspection confirms the declared experiment boundary and exclusions are present
+- **Parent:** none
 - **Evidence status:** planned/not_run
-- **Candidate only:** true
+- **Source locators:**
+  - `systems_engineering/project_charter.md#purpose`
+  - `systems_engineering/development_baseline.md#single-objective`
+- **Cross-domain links:**
+  - `models` → `PILOT-MODEL-B0-BOUNDARY-01` (project_extension)
+  - `allocated_to` → `PILOT-DEV-REVIEW-BOUNDARY-01` (project_extension)
+  - `specified_by` → `PILOT-VER-BOUNDARY-01` (project_extension)
 
 ### Statement
 
@@ -28,21 +29,28 @@ The B0 system shall support a configured, repeatable bounded attitude experiment
 
 This is a source-format trial of a user-need record. It is not a formal B0 requirement and is not part of coverage accounting.
 
+### Planned acceptance condition
+
+Planned inspection confirms the declared experiment boundary and exclusions are present.
+
 ## PILOT-ONLY-INTERFACE-02
 
-- **Level:** system_constraint
-- **Status:** pilot_only_candidate
 - **Title:** Runtime truth isolation
-- **Parent:** PILOT-ONLY-NEED-01
-- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility; 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden; systems_engineering/models/architecture.md#modular-boundaries
+- **Record type:** system_constraint
+- **Approval status:** candidate_only
 - **Applicability:** applicable
 - **Scope:** current B0 after explicit reset initialization
-- **Allocation:** estimation and control components; execution adapter preserves the boundary
-- **Model refs:** SE-MODEL-INTERFACE-001:Controller
-- **Verification plan:** systems_engineering/verification/verification_plan.md#evidence-chain
-- **Acceptance condition:** planned inspection verifies declared runtime inputs exclude live truth and evaluation remains independent
+- **Parent:** PILOT-ONLY-NEED-01
 - **Evidence status:** planned/not_run
-- **Candidate only:** true
+- **Source locators:**
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden`
+  - `systems_engineering/models/architecture.md#modular-boundaries`
+- **Cross-domain links:**
+  - `models` → `PILOT-MODEL-IF-TRUTH-EVALUATOR-01` (project_extension)
+  - `models` → `PILOT-MODEL-CONTROLLER-01` (project_extension)
+  - `allocated_to` → `PILOT-DEV-INTEGRATION-ADAPTER-01` (project_extension)
+  - `specified_by` → `PILOT-VER-TRUTH-01` (project_extension)
 
 ### Statement
 
@@ -52,21 +60,26 @@ After explicit reset initialization, the estimator and controller shall not rece
 
 This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.
 
+### Planned acceptance condition
+
+Planned inspection verifies declared runtime inputs exclude live truth and evaluation remains independent.
+
 ## PILOT-ONLY-ACCEPTANCE-03
 
-- **Level:** system_constraint
-- **Status:** pilot_only_candidate
 - **Title:** Frozen acceptance-field reference
-- **Parent:** PILOT-ONLY-NEED-01
-- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance
+- **Record type:** system_constraint
+- **Approval status:** candidate_only
 - **Applicability:** applicable
 - **Scope:** current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed
-- **Allocation:** independent verification and configuration validator consumers
-- **Model refs:** SE-MODEL-BEHAVIOR-001:Ready
-- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
-- **Acceptance condition:** planned inspection verifies each assessment points to a versioned JSON field and does not duplicate a numeric threshold
+- **Parent:** PILOT-ONLY-NEED-01
 - **Evidence status:** planned/not_run
-- **Candidate only:** true
+- **Source locators:**
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance`
+- **Cross-domain links:**
+  - `models` → `PILOT-MODEL-VER-BOUNDARY-01` (project_extension)
+  - `specified_by` → `PILOT-VER-G0-REFERENCE-01` (project_extension)
 
 ### Statement
 
@@ -76,22 +89,27 @@ Any assessment of the signed three-axis step scenario shall cite the approved G0
 
 This trial represents a performance/acceptance reference while preserving the JSON contract as the sole parameter source and avoiding a false performance result.
 
+### Planned acceptance condition
+
+Planned inspection verifies each assessment points to a versioned JSON field and does not duplicate a numeric threshold.
+
 ## PILOT-ONLY-LEGACY-04
 
-- **Level:** applicability_record
-- **Status:** pilot_only_candidate
 - **Title:** Preserved legacy control applicability
-- **Parent:** PILOT-ONLY-NEED-01
-- **Source locators:** systems_engineering/requirements/legacy_requirements.md#control-requirements; systems_engineering/reports/b0/g0_approval_decision.md#决定; 05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability
+- **Record type:** applicability_record
+- **Approval status:** candidate_only
 - **Applicability:** not_applicable
 - **Scope:** current B0 only; CTL-REQ-001 and CTL-REQ-002 remain preserved for their historical scopes under the approved disposition
-- **Allocation:** requirements applicability record and approval-decision reference
-- **Model refs:** SE-MODEL-CONTEXT-001:B0
-- **Verification plan:** systems_engineering/verification/g0_acceptance.md#ctl-req-适用性审查
-- **Acceptance condition:** planned inspection verifies both legacy identifiers, their decision locator, and the absence of a satisfaction claim
+- **Parent:** PILOT-ONLY-NEED-01
 - **Evidence status:** planned/not_run
-- **Candidate only:** true
-- **Approval ref:** systems_engineering/reports/b0/g0_approval_decision.md#决定
+- **Source locators:**
+  - `systems_engineering/requirements/legacy_requirements.md#control-requirements`
+  - `systems_engineering/reports/b0/g0_approval_decision.md#决定`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability`
+- **Approval locator:** `systems_engineering/reports/b0/g0_approval_decision.md#决定`
+- **Cross-domain links:**
+  - `models` → `PILOT-MODEL-B0-BOUNDARY-01` (project_extension)
+  - `specified_by` → `PILOT-VER-LEGACY-01` (project_extension)
 
 ### Statement
 
@@ -101,21 +119,28 @@ For current B0, the applicability record shall preserve CTL-REQ-001 and CTL-REQ-
 
 This trial represents a non-applicable legacy relationship. The legacy identifiers remain references only and are never candidate identifiers for reuse.
 
+### Planned acceptance condition
+
+Planned inspection verifies both legacy identifiers, their decision locator, and the absence of a satisfaction claim.
+
 ## PILOT-ONLY-G2-05
 
-- **Level:** component_constraint
-- **Status:** pilot_only_candidate
 - **Title:** Planned controller interface boundary
-- **Parent:** PILOT-ONLY-INTERFACE-02
-- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller
+- **Record type:** component_constraint
+- **Approval status:** candidate_only
 - **Applicability:** applicable
 - **Scope:** planned G2 controller only; not an implemented or accepted component
-- **Allocation:** planned C++ controller core and execution adapter interface boundary
-- **Model refs:** SE-MODEL-ARCH-001:Control, SE-MODEL-INTERFACE-001:Controller
-- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
-- **Acceptance condition:** planned G2 verification defines inputs, reset and step behavior, an independent oracle, and execution evidence before any pass claim
+- **Parent:** PILOT-ONLY-INTERFACE-02
 - **Evidence status:** planned/not_run
-- **Candidate only:** true
+- **Source locators:**
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command`
+  - `05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller`
+- **Cross-domain links:**
+  - `models` → `PILOT-MODEL-CONTROLLER-01` (project_extension)
+  - `models` → `PILOT-MODEL-REQ-PROXY-G2-05` (project_extension)
+  - `allocated_to` → `PILOT-DEV-CONTROLLER-CORE-01` (project_extension)
+  - `specified_by` → `PILOT-VER-G2-INTERFACE-01` (project_extension)
 
 ### Statement
 
@@ -124,3 +149,7 @@ The planned G2 controller shall consume the declared command, state estimate, an
 ### Rationale
 
 This is a planned component candidate used to test truthful planned/not-run status. It does not claim a G2 implementation or closed-loop evidence.
+
+### Planned acceptance condition
+
+Planned G2 verification defines inputs, reset and step behavior, an independent oracle, and execution evidence before any pass claim.

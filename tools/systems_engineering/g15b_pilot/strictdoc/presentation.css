@@ -56,7 +56,7 @@ body[data-viewtype="document"] .layout_main {
 }
 
 body[data-viewtype="document"] .layout_main::before {
-  content: "Pilot-only comparison fixture — candidate records, not a formal B0 baseline or execution evidence.";
+  content: "Pilot-only structured review projection — candidate records, not a formal B0 baseline or execution evidence.";
   display: block;
   max-width: 72rem;
   margin: 0 auto 1.5rem;
