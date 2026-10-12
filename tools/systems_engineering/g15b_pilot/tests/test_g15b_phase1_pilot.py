@@ -1,7 +1,9 @@
-"""Positive and negative checks for the G1.5-B phase-one text trial."""
+"""Positive and negative checks for the G1.5-B structured pilot."""
 
 from __future__ import annotations
 
+from copy import deepcopy
+import json
 from pathlib import Path
 import sys
 
@@ -10,136 +12,128 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 TOOLS_ROOT = Path(__file__).resolve().parents[2]
+PILOT_ROOT = TOOLS_ROOT / "g15b_pilot"
 sys.path.insert(0, str(TOOLS_ROOT))
 
-from check_g15b_phase1_pilot import (  # noqa: E402
+from check_g15b_phase1_pilot import check_pilot  # noqa: E402
+from g15b_pilot.build_pilot_views import check_outputs, render_outputs  # noqa: E402
+from g15b_pilot.pilot_contract import (  # noqa: E402
+    CONTRACT_PATH,
+MODEL_PATH,
     PilotError,
-    check_pilot,
-    parse_markdown_records,
-    parse_sdoc_records,
-    validate_equivalence,
-    validate_records,
+    load_contract,
+    load_sysml_model,
+    load_validated_pilot,
+    validate_contract,
+    validate_schema,
 )
 
 
-SDOC_SOURCE = REPO_ROOT / "tools/systems_engineering/g15b_pilot/strictdoc/b0_phase1_pilot.sdoc"
-MARKDOWN_SOURCE = REPO_ROOT / "tools/systems_engineering/g15b_pilot/lightweight/b0_phase1_pilot.md"
+MIGRATION_BASELINE_PATH = (
+    PILOT_ROOT / "tests" / "fixtures" / "prestructured_semantic_baseline.json"
+)
 
 
-def test_actual_phase_one_pilot_passes() -> None:
+def contract_copy() -> dict:
+    return deepcopy(load_contract())
+
+
+def validate(data: dict) -> None:
+    validate_schema(data)
+    validate_contract(REPO_ROOT, data, load_sysml_model())
+
+
+def test_actual_structured_pilot_passes() -> None:
     check_pilot(REPO_ROOT)
 
 
+def test_five_records_preserve_the_prestructured_semantics() -> None:
+    """Compare the one-way migration with its test-only pre-structured oracle."""
+    baseline = json.loads(MIGRATION_BASELINE_PATH.read_text(encoding="utf-8"))
+    assert baseline["fixture_role"] == "test_only_migration_oracle"
+    assert baseline["source_commit"] == "ce350a488ff9b0c50cf32bb4d22c5833b33db597"
+
+    contract = load_contract()
+    locator_by_id = {
+        source["id"]: source["locator"] for source in contract["source_locators"]
+    }
+    records_by_key = {record["key"]: record for record in contract["records"]}
+    assert list(records_by_key) == [record["key"] for record in baseline["records"]]
+
+    for expected in baseline["records"]:
+        actual = records_by_key[expected["key"]]
+        for field in ("level", "status", "title", "statement", "rationale", "parent"):
+            assert actual[field] == expected[field]
+        assert actual["applicability"] == expected["applicability"]
+        assert actual["acceptance_condition"].casefold().rstrip(".") == (
+            expected["acceptance_condition"].casefold().rstrip(".")
+        )
+        assert [locator_by_id[source_id] for source_id in actual["source_locator_ids"]] == (
+            expected["source_locators"]
+        )
+
+
+def test_actual_parser_records_documented_non_error_warnings() -> None:
+    model = load_sysml_model()
+    assert model.analysis_warnings
+    assert all("severity='warning'" in warning for warning in model.analysis_warnings)
+
+
 def test_duplicate_temporary_key_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "UID: PILOT-ONLY-G2-05", "UID: PILOT-ONLY-NEED-01"
-    )
-    with pytest.raises(PilotError, match="duplicate pilot key"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+    data = contract_copy()
+    data["records"][-1]["key"] = data["records"][0]["key"]
+    with pytest.raises(PilotError, match="duplicate records identity"):
+        validate(data)
 
 
-def test_unknown_model_reference_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "SE-MODEL-INTERFACE-001", "SE-MODEL-NOT-999", 1
-    )
-    with pytest.raises(PilotError, match="unknown model reference"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+@pytest.mark.parametrize("field", ("statement", "acceptance_condition"))
+def test_required_record_body_or_acceptance_field_fails_closed(field: str) -> None:
+    data = contract_copy()
+    del data["records"][0][field]
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
 
 
-def test_missing_json_field_locator_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "/controller_contract/truth_inputs_forbidden", "/missing_controller_contract"
-    )
-    with pytest.raises(PilotError, match="JSON pointer is missing"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+def test_illegal_enum_fails_closed() -> None:
+    data = contract_copy()
+    data["records"][0]["applicability"]["state"] = "unknown"
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
 
 
-def test_malformed_json_locator_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "#/controller_contract/truth_inputs_forbidden", "#controller_contract/truth_inputs_forbidden"
-    )
-    with pytest.raises(PilotError, match="must use a JSON Pointer"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+def test_unknown_relation_target_fails_closed() -> None:
+    data = contract_copy()
+    data["relations"][0]["target_id"] = "PILOT-MODEL-UNKNOWN-01"
+    with pytest.raises(PilotError, match="relation target is unknown"):
+        validate(data)
 
 
-def test_malformed_markdown_locator_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "architecture.md#modular-boundaries", "architecture.md#/modular-boundaries"
-    )
-    with pytest.raises(PilotError, match="must use a Markdown anchor"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+def test_wrong_relation_endpoint_type_fails_closed() -> None:
+    data = contract_copy()
+    data["relations"][0]["target_kind"] = "verification_provision"
+    with pytest.raises(PilotError, match="relation endpoint type is invalid"):
+        validate(data)
 
 
-def test_missing_required_metadata_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Evidence status: planned/not_run\n", "", 1
-    )
-    with pytest.raises(PilotError, match="missing required metadata"):
-        parse_sdoc_records(source)
+def test_wrong_relation_direction_fails_closed() -> None:
+    data = contract_copy()
+    data["relations"][0]["direction"] = "reverse"
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
 
 
-def test_missing_acceptance_condition_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Acceptance condition: planned inspection confirms the declared experiment boundary and exclusions are present\n",
-        "",
-        1,
-    )
-    with pytest.raises(PilotError, match="missing required metadata: acceptance condition"):
-        parse_sdoc_records(source)
-
-
-def test_missing_allocation_for_applicable_record_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Allocation: integration execution adapter and reader-facing system boundary\n",
-        "",
-        1,
-    )
-    with pytest.raises(PilotError, match="missing required metadata: allocation"):
-        parse_sdoc_records(source)
-
-
-def test_not_applicable_record_without_approval_reference_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#决定\n",
-        "",
-        1,
-    )
-    with pytest.raises(PilotError, match="lacks approval ref"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
-
-
-def test_not_applicable_record_with_invalid_approval_reference_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#决定",
-        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#missing-decision",
-    )
-    with pytest.raises(PilotError, match="approval ref.*anchor is missing"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
-
-
-def test_not_applicable_record_with_unrelated_approval_reference_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#决定",
-        "Approval ref: systems_engineering/project_charter.md#purpose",
-    )
-    with pytest.raises(PilotError, match="fixed legacy approval decision"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
-
-
-def test_not_applicable_record_cannot_claim_applicability() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "Applicability: not_applicable", "Applicability: applicable"
-    )
-    with pytest.raises(PilotError, match="must state not_applicable applicability"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
-
-
-def test_broken_parent_relation_fails_closed() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
-        "VALUE: PILOT-ONLY-INTERFACE-02", "VALUE: PILOT-ONLY-MISSING-99"
-    )
+def test_missing_parent_target_fails_closed() -> None:
+    data = contract_copy()
+    data["records"][1]["parent"] = "PILOT-ONLY-MISSING-99"
     with pytest.raises(PilotError, match="unknown parent relation"):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+        validate(data)
+
+
+def test_parent_hierarchy_cycle_fails_without_rejecting_physical_feedback() -> None:
+    data = contract_copy()
+    data["records"][0]["parent"] = "PILOT-ONLY-G2-05"
+    with pytest.raises(PilotError, match="Parent hierarchy cycle"):
+        validate(data)
 
 
 @pytest.mark.parametrize(
@@ -152,35 +146,160 @@ def test_broken_parent_relation_fails_closed() -> None:
     ),
 )
 def test_invalid_json_array_index_fails_closed(replacement: str, message: str) -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace("/scenarios/6/id", replacement)
+    data = contract_copy()
+    source = next(item for item in data["source_locators"] if item["id"] == "PILOT-SRC-G0-SCENARIO-ID-01")
+    source["locator"] = f"05_integration/b0/configs/b0_g0_contract.v2.json#{replacement}"
     with pytest.raises(PilotError, match=message):
-        validate_records(parse_sdoc_records(source), REPO_ROOT)
+        validate(data)
 
 
 def test_valid_json_array_index_remains_accepted() -> None:
-    source = SDOC_SOURCE.read_text(encoding="utf-8").replace("/scenarios/6/id", "/scenarios/0/id")
-    validate_records(parse_sdoc_records(source), REPO_ROOT)
+    data = contract_copy()
+    source = next(item for item in data["source_locators"] if item["id"] == "PILOT-SRC-G0-SCENARIO-ID-01")
+    source["locator"] = "05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/0/id"
+    validate(data)
 
 
-def test_cross_format_drift_fails_closed() -> None:
-    changed_markdown = MARKDOWN_SOURCE.read_text(encoding="utf-8").replace(
-        "Runtime truth isolation", "Changed interface title", 1
+def test_bad_markdown_anchor_fails_closed() -> None:
+    data = contract_copy()
+    source = next(item for item in data["source_locators"] if item["id"] == "PILOT-SRC-ARCH-MODULAR-01")
+    source["locator"] = "systems_engineering/models/architecture.md#missing-anchor"
+    with pytest.raises(PilotError, match="anchor is missing"):
+        validate(data)
+
+
+def test_bad_relation_source_locator_fails_closed() -> None:
+    data = contract_copy()
+    source = next(item for item in data["source_locators"] if item["id"] == "PILOT-SRC-VER-B0-CHECKS-01")
+    source["locator"] = "systems_engineering/verification/verification_plan.md#missing-anchor"
+    with pytest.raises(PilotError, match="relation source locator.*anchor is missing"):
+        validate(data)
+
+
+def test_not_applicable_without_approval_fails_closed() -> None:
+    data = contract_copy()
+    del data["records"][3]["applicability"]["approval_ref"]
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
+
+
+def test_not_applicable_with_unapproved_reference_fails_closed() -> None:
+    data = contract_copy()
+    data["records"][3]["applicability"]["approval_ref"] = "PILOT-SRC-CHARTER-PURPOSE-01"
+    with pytest.raises(PilotError, match="fixed G0 approval"):
+        validate(data)
+
+
+def test_planned_verification_cannot_claim_pass() -> None:
+    data = contract_copy()
+    data["verification_provisions"][0]["execution_status"] = "pass"
+    with pytest.raises(PilotError, match="falsely claims pass"):
+        validate(data)
+
+
+def test_planned_verification_cannot_carry_execution_evidence() -> None:
+    data = contract_copy()
+    data["execution_evidence"].append(
+        {
+            "id": "PILOT-EVID-UNTRUE-01",
+            "test_case_ref": "not-run-test",
+            "code_version": "not-run-code",
+            "configuration_version": "not-run-config",
+            "command": "not run",
+            "environment": "none",
+            "result": "pass",
+            "locator": "systems_engineering/project_charter.md#purpose",
+        }
     )
-    with pytest.raises(PilotError, match="trial source formats drift"):
-        validate_equivalence(
-            parse_sdoc_records(SDOC_SOURCE.read_text(encoding="utf-8")),
-            parse_markdown_records(changed_markdown),
-        )
+    data["verification_provisions"][0]["evidence_ids"] = ["PILOT-EVID-UNTRUE-01"]
+    with pytest.raises(PilotError, match="carries execution evidence"):
+        validate(data)
 
 
-def test_cross_format_rationale_drift_fails_closed() -> None:
-    changed_markdown = MARKDOWN_SOURCE.read_text(encoding="utf-8").replace(
-        "This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.",
-        "A deliberately different rationale must not be concealed by the text-format comparison.",
-        1,
+def test_generated_projection_drift_fails_closed(tmp_path: Path) -> None:
+    contract, model = load_validated_pilot(REPO_ROOT)
+    expected = render_outputs(contract, model)
+    generated = tmp_path / "b0_phase1_pilot.md"
+    generated.write_text(next(content for path, content in expected.items() if path.name.endswith(".md")), encoding="utf-8")
+    generated.write_text(generated.read_text(encoding="utf-8") + "manual drift\n", encoding="utf-8")
+    with pytest.raises(PilotError, match="projection drifted"):
+        check_outputs({generated: next(content for path, content in expected.items() if path.name.endswith(".md"))})
+
+
+def test_legal_many_to_many_relation_and_planned_not_applicable_states_pass() -> None:
+    data = contract_copy()
+    data["relations"].append(
+        {
+            "id": "PILOT-REL-INTERFACE-MODEL-MANY-01",
+            "type": "models",
+            "source_id": "PILOT-ONLY-INTERFACE-02",
+            "source_kind": "record",
+            "target_id": "PILOT-MODEL-IMU-01",
+            "target_kind": "model_element",
+            "direction": "forward",
+            "origin": "project_extension",
+            "basis": "A legal additional many-to-many truth-isolation model link for schema coverage.",
+            "source_locator_id": "PILOT-SRC-TRUTH-VISIBILITY-01",
+        }
     )
-    with pytest.raises(PilotError, match="trial source formats drift"):
-        validate_equivalence(
-            parse_sdoc_records(SDOC_SOURCE.read_text(encoding="utf-8")),
-            parse_markdown_records(changed_markdown),
-        )
+    validate(data)
+
+
+def test_model_type_mismatch_fails_closed() -> None:
+    data = contract_copy()
+    model = next(item for item in data["model_elements"] if item["id"] == "PILOT-MODEL-CONTROLLER-01")
+    model["sysml_kind"] = "interface_definition"
+    validate_schema(data)
+    with pytest.raises(PilotError, match="SysML model type mismatch"):
+        validate_contract(REPO_ROOT, data, load_sysml_model())
+
+
+def test_dangling_model_identity_fails_closed(tmp_path: Path) -> None:
+    source = MODEL_PATH.read_text(encoding="utf-8").replace(
+        "'PILOT-MODEL-CONTROLLER-01'", "'PILOT-MODEL-CONTROLLER-99'", 1
+    )
+    model_path = tmp_path / "dangling.sysml"
+    model_path.write_text(source, encoding="utf-8")
+    with pytest.raises(PilotError, match="sysmlpy reported semantic error"):
+        load_validated_pilot(REPO_ROOT, model_path=model_path)
+
+
+def test_invalid_sysml_syntax_fails_closed(tmp_path: Path) -> None:
+    model_path = tmp_path / "invalid.sysml"
+    model_path.write_text(MODEL_PATH.read_text(encoding="utf-8") + "\nthis is not SysML;\n", encoding="utf-8")
+    with pytest.raises(PilotError, match="sysmlpy could not parse/analyse"):
+        load_sysml_model(model_path)
+
+
+def test_live_truth_flow_to_controller_fails_closed(tmp_path: Path) -> None:
+    source = MODEL_PATH.read_text(encoding="utf-8").replace(
+        "flow plant.truth to evaluator.truth;",
+        "flow plant.truth to evaluator.truth;\n        flow plant.truth to controller.estimate;",
+    )
+    model_path = tmp_path / "truth_leak.sysml"
+    model_path.write_text(source, encoding="utf-8")
+    with pytest.raises(PilotError, match="live truth must not flow"):
+        load_validated_pilot(REPO_ROOT, model_path=model_path)
+
+
+def test_g2_trace_chain_cannot_be_removed() -> None:
+    data = contract_copy()
+    data["relations"] = [
+        relation
+        for relation in data["relations"]
+        if relation["id"] != "PILOT-REL-DEV-CONTROLLER-VERIFY-01"
+    ]
+    with pytest.raises(PilotError, match="planned controller verification relation is missing"):
+        validate(data)
+
+
+def test_generated_sources_are_current_and_use_the_single_json_body_source() -> None:
+    contract, model = load_validated_pilot(REPO_ROOT)
+    rendered = render_outputs(contract, model)
+    check_outputs(rendered)
+    assert "Generated review projection; edit pilot_structure.json" in rendered[
+        PILOT_ROOT / "strictdoc" / "b0_phase1_pilot.sdoc"
+    ]
+    assert "do not edit this Markdown file" in rendered[
+        PILOT_ROOT / "lightweight" / "b0_phase1_pilot.md"
+    ]

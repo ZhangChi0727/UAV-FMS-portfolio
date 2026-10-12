@@ -38,6 +38,30 @@ The method is reviewed before any of the following occurs: promotion of a
 assertion of satisfaction or verification, adoption of a new SysML language
 version, or a request for an executable/graphical MBSE platform.
 
+### Project-lightweight workflow
+
+This is a deliberately bounded project workflow, not a claim to implement
+OOSEM, Harmony, Arcadia, or a certification process.  Its value is that each
+step has one review question and a stated authority before a reader follows a
+link to the next step.
+
+| Step | Inputs | Output and authority | Review question | Update trigger |
+|---|---|---|---|---|
+| Purpose / scenario | Charter, development baseline, and approved G0 scenario locators | Bounded purpose and scenario references in `pilot_structure.json`; the source documents remain authoritative. | What engineering situation is in scope, and what is expressly excluded? | Approved scope/scenario change or broken locator. |
+| Requirement obligation | Five preserved pilot bodies and rationale | One editable candidate-record body in `pilot_structure.json`. | What is the obligation, why is it present, and is it only a candidate? | PA-approved wording/scope change; never a silent generated-output edit. |
+| Structure and behavioural allocation | Candidate record and planned responsibility | Typed `models` / `allocated_to` relation and a named model/development identity. | Which bounded role is responsible, without asserting implementation? | Changed responsibility, model boundary, or lifecycle. |
+| Interface and constraint | Approved G0 truth/control locators and the textual SysML slice | Parsed interface/flow relation and its locator-backed project extension. | What may cross the boundary, and does live truth remain outside estimator/controller inputs? | G0 interface-contract change, missing/changed flow endpoint, or parser limitation. |
+| Verification provision | Candidate record, model/development link, existing verification-plan locator | Planned provision with preconditions, inputs, steps, independent oracle, and acceptance condition. | What would independently establish the planned check, and what has not run? | New approved procedure, real execution, or a changed acceptance source. |
+| Change-impact analysis | Typed relation graph, generated projections, and source locators | Checker-reported affected records/views; no automatic approval. | Which record/model/provision/read view must be reviewed before a change is accepted? | Any edit to a record, relation, locator, model element, or fixed dependency. |
+
+### Review-view catalogue
+
+| View | Purpose and primary audience | Source elements / update path | Limit |
+|---|---|---|---|
+| Generated StrictDoc HTML | Requirement-reader review of title, statement, rationale, and native parent hierarchy. | Generated SDoc from the JSON contract, then native StrictDoc export. Regenerate; never edit HTML/SDoc as a record source. | It does not expose arbitrary custom StrictDoc fields or prove satisfaction. |
+| Generated Markdown review projection | Systems-engineering reviewer inspection of scope, acceptance, locators, allocations, planned verification, and evidence status. | JSON contract plus parser result; rebuilt by `build_pilot_views.py --write`. | Project reading aid, not a second requirements source or a SysML graphic. |
+| Generated model reading aid | Reviewer trace from stable model identity to parsed interface/flow boundary. | JSON model inventory plus AST from `b0_truth_control_slice.sysml`; rebuilt by the same generator. | Textual parser-facing view only; no graphical notation, execution, simulation, or interchange claim. |
+
 ## Authority and one-way derivation
 
 There is exactly one editable source for every pilot record body:
@@ -56,6 +80,14 @@ contract, approval decision, and legacy records retain their own authorities.
 The model may refer to a pilot record through a proxy identity, but does not
 duplicate its normative statement or declare a `satisfy`/`verify` result.
 
+StrictDoc 0.30.1 accepts only its native fixed requirement fields (`UID`,
+`LEVEL`, `STATUS`, `TAGS`, `TITLE`, `STATEMENT`, `RATIONALE`, and `COMMENT`).
+Accordingly, its generated projection carries the editable body projection and
+native `Parent` hierarchy only.  It does **not** place structural metadata in
+`COMMENT` or pretend that custom fields are native StrictDoc fields.  The
+generated Markdown/HTML review views display the source locators, allocation,
+verification, evidence status, and cross-domain links from the JSON contract.
+
 ## Field dictionary
 
 The schema at
@@ -67,15 +99,16 @@ fields that matter in review.
 |---|---|
 | `records[].key` | Temporary `PILOT-ONLY-*` identity; it is never a `NAV-REQ-*`, `CTL-REQ-*`, or `FDI-REQ-*` identifier. |
 | `statement`, `rationale` | The only editable body text for the five pilot records.  Generated projections copy it verbatim. |
+| `decomposition_note` | A visible future-splitting recommendation when a preserved pilot statement contains several obligations; it neither splits nor expands the current record. |
 | `applicability.state` | `applicable` or `not_applicable`.  The latter requires a separately checked `approval_ref`; it is not satisfaction. |
 | `source_locator_ids` | References into a typed locator inventory.  Every locator is resolved against the repository, with Markdown anchors or JSON Pointers checked separately. |
 | `acceptance_condition` | A planned inspection criterion.  It may reference an approved G0 field but may not reproduce G0 thresholds. |
 | `evidence_status` | Pilot record status, currently `planned/not_run`; it is not an execution result. |
-| `model_elements[]` | Stable `PILOT-MODEL-*` identities, their expected SysML definition type, and their intended bounded role. |
-| `development_objects[]` | Allocated development candidates.  `planned` objects have no execution result or evidence claim. |
-| `verification_provisions[]` | Planned review/verification definitions with inputs, steps, independent oracle, and acceptance condition. |
-| `execution_evidence[]` | Reserved for a real future execution only; the current list is empty.  Evidence is never synthesized from a planned provision. |
-| `relations[]` | Typed, directed cross-domain project extensions.  `origin` records whether a relationship is native SysML or a project extension; the current cross-domain links are extensions, not renamed SysML v1 relations. |
+| `model_elements[]` | Stable `PILOT-MODEL-*` identity, display name, scope, expected SysML definition type, intended role, and related candidate-record keys. |
+| `development_objects[]` | Responsible component, allocation, lifecycle, and path/symbol/version slots.  A `planned` object has null implementation slots and no execution claim. |
+| `verification_provisions[]` | Planned review/verification definitions with preconditions, inputs, steps, independent oracle, acceptance condition, and execution state. |
+| `execution_evidence[]` | Reserved for a real future execution only; every future item must name test-case, code and configuration versions, command, environment, result, and locator. The current list is empty. |
+| `relations[]` | Typed, directed cross-domain project extensions with a human-readable basis and source locator. `origin` records whether a relationship is native SysML or a project extension; the current cross-domain links are extensions, not renamed SysML v1 relations. |
 | `parent` | The sole structural hierarchy link.  Cycle detection applies only to this hierarchy, not to physical feedback flows in the SysML slice. |
 
 ## Relation map and endpoint rules
@@ -135,6 +168,18 @@ the tool check, install that isolated requirements file, run
 dependency upgrade, changed parser behaviour, or a need for metadata,
 graphical notation, execution, simulation, or interchange is a method-review
 trigger rather than a silent capability claim.
+
+### Dependency and local-environment control
+
+| Component | Fixed source / version | License record at evaluation | Install, prerequisite, and removal boundary | Maintenance cost / decision limit |
+|---|---|---|---|---|
+| StrictDoc | Public PyPI resolution from `requirements/g15b-pilot.txt`; `strictdoc==0.30.1`. | Its project repository identifies Apache-2.0; the installed distribution's `License` metadata is empty. | Python 3.11+ isolated pilot virtual environment only. Remove only the explicitly named temporary pilot environment after stopping any loopback preview; do not touch the repository or `.venv-b0`. | Retained native projection/export capability, but fixed grammar rejects arbitrary fields; an upgrade requires export and regression review. |
+| sysmlpy | Public PyPI resolution from `requirements/g15b-pilot.txt`; `sysmlpy==0.33.2`. | The evaluated distribution reports no `License`, homepage, or project-URL metadata. Broader adoption is blocked pending maintainer license/source due diligence. | Python 3.11+ plus the isolated pilot dependency directory; no account, service, global install, or B0/literature environment change. Remove only that explicit temporary dependency directory after use. | Small local AST parser for this slice only. Parser/model-builder limitations, dependency changes, or any need for graphical/executable/interchange support trigger method review. |
+| jsonschema | Public PyPI resolution from `requirements/g15b-pilot.txt`; `jsonschema==4.23.0`. | The evaluated package metadata declares MIT. | Installed only beside the pilot parser/checker dependencies. Remove with the same explicit temporary dependency directory; no global installation. | Validates record shape only; cross-object and model semantics stay in the project checker. |
+
+The evaluated package metadata and pinned dependency file are a reproducibility
+record, not a procurement approval.  No cloud service, new account, new MCP
+dependency, or full MBSE platform is introduced by this pilot.
 
 ## Trace query and review use
 

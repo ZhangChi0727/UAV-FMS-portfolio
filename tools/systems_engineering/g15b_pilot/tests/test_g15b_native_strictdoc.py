@@ -56,7 +56,7 @@ def test_native_export_generates_readable_html(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr or result.stdout
     html = "\n".join(path.read_text(encoding="utf-8") for path in (tmp_path / "html").rglob("*.html"))
     assert "PILOT-ONLY-G2-05" in html
-    assert "planned/not_run" in html
+    assert "Generated review projection; edit pilot_structure.json" in html
     assert "Git branch:" in html
     assert "@GIT_VERSION" not in html
 
@@ -70,7 +70,8 @@ def test_native_export_copies_the_source_owned_presentation_asset(tmp_path: Path
     assert 'href="../_static/custom.css"' in document.read_text(encoding="utf-8")
     assert copied_css.read_text(encoding="utf-8") == source_css.read_text(encoding="utf-8")
     assert '.layout_tree' in source_css.read_text(encoding="utf-8")
-    assert 'data-field-label="comment"' in source_css.read_text(encoding="utf-8")
+    assert 'structured review projection' in source_css.read_text(encoding="utf-8")
+    assert 'data-field-label="statement"' in source_css.read_text(encoding="utf-8")
 
 
 def test_native_export_has_record_navigation_and_parent_links(tmp_path: Path) -> None:
