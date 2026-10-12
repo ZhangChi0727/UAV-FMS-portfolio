@@ -207,14 +207,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements/g15b-pilot.txt
 
-      - name: Check paired trial sources
-        run: python check_g15b_phase1_pilot.py
+      - name: Check structured pilot contract, model, and controlled projections
+        run: python -B check_g15b_phase1_pilot.py
         working-directory: tools/systems_engineering
 
       - name: Render the native StrictDoc trial to temporary HTML
-        run: strictdoc export --formats=html --output-dir "$RUNNER_TEMP/g15b-pilot-html" --no-parallelization g15b_pilot/strictdoc
+        run: strictdoc export --config g15b_pilot/strictdoc/strictdoc_config.py --formats=html --output-dir "$RUNNER_TEMP/g15b-pilot-html" --no-parallelization g15b_pilot/strictdoc
         working-directory: tools/systems_engineering
 
       - name: Run phase-one positive and negative fixtures
-        run: python -m pytest -q g15b_pilot/tests/test_g15b_phase1_pilot.py g15b_pilot/tests/test_g15b_native_strictdoc.py
+        run: python -B -m pytest -q g15b_pilot/tests -p no:cacheprovider
         working-directory: tools/systems_engineering

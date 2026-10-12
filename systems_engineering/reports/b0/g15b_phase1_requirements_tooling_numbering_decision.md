@@ -11,6 +11,32 @@ numbering-rule proposal. This package neither changes nor claims execution of
 G0 configuration, G1 behavior, acceptance thresholds, G2/G3 implementation,
 or requirements coverage.
 
+## Current structured-pilot increment — review pending
+
+This document retains the historical StrictDoc-versus-lightweight comparison
+below for traceability. Its statements that both documents are editable and
+its provisional preference for a future StrictDoc source describe that earlier
+comparison only; they are **not** a present source-selection approval.
+
+The active G1.5-B structured phase-one increment uses
+`tools/systems_engineering/g15b_pilot/contract/pilot_structure.json` as the
+single editable pilot-record body and metadata source. It generates the
+StrictDoc and Markdown reader projections and uses the separate editable
+`model/b0_truth_control_slice.sysml` only for bounded model structure. The
+change is required because StrictDoc 0.30.1 accepts only its fixed native
+requirement fields: using it as the richer structured source would force
+locators, allocations, verification provisions, status separation and typed
+relations into `COMMENT` or a parallel hand-edited store.
+
+This is a phase-one method experiment, not a maintainer-approved selection of
+a formal future source. It adds a JSON Schema, deterministic projections,
+AST-backed textual SysML checks, and an explicit source/field/relation contract
+for comparison. Any later formal-source decision must weigh the JSON schema and
+generator maintenance cost, migration/import path, StrictDoc's retained native
+hierarchy/rendering role, tool coverage, and maintainer workflow—not merely the
+convenience of this fixture. No formal ID, source migration, freeze, or
+implementation claim is authorized by this increment.
+
 ## Review boundary and protected inputs
 
 | Item | Value or source | Treatment in this package |
@@ -254,3 +280,55 @@ Review the exact PR head supplied with this package and answer separately:
 
 PA technical approval is not maintainer numbering approval and does not
 authorize merge/freeze. After PA review, execution stops for that decision.
+
+## Structured SysML pilot addendum — 2026-10-12, PA review pending
+
+### What changed, and what did not
+
+This addendum records the active structured phase-one method. It does not rewrite the preceding historical comparison or turn its provisional future-source recommendation into a decision.
+
+| Area | Current structured pilot | Deliberately unchanged / not claimed |
+|---|---|---|
+| Record body authority | `contract/pilot_structure.json` is the sole editable source for all five candidate statements and rationales. | No formal B0 requirement source has been selected or migrated. |
+| Rich metadata | Typed locator inventory, applicability, allocation, development objects, verification provisions, execution-evidence collection, and directed relations are schema-checked in the JSON contract. | No metadata is hidden in StrictDoc `COMMENT`; no evidence is fabricated. |
+| StrictDoc | Generated native-body/Parent projection with StrictDoc 0.30.1 HTML rendering. | StrictDoc's fixed field grammar is not represented as arbitrary custom native fields. |
+| SysML | A bounded textual `PILOT-MODEL-*` slice is parsed and AST-inspected. | No OMG conformance, graphical notation, execution, simulation, interchange, satisfaction, or verification verdict is claimed. |
+| G0/G1/G2/G3 | G0 field locators and the approved legacy disposition are checked; G2 objects remain planned/not-run. | No numerical threshold is copied, and no G1 behaviour or G2/G3 code is changed. |
+
+The source split is intentional: JSON owns review-record semantics, while the `.sysml` source owns the bounded model structure. The SysML requirement proxy contains no copied record body and the verification definitions carry no `verify` usage or pass result. Cross-domain `models`, `allocated_to`, `specified_by`, `development_checked_by`, and future `evidenced_by` links are explicitly labelled project extensions, rather than incorrectly reusing SysML v1 relationship names.
+
+### Standard, tool, and presentation boundaries
+
+The language reference is OMG SysML v2.0 Part 1 [`formal/2026-03-02`](https://www.omg.org/spec/SysML/2.0/Language/PDF), held fixed for this review. The selected textual subset is documented with sections and printed page numbers in [modeling_conventions.md](../../models/modeling_conventions.md): packages and definitions/usages (§§7.5–7.6), items (§7.10), parts (§7.11), interfaces/connections/flows (§§7.13–7.16), requirements (§7.21), verification cases (§7.24), and metadata (§7.27). The standard's graphical notation is explicitly outside this parser-based review slice.
+
+The isolated dependency file pins `jsonschema==4.23.0`, `strictdoc==0.30.1`, and `sysmlpy==0.33.2` (plus the scoped test runner). `sysmlpy` is a third-party pure-Python parser/analyser. The implementation calls its grammar loader, model loader, and analyser, and consumes its AST to check stable model identities and flow endpoints. The observed fixed-version analysis issues are non-error naming-convention warnings caused by quoted, stable `PILOT-MODEL-*` identities; they are surfaced in the generated model view rather than suppressed. Metadata annotations are not used because this parser version's model builder does not support the needed annotation path.
+
+StrictDoc 0.30.1 rejected arbitrary fields during this increment. That actual tool result is why the generated SDoc contains only its supported native body and hierarchy fields, and why locators/relations/statuses remain typed JSON data instead of labels in `COMMENT`. The Markdown and local review HTML expose those fields for review. The HTML is a SHA-named, loopback-only temporary review page, not a standard SysML graphic or retained evidence artifact.
+
+### Migration coverage and checks
+
+The earlier fixture had 26 collected test instances: 21 text/checker instances including four JSON-pointer-index parameters, plus five native StrictDoc CLI instances. The structured suite retains the native five and replaces the hand-maintained two-text equivalence test with a test-only pre-structured semantic baseline plus controlled-projection drift checks. It expands to 36 collected instances, without skips, xfails, or `continue-on-error`.
+
+| Earlier coverage | Structured replacement / retention |
+|---|---|
+| Paired handwritten SDoc/Markdown parsing and drift | Single JSON authority plus byte-exact generated SDoc/Markdown/model-view drift check. |
+| Temporary UID / Parent shape | JSON uniqueness and Parent-only cycle checks, plus retained native StrictDoc duplicate/missing-Parent rejection. |
+| JSON Pointer / Markdown locator checks | Retained with separate malformed-anchor and four invalid-array-index counterexamples. |
+| Legacy applicability reference | Retained fixed approved-decision locator and both CTL disposition checks. |
+| Mermaid-derived model references | Actual `sysmlpy` AST identity/type/flow checks, unknown-target and dangling/invalid-model counterexamples. |
+| Planned/not-run wording | Separate development lifecycle, verification execution status, and evidence collection checks that reject planned `pass` or attached evidence. |
+| No equivalent earlier coverage | Schema required-field/enumeration checks; typed relation endpoint/direction checks; G2 trace-chain check; legal M:N relation; truth-to-controller leak check. |
+
+The scoped commands for final PR validation are:
+
+```text
+python -B tools/systems_engineering/check_g15b_phase1_pilot.py
+strictdoc export --config tools/systems_engineering/g15b_pilot/strictdoc/strictdoc_config.py --formats=html --output-dir <temporary-output> --no-parallelization tools/systems_engineering/g15b_pilot/strictdoc
+python -B -m pytest -q tools/systems_engineering/g15b_pilot/tests -p no:cacheprovider
+```
+
+They are run only in the isolated G1.5-B tool environment. The final PR head, fresh output path, CI result, and viewport-review observations are supplied to PA as handoff evidence; neither this addendum nor a green tool exit converts a candidate record into a formal requirement or a planned object into execution evidence.
+
+### Decision needed after PA technical review
+
+PA should assess whether the structured pilot has accurately separated record authority, native tool limits, project extensions, and evidence status. A maintainer—not this pilot or PA technical approval alone—must still decide whether a future formal source is JSON-led, StrictDoc-led, another evaluated tool, or a different governance approach; whether to adopt the numbering rule; and whether a controlled migration is warranted. Until then, the stop conditions remain: no formal IDs, no full source migration, no joint freeze, and no C/G2/G3 start authorization.
