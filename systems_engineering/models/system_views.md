@@ -92,26 +92,36 @@ flowchart LR
     Command[command\nq_nb_command, timestamp_s]
     IMU[imu_sample\nomega_b rad/s; specific_force_b m/s2\nNED/FRD, scenario clock]
     Est[estimator state\nq_nb_estimate; state timestamp]
-    Torque[torque command\nrequested_torque_body_Nm; timestamp]
-    Limited[actuator feedback\nlimited/actual torque; paired timestamp]
+    Controller[controller\ncommand + estimate + paired feedback]
+    Torque[torque command\nrequested + limited torque; saturated; timestamp]
+    Actuator[actuator\nadvances paired limited target]
+    Feedback[actuator feedback\nlimited/actual torque; saturated; paired timestamp]
     Truth[plant truth\nq_nb_truth, omega_b_truth\nevaluation only]
     Eval[oracle/evaluator\nindependent ownership]
-    Command --> Est
+    Command --> Controller
     IMU --> Est
-    Est --> Torque
-    Torque --> Limited
-    Limited --> Eval
+    Est --> Controller
+    Feedback --> Controller
+    Controller -->|request, componentwise limit, saturation flag| Torque
+    Torque --> Actuator
+    Actuator --> Feedback
+    Feedback --> Eval
     Truth --> Eval
     Est --> Eval
+    Controller --> Eval
     Eval -. no truth input .-> Est
-    Eval -. no truth input .-> Torque
+    Eval -. no truth input .-> Controller
 ```
 
 All vectors retain SI units, NED/body frame conventions and scalar-first
-Hamilton quaternion order. Scenario-clock timestamps pair samples and feedback;
-the actuator owns limiting and reports the command actually advanced. Truth is
-owned by the plant/evaluator boundary and is never silently copied into an
-estimator or controller input.
+Hamilton quaternion order. The controller consumes the attitude command,
+current estimate and tagged actuator feedback, then produces the requested
+torque, its componentwise limited target and the saturation flag in one
+controller tick. The controller is the sole limiting authority; the actuator
+advances the paired limited target and reports actual/limited torque and the
+paired saturation status back to the controller and evaluator. Scenario-clock
+timestamps pair samples and feedback. Truth is owned by the plant/evaluator
+boundary and is never silently copied into an estimator or controller input.
 
 ## SE-MODEL-BEHAVIOR-001 — lifecycle and rejection behavior
 

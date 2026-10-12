@@ -111,7 +111,14 @@
     {"source": "07_docs/b0/pr11_review_report.md", "target": "systems_engineering/reports/b0/pr11_review_report.md"},
     {"source": "07_docs/roadmap.md", "target": "docs/roadmap.md"},
     {"source": "07_docs/development_environment.md", "target": "docs/development_environment.md"},
-    {"source": "07_docs/work_orders/*", "target": "docs/work_orders/*"}
+    {"source": "07_docs/work_orders/B0_G0_PR11_repair_work_order.md", "target": "docs/work_orders/B0_G0_PR11_repair_work_order.md"},
+    {"source": "07_docs/work_orders/B0_G0_PR11_round2_repair.md", "target": "docs/work_orders/B0_G0_PR11_round2_repair.md"},
+    {"source": "07_docs/work_orders/B0_G0_work_order.md", "target": "docs/work_orders/B0_G0_work_order.md"},
+    {"source": "07_docs/work_orders/B0_G1_development_readiness.md", "target": "docs/work_orders/B0_G1_development_readiness.md"},
+    {"source": "07_docs/work_orders/B0_G1_work_order.md", "target": "docs/work_orders/B0_G1_work_order.md"},
+    {"source": "07_docs/work_orders/B0_PR11_v2_G1_closeout.md", "target": "docs/work_orders/B0_PR11_v2_G1_closeout.md"},
+    {"source": "07_docs/work_orders/B0_work_order.md", "target": "docs/work_orders/B0_work_order.md"},
+    {"source": "07_docs/work_orders/development_readiness.md", "target": "docs/work_orders/development_readiness.md"}
   ],
   "preserved_identifiers": [
     "NAV-REQ-001",
