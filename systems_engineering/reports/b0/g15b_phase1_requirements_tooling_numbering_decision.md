@@ -80,7 +80,7 @@ No fixture enters coverage accounting or claims implementation/verification.
 |---|---|---|---|
 | Offline editing/review | UTF-8 text without a tool | UTF-8 text without a tool | Neither is generated or a database export. |
 | Key/hierarchy | Native `UID` plus `Parent` relation | Heading/key plus `Parent` field | Thin checker rejects duplicate/broken temporary relations. |
-| Rendering | Native HTML export to a temporary directory | Directly reviewable text; no second renderer | Generated HTML is not committed or evidence of satisfaction. |
+| Rendering | Native HTML export to a temporary directory using the source-owned `strictdoc_config.py` and `presentation.css` | Directly reviewable text; no second renderer | Generated HTML is not committed or evidence of satisfaction. The native export copies the CSS as `html/_static/custom.css`; generated output is never hand-edited. |
 | Project-specific fields | Standard `COMMENT` labels in this fixture | Explicit labeled fields | Thin checker owns exact applicability/scope, approved-not-applicable reference, JSON pointers, Markdown anchors, model elements, verification and acceptance checks. |
 | Git review | Plain-text diff | Plain-text diff | Five equivalent records only; not a full-baseline migration proof. |
 | Future migration | Plain-text source with rebuildable native output | Plain-text source | A later approved import is one-way and reviewed into one chosen source. The twin remains only as a fixture/conclusion. |
@@ -115,7 +115,9 @@ scoped commands there.
 /tmp/uav-fms-g15b-strictdoc/bin/strictdoc --version
 # exit 0; output: 0.30.1
 
-/tmp/uav-fms-g15b-strictdoc/bin/strictdoc export --formats=html \
+/tmp/uav-fms-g15b-strictdoc/bin/strictdoc export \
+  --config tools/systems_engineering/g15b_pilot/strictdoc/strictdoc_config.py \
+  --formats=html \
   --output-dir /tmp/uav-fms-g15b-html-current --no-parallelization \
   tools/systems_engineering/g15b_pilot/strictdoc
 # exit 0; generated .../html/strictdoc/b0_phase1_pilot.html
@@ -167,16 +169,27 @@ evidence.
 
 ### User-facing temporary preview, not a repository artifact
 
-The same successful native export was also written outside Git to
-`%LOCALAPPDATA%\Temp\uav-fms-g15b-strictdoc-preview-7d486b1\html\strictdoc\b0_phase1_pilot.html`.
+The source-owned `strictdoc_config.py` uses StrictDoc 0.30.1's native
+`custom_css_path` support to load `presentation.css` after the bundled
+stylesheets. It narrows the review layout to the content and five-entry
+navigation on wide displays, places the reader-facing statement/rationale ahead
+of the metadata panel, distinguishes the record comment as review detail, and
+labels every record as `PILOT-ONLY`. These are presentation-only changes: the
+five `.sdoc` records, their fields, hierarchy and generated relation links are
+unchanged. The native test proves configuration linkage and asset copying, not
+visual quality.
+
+A fresh successful native export may be written outside Git to a uniquely named
+`%LOCALAPPDATA%\Temp\uav-fms-g15b-strictdoc-preview-<head>\html\strictdoc\b0_phase1_pilot.html`.
 It is a short-lived, local browser preview of the five `PILOT-ONLY-*` fixtures,
 not a formal requirements view or retained evidence artifact. The native test
 also asserts that all five generated anchors occur in the navigation and that
 the four parent links target the declared parent records. Visual acceptance is
-still a human review action: inspect those five entries, the navigation, and
-the four parent links in the local preview before any phase-one approval.
-Recreate it with the documented `strictdoc export` command and a local temporary
-output path; do not copy it into the repository.
+still a human review action: inspect the pilot banner, each statement and
+review-detail panel, the navigation, and the four parent links in the local
+preview before any phase-one approval. Recreate it with the documented
+`strictdoc export` command and a local temporary output path; do not copy it
+into the repository.
 
 The browser-automation policy in this task rejects `file://` URLs, so the
 executor did not bypass that protection or fabricate a browser screenshot.

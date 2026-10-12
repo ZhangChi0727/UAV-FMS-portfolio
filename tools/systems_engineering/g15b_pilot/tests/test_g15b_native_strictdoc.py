@@ -36,6 +36,8 @@ def export(source: Path, output: Path) -> subprocess.CompletedProcess[str]:
         [
             strictdoc_command(),
             "export",
+            "--config",
+            str(source / "strictdoc_config.py"),
             "--formats=html",
             "--output-dir",
             str(output),
@@ -57,6 +59,18 @@ def test_native_export_generates_readable_html(tmp_path: Path) -> None:
     assert "planned/not_run" in html
     assert "Git branch:" in html
     assert "@GIT_VERSION" not in html
+
+
+def test_native_export_copies_the_source_owned_presentation_asset(tmp_path: Path) -> None:
+    result = export(PILOT_DIRECTORY, tmp_path / "html")
+    assert result.returncode == 0, result.stderr or result.stdout
+    document = next((tmp_path / "html").rglob("b0_phase1_pilot.html"))
+    copied_css = document.parents[1] / "_static" / "custom.css"
+    source_css = PILOT_DIRECTORY / "presentation.css"
+    assert 'href="../_static/custom.css"' in document.read_text(encoding="utf-8")
+    assert copied_css.read_text(encoding="utf-8") == source_css.read_text(encoding="utf-8")
+    assert '.layout_tree' in source_css.read_text(encoding="utf-8")
+    assert 'data-field-label="comment"' in source_css.read_text(encoding="utf-8")
 
 
 def test_native_export_has_record_navigation_and_parent_links(tmp_path: Path) -> None:
