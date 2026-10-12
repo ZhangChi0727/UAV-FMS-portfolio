@@ -177,6 +177,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install isolated B0 test tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/b0-dev.txt
+
       - name: Check migration, model allocation and evidence references
         run: python tools/systems_engineering/check_governance.py
 
