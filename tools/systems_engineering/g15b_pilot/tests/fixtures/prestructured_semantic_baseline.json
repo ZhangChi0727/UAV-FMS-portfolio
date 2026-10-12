@@ -1,0 +1,102 @@
+{
+  "fixture_role": "test_only_migration_oracle",
+  "source_commit": "ce350a488ff9b0c50cf32bb4d22c5833b33db597",
+  "authority_note": "This immutable test fixture is not an editable pilot-record authority. The structured JSON contract remains the sole editable source after migration.",
+  "records": [
+    {
+      "key": "PILOT-ONLY-NEED-01",
+      "level": "user_need",
+      "status": "pilot_only_candidate",
+      "title": "Bounded attitude experiment use",
+      "statement": "The B0 system shall support a configured, repeatable bounded attitude experiment for engineering review without claiming full-flight capability.",
+      "rationale": "This is a source-format trial of a user-need record. It is not a formal B0 requirement and is not part of coverage accounting.",
+      "parent": null,
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions"
+      },
+      "acceptance_condition": "planned inspection confirms the declared experiment boundary and exclusions are present",
+      "source_locators": [
+        "systems_engineering/project_charter.md#purpose",
+        "systems_engineering/development_baseline.md#single-objective"
+      ]
+    },
+    {
+      "key": "PILOT-ONLY-INTERFACE-02",
+      "level": "system_constraint",
+      "status": "pilot_only_candidate",
+      "title": "Runtime truth isolation",
+      "statement": "After explicit reset initialization, the estimator and controller shall not receive live truth as a runtime input; truth is limited to plant, sensor, and evaluation responsibilities.",
+      "rationale": "This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.",
+      "parent": "PILOT-ONLY-NEED-01",
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 after explicit reset initialization"
+      },
+      "acceptance_condition": "planned inspection verifies declared runtime inputs exclude live truth and evaluation remains independent",
+      "source_locators": [
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden",
+        "systems_engineering/models/architecture.md#modular-boundaries"
+      ]
+    },
+    {
+      "key": "PILOT-ONLY-ACCEPTANCE-03",
+      "level": "system_constraint",
+      "status": "pilot_only_candidate",
+      "title": "Frozen acceptance-field reference",
+      "statement": "Any assessment of the signed three-axis step scenario shall cite the approved G0 v2 configuration fields for its event window and metrics instead of copying numerical thresholds into a second requirement source.",
+      "rationale": "This trial represents a performance/acceptance reference while preserving the JSON contract as the sole parameter source and avoiding a false performance result.",
+      "parent": "PILOT-ONLY-NEED-01",
+      "applicability": {
+        "state": "applicable",
+        "scope": "current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed"
+      },
+      "acceptance_condition": "planned inspection verifies each assessment points to a versioned JSON field and does not duplicate a numeric threshold",
+      "source_locators": [
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance"
+      ]
+    },
+    {
+      "key": "PILOT-ONLY-LEGACY-04",
+      "level": "applicability_record",
+      "status": "pilot_only_candidate",
+      "title": "Preserved legacy control applicability",
+      "statement": "For current B0, the applicability record shall preserve CTL-REQ-001 and CTL-REQ-002 unchanged and record their approved not-applicable status without claiming that either legacy performance threshold is satisfied.",
+      "rationale": "This trial represents a non-applicable legacy relationship. The legacy identifiers remain references only and are never candidate identifiers for reuse.",
+      "parent": "PILOT-ONLY-NEED-01",
+      "applicability": {
+        "state": "not_applicable",
+        "scope": "current B0 only; CTL-REQ-001 and CTL-REQ-002 remain preserved for their historical scopes under the approved disposition",
+        "approval_ref": "PILOT-SRC-G0-APPROVAL-01"
+      },
+      "acceptance_condition": "planned inspection verifies both legacy identifiers, their decision locator, and the absence of a satisfaction claim",
+      "source_locators": [
+        "systems_engineering/requirements/legacy_requirements.md#control-requirements",
+        "systems_engineering/reports/b0/g0_approval_decision.md#决定",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability"
+      ]
+    },
+    {
+      "key": "PILOT-ONLY-G2-05",
+      "level": "component_constraint",
+      "status": "pilot_only_candidate",
+      "title": "Planned controller interface boundary",
+      "statement": "The planned G2 controller shall consume the declared command, state estimate, and paired actuator feedback; it shall expose requested torque, limited target, and saturation status under the approved reset and step contract.",
+      "rationale": "This is a planned component candidate used to test truthful planned/not-run status. It does not claim a G2 implementation or closed-loop evidence.",
+      "parent": "PILOT-ONLY-INTERFACE-02",
+      "applicability": {
+        "state": "applicable",
+        "scope": "planned G2 controller only; not an implemented or accepted component"
+      },
+      "acceptance_condition": "planned G2 verification defines inputs, reset and step behavior, an independent oracle, and execution evidence before any pass claim",
+      "source_locators": [
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command",
+        "05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller"
+      ]
+    }
+  ]
+}

@@ -11,11 +11,15 @@ claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
 1. **Purpose and scope** — [project charter](project_charter.md) and
    [development baseline](development_baseline.md).
 2. **Models** — [architecture source](models/architecture.md),
-   [G0 model contract](models/g0_contract.md), and the
-   [B0 system views](models/system_views.md).
+   [G0 model contract](models/g0_contract.md), [B0 system views](models/system_views.md),
+   and the [structured-pilot modelling conventions](models/modeling_conventions.md).
 3. **Requirements state** — [legacy requirements and applicability](requirements/legacy_requirements.md).
-   G1.5-A does not create or freeze new B0 requirement identifiers; that is a
-   later G1.5-B decision.
+   The isolated [G1.5-B phase-one pilot](../tools/systems_engineering/g15b_pilot/README.md) and its
+   [decision package](reports/b0/g15b_phase1_requirements_tooling_numbering_decision.md)
+   remain non-authoritative until PA review and maintainer approval; they do
+   not create or freeze new B0 requirement identifiers. The current pilot has
+   one structured JSON record source and controlled StrictDoc/Markdown/model
+   projections; it is not a formal SysML conformance or graphical-view claim.
 4. **Development state** — [current status snapshot](reports/current_status.md)
    and the module-local implementations under `01_simulation/` and
    `05_integration/`.
