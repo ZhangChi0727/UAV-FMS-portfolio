@@ -16,7 +16,11 @@ PILOT_ROOT = TOOLS_ROOT / "g15b_pilot"
 sys.path.insert(0, str(TOOLS_ROOT))
 
 from check_g15b_phase1_pilot import check_pilot  # noqa: E402
-from g15b_pilot.build_pilot_views import check_outputs, render_outputs  # noqa: E402
+from g15b_pilot.build_pilot_views import (  # noqa: E402
+    check_outputs,
+    render_outputs,
+    render_preview_html,
+)
 from g15b_pilot.pilot_contract import (  # noqa: E402
     CONTRACT_PATH,
 MODEL_PATH,
@@ -303,3 +307,13 @@ def test_generated_sources_are_current_and_use_the_single_json_body_source() -> 
     assert "do not edit this Markdown file" in rendered[
         PILOT_ROOT / "lightweight" / "b0_phase1_pilot.md"
     ]
+
+
+def test_local_review_preview_links_records_model_parent_and_planned_objects() -> None:
+    contract, model = load_validated_pilot(REPO_ROOT)
+    preview = render_preview_html(contract, model)
+    assert 'href="#PILOT-ONLY-NEED-01"' in preview
+    assert 'href="#PILOT-MODEL-CONTROLLER-01"' in preview
+    assert 'id="PILOT-MODEL-CONTROLLER-01"' in preview
+    assert 'id="PILOT-DEV-CONTROLLER-CORE-01"' in preview
+    assert 'id="PILOT-VER-G2-INTERFACE-01"' in preview

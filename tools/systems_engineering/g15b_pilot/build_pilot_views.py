@@ -36,6 +36,13 @@ def _relation_rows(contract: dict[str, Any], source_id: str) -> list[dict[str, A
     return [relation for relation in contract["relations"] if relation["source_id"] == source_id]
 
 
+def _identity_link(identity: str, label: str | None = None) -> str:
+    """Render an internal review-page link for a stable pilot identity."""
+
+    visible = label if label is not None else identity
+    return f'<a href="#{escape(identity)}"><code>{escape(visible)}</code></a>'
+
+
 def render_sdoc(contract: dict[str, Any]) -> str:
     """Render body and native Parent hierarchy as a StrictDoc projection.
 
@@ -202,9 +209,26 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
     """Create a local-only review page; it is intentionally never committed."""
 
     locators = _locator_map(contract)
+    model_elements = {element["id"]: element for element in contract["model_elements"]}
+    development_objects = {
+        element["id"]: element for element in contract["development_objects"]
+    }
+    verification_provisions = {
+        element["id"]: element for element in contract["verification_provisions"]
+    }
+    known_targets = set(model_elements) | set(development_objects) | set(verification_provisions)
     records = []
     for record in contract["records"]:
         source_list = "".join(f"<li><code>{escape(locators[key]['locator'])}</code></li>" for key in record["source_locator_ids"])
+        parent = _identity_link(record["parent"]) if record["parent"] is not None else "none"
+        relation_items = []
+        for relation in _relation_rows(contract, record["key"]):
+            target_id = relation["target_id"]
+            target = _identity_link(target_id) if target_id in known_targets else f"<code>{escape(target_id)}</code>"
+            relation_items.append(
+                f"<li><code>{escape(relation['type'])}</code> → {target} (project_extension)</li>"
+            )
+        relation_list = "".join(relation_items)
         records.append(
             "\n".join(
                 [
@@ -215,7 +239,7 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
                     "<dt>Approval</dt><dd>candidate_only</dd>",
                     f"<dt>Applicability</dt><dd>{escape(record['applicability']['state'])}</dd>",
                     f"<dt>Scope</dt><dd>{escape(record['applicability']['scope'])}</dd>",
-                    f"<dt>Parent</dt><dd>{escape(record['parent'] or 'none')}</dd>",
+                    f"<dt>Parent</dt><dd>{parent}</dd>",
                     f"<dt>Evidence</dt><dd>{escape(record['evidence_status'])}</dd>",
                     "</dl>",
                     "<h3>Statement</h3>",
@@ -227,12 +251,7 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
                     "<h3>Source locators</h3>",
                     f"<ul>{source_list}</ul>",
                     "<h3>Cross-domain links</h3>",
-                    "<ul>"
-                    + "".join(
-                        f"<li><code>{escape(relation['type'])}</code> → <code>{escape(relation['target_id'])}</code> (project_extension)</li>"
-                        for relation in _relation_rows(contract, record["key"])
-                    )
-                    + "</ul>",
+                    f"<ul>{relation_list}</ul>",
                     "</article>",
                 ]
             )
@@ -242,20 +261,46 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
         f"<li><code>{escape(source)}.{escape(source_feature)}</code> → <code>{escape(target)}.{escape(target_feature)}</code></li>"
         for source, source_feature, target, target_feature in sorted(model.flows)
     )
-    model_elements = {element["id"]: element for element in contract["model_elements"]}
     model_rows = "".join(
-        "<tr>"
-        f"<td><code>{escape(identity)}</code></td>"
+        f'<tr id="{escape(identity)}">'
+        f"<td>{_identity_link(identity)}</td>"
         f"<td>{escape(model_elements[identity]['display_name'])}</td>"
         f"<td><code>{escape(kind)}</code></td>"
         f"<td>{escape(model_elements[identity]['scope'])}</td>"
-        f"<td>{escape(', '.join(model_elements[identity]['related_record_keys']))}</td>"
+        "<td>"
+        + ", ".join(
+            _identity_link(record_key)
+            for record_key in model_elements[identity]["related_record_keys"]
+        )
+        + "</td>"
         "</tr>"
         for identity, kind in sorted(model.definitions.items())
         if identity in model_elements
     )
+    development_rows = "".join(
+        f'<tr id="{escape(identity)}">'
+        f"<td>{_identity_link(identity)}</td>"
+        f"<td>{escape(object_['kind'])}</td>"
+        f"<td>{escape(object_['responsible_component'])}</td>"
+        f"<td>{escape(object_['lifecycle'])}</td>"
+        "</tr>"
+        for identity, object_ in development_objects.items()
+    )
+    verification_rows = "".join(
+        f'<tr id="{escape(identity)}">'
+        f"<td>{_identity_link(identity)}</td>"
+        f"<td>{escape(provision['method'])}</td>"
+        f"<td>{escape(provision['planning_status'])} / {escape(provision['execution_status'])}</td>"
+        f"<td>{escape(provision['acceptance_condition'])}</td>"
+        "</tr>"
+        for identity, provision in verification_provisions.items()
+    )
     trace_rows = "".join(
-        f"<tr><td>{escape(relation['type'])}</td><td><code>{escape(relation['source_id'])}</code></td><td><code>{escape(relation['target_id'])}</code></td></tr>"
+        "<tr>"
+        f"<td>{escape(relation['type'])}</td>"
+        f"<td>{_identity_link(relation['source_id'])}</td>"
+        f"<td>{_identity_link(relation['target_id'])}</td>"
+        "</tr>"
         for relation in contract["relations"]
     )
     return f"""<!doctype html>
@@ -276,6 +321,8 @@ code {{ overflow-wrap: anywhere; color: #7c2d12; }} .scroll-table {{ overflow-x:
 {''.join(records)}
 <section><h2>Parsed model slice</h2><div class="scroll-table"><table><thead><tr><th>Identity</th><th>Name</th><th>Parsed type</th><th>Scope</th><th>Related records</th></tr></thead><tbody>{model_rows}</tbody></table></div></section>
 <section><h2>Parsed model flow endpoints</h2><ul>{flow_rows}</ul><p>This textual view is generated from the fixed parser AST; it is not standard SysML graphical notation.</p></section>
+<section><h2>Planned development allocation</h2><div class="scroll-table"><table><thead><tr><th>Identity</th><th>Kind</th><th>Responsible component</th><th>Lifecycle</th></tr></thead><tbody>{development_rows}</tbody></table></div></section>
+<section><h2>Planned verification provisions</h2><div class="scroll-table"><table><thead><tr><th>Identity</th><th>Method</th><th>Planning / execution</th><th>Acceptance condition</th></tr></thead><tbody>{verification_rows}</tbody></table></div></section>
 <section><h2>Cross-domain trace links</h2><table><thead><tr><th>Relation</th><th>Source</th><th>Target</th></tr></thead><tbody>{trace_rows}</tbody></table></section>
 </main></body></html>"""
 

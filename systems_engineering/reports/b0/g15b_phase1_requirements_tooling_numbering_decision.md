@@ -307,7 +307,7 @@ StrictDoc 0.30.1 rejected arbitrary fields during this increment. That actual to
 
 ### Migration coverage and checks
 
-The earlier fixture had 26 collected test instances: 21 text/checker instances including four JSON-pointer-index parameters, plus five native StrictDoc CLI instances. The structured suite retains the native five and replaces the hand-maintained two-text equivalence test with a test-only pre-structured semantic baseline plus controlled-projection drift checks. It expands to 36 collected instances, without skips, xfails, or `continue-on-error`.
+The earlier fixture had 26 collected test instances: 21 text/checker instances including four JSON-pointer-index parameters, plus five native StrictDoc CLI instances. The structured suite retains the native five and replaces the hand-maintained two-text equivalence test with a test-only pre-structured semantic baseline plus controlled-projection drift checks. It expands to 37 collected instances, without skips, xfails, or `continue-on-error`.
 
 | Earlier coverage | Structured replacement / retention |
 |---|---|
@@ -318,6 +318,7 @@ The earlier fixture had 26 collected test instances: 21 text/checker instances i
 | Mermaid-derived model references | Actual `sysmlpy` AST identity/type/flow checks, unknown-target and dangling/invalid-model counterexamples. |
 | Planned/not-run wording | Separate development lifecycle, verification execution status, and evidence collection checks that reject planned `pass` or attached evidence. |
 | No equivalent earlier coverage | Schema required-field/enumeration checks; typed relation endpoint/direction checks; G2 trace-chain check; legal M:N relation; truth-to-controller leak check. |
+| Local review navigation | A generated-preview check requires stable identity links for record navigation, native Parent traversal, model elements, and planned development/verification objects. |
 
 The scoped commands for final PR validation are:
 
