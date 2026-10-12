@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/tools/systems_engineering/g15b_pilot/contract/pilot_structure.schema.json",
+  "title": "B0 G1.5-B phase-one structured pilot contract",
+  "description": "Non-authoritative structured review contract for five PILOT-ONLY records.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pilot_status",
+    "record_source",
+    "records",
+    "source_locators",
+    "model_elements",
+    "development_objects",
+    "verification_provisions",
+    "execution_evidence",
+    "relations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "pilot_status": {
+      "const": "non_authoritative_phase_one"
+    },
+    "record_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authoritative_edit_source", "generated_outputs"],
+      "properties": {
+        "authoritative_edit_source": {
+          "const": "tools/systems_engineering/g15b_pilot/contract/pilot_structure.json"
+        },
+        "generated_outputs": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "records": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {"$ref": "#/$defs/record"}
+    },
+    "source_locators": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/sourceLocator"}
+    },
+    "model_elements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/modelElement"}
+    },
+    "development_objects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/developmentObject"}
+    },
+    "verification_provisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/verificationProvision"}
+    },
+    "execution_evidence": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/executionEvidence"}
+    },
+    "relations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/relation"}
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9-]*[A-Z0-9]$"
+    },
+    "pilotRecordId": {
+      "type": "string",
+      "pattern": "^PILOT-ONLY-[A-Z0-9-]+$"
+    },
+    "sourceLocator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "locator", "role"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-SRC-[A-Z0-9-]+$"},
+        "locator": {"type": "string", "minLength": 3},
+        "role": {
+          "enum": ["source", "approval", "verification_plan", "g0_contract"]
+        },
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "scope"],
+      "properties": {
+        "state": {"enum": ["applicable", "not_applicable"]},
+        "scope": {"type": "string", "minLength": 1},
+        "approval_ref": {"type": "string", "pattern": "^PILOT-SRC-[A-Z0-9-]+$"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"state": {"const": "not_applicable"}}},
+          "then": {"required": ["approval_ref"]},
+          "else": {"not": {"required": ["approval_ref"]}}
+        }
+      ]
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "level",
+        "status",
+        "tags",
+        "title",
+        "statement",
+        "rationale",
+        "candidate_only",
+        "parent",
+        "source_locator_ids",
+        "applicability",
+        "acceptance_condition",
+        "evidence_status"
+      ],
+      "properties": {
+        "key": {"$ref": "#/$defs/pilotRecordId"},
+        "level": {
+          "enum": ["user_need", "system_constraint", "applicability_record", "component_constraint"]
+        },
+        "status": {"const": "pilot_only_candidate"},
+        "tags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^[a-z0-9_]+$"},
+          "uniqueItems": true
+        },
+        "title": {"type": "string", "minLength": 1},
+        "statement": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1},
+        "candidate_only": {"const": true},
+        "parent": {
+          "anyOf": [
+            {"$ref": "#/$defs/pilotRecordId"},
+            {"type": "null"}
+          ]
+        },
+        "source_locator_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "pattern": "^PILOT-SRC-[A-Z0-9-]+$"},
+          "uniqueItems": true
+        },
+        "applicability": {"$ref": "#/$defs/applicability"},
+        "acceptance_condition": {"type": "string", "minLength": 1},
+        "evidence_status": {"const": "planned/not_run"}
+      }
+    },
+    "modelElement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sysml_kind", "intended_role"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-MODEL-[A-Z0-9-]+$"},
+        "sysml_kind": {
+          "enum": ["item_definition", "part_definition", "interface_definition", "requirement_definition", "verification_definition"]
+        },
+        "intended_role": {"type": "string", "minLength": 1}
+      }
+    },
+    "developmentObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "lifecycle", "allocation_statement"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-DEV-[A-Z0-9-]+$"},
+        "kind": {"enum": ["integration_adapter", "controller_core", "review_boundary"]},
+        "lifecycle": {"enum": ["planned", "implemented"]},
+        "allocation_statement": {"type": "string", "minLength": 1},
+        "implementation_ref": {
+          "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"lifecycle": {"const": "planned"}}},
+          "then": {"properties": {"implementation_ref": {"type": "null"}}}
+        }
+      ]
+    },
+    "verificationProvision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "method",
+        "planning_status",
+        "execution_status",
+        "inputs",
+        "steps",
+        "independent_oracle",
+        "acceptance_condition",
+        "evidence_ids"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-VER-[A-Z0-9-]+$"},
+        "method": {"enum": ["inspection", "configuration_review", "interface_review"]},
+        "planning_status": {"enum": ["planned", "defined"]},
+        "execution_status": {"enum": ["not_run", "pass", "fail"]},
+        "inputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "independent_oracle": {"type": "string", "minLength": 1},
+        "acceptance_condition": {"type": "string", "minLength": 1},
+        "evidence_ids": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^PILOT-EVID-[A-Z0-9-]+$"},
+          "uniqueItems": true
+        }
+      }
+    },
+    "executionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "command", "environment", "result", "locator"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-EVID-[A-Z0-9-]+$"},
+        "command": {"type": "string", "minLength": 1},
+        "environment": {"type": "string", "minLength": 1},
+        "result": {"enum": ["pass", "fail"]},
+        "locator": {"type": "string", "minLength": 3}
+      }
+    },
+    "relation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "source_id", "source_kind", "target_id", "target_kind", "direction", "origin", "source_locator_id"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PILOT-REL-[A-Z0-9-]+$"},
+        "type": {"enum": ["models", "allocated_to", "specified_by", "development_checked_by", "evidenced_by"]},
+        "source_id": {"$ref": "#/$defs/id"},
+        "source_kind": {"enum": ["record", "model_element", "development_object", "verification_provision"]},
+        "target_id": {"$ref": "#/$defs/id"},
+        "target_kind": {"enum": ["model_element", "development_object", "verification_provision", "execution_evidence"]},
+        "direction": {"const": "forward"},
+        "origin": {"enum": ["project_extension", "sysml_native"]},
+        "source_locator_id": {"type": "string", "pattern": "^PILOT-SRC-[A-Z0-9-]+$"}
+      }
+    }
+  }
+}
