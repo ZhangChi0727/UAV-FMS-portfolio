@@ -14,6 +14,40 @@ import re
 from pathlib import Path
 from typing import Any
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+LEGACY_APPROVAL_SOURCE = "07_docs/b0/g0_approval_decision.md"
+MIGRATED_APPROVAL_TARGET = Path("systems_engineering/reports/b0/g0_approval_decision.md")
+
+
+def _resolve_approval_record_source(source: str) -> Path:
+    """Resolve the one frozen historical source through the G1.5-A move.
+
+    The JSON contract deliberately retains the original source string.  The
+    validator owns the compatibility mapping so callers cannot substitute a
+    similarly named file, a path traversal, or a cwd-relative guess.
+    """
+
+    source_path = source.split(";", 1)[0].strip() if isinstance(source, str) else ""
+    if source_path != LEGACY_APPROVAL_SOURCE:
+        _fail(
+            "contract_status.approval_record.decision_source",
+            f"must begin with the exact repository path {LEGACY_APPROVAL_SOURCE}",
+        )
+    target = (REPOSITORY_ROOT / MIGRATED_APPROVAL_TARGET).resolve()
+    try:
+        target.relative_to(REPOSITORY_ROOT)
+    except ValueError:
+        _fail(
+            "contract_status.approval_record.decision_source",
+            "compatibility target must remain inside the repository",
+        )
+    if not target.is_file():
+        _fail(
+            "contract_status.approval_record.decision_source",
+            f"referenced file is missing: {MIGRATED_APPROVAL_TARGET.as_posix()}",
+        )
+    return target
+
 
 SUPPORTED_SCHEMA_VERSIONS = {"b0-g0-contract/v1", "b0-g0-contract/v2"}
 
@@ -2970,13 +3004,7 @@ def validate_config(config: dict[str, Any]) -> None:
             value = record[field]
             if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
                 _fail(f"contract_status.approval_record.{field}", "must be a 40-character lowercase hexadecimal SHA")
-        source = record["decision_source"]
-        expected_source = "07_docs/b0/g0_approval_decision.md"
-        if source.split(";", 1)[0].strip() != expected_source:
-            _fail("contract_status.approval_record.decision_source", f"must begin with the exact repository path {expected_source}")
-        approval_path = Path(__file__).resolve().parents[2] / expected_source
-        if not approval_path.is_file():
-            _fail("contract_status.approval_record.decision_source", f"referenced file is missing: {expected_source}")
+        _resolve_approval_record_source(record["decision_source"])
         if record["decision"] != "approved_by_project_administrator":
             _fail("contract_status.approval_record.decision", "must identify the approving authority")
         if record["ctl_applicability"] != {
