@@ -33,6 +33,11 @@ REQUIRED_METADATA = (
     "candidate only",
 )
 PILOT_KEY = re.compile(r"PILOT-ONLY-[A-Z0-9-]+$")
+EXPECTED_LEGACY_APPROVAL_REF = "systems_engineering/reports/b0/g0_approval_decision.md#决定"
+APPROVED_LEGACY_DISPOSITIONS = {
+    "CTL-REQ-001": "not_applicable",
+    "CTL-REQ-002": "not_applicable",
+}
 
 
 @dataclass(frozen=True)
@@ -217,7 +222,16 @@ def _check_locator(repo_root: Path, locator: str, label: str) -> None:
             value = json.loads(path.read_text(encoding="utf-8"))
             for segment in fragment[1:].split("/"):
                 segment = segment.replace("~1", "/").replace("~0", "~")
-                value = value[int(segment)] if isinstance(value, list) else value[segment]
+                if isinstance(value, list):
+                    _require(
+                        re.fullmatch(r"(?:0|[1-9][0-9]*)", segment) is not None,
+                        f"{label} uses an invalid JSON array index: {locator}",
+                    )
+                    value = value[int(segment)]
+                else:
+                    value = value[segment]
+        except PilotError:
+            raise
         except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise PilotError(f"{label} JSON pointer is missing: {locator}") from exc
     elif path.suffix == ".md":
@@ -225,6 +239,27 @@ def _check_locator(repo_root: Path, locator: str, label: str) -> None:
         _require(fragment in _anchors(path.read_text(encoding="utf-8")), f"{label} anchor is missing: {locator}")
     else:
         raise PilotError(f"{label} uses an unsupported fragment format: {locator}")
+
+
+def _validate_legacy_approval(record: PilotRecord, repo_root: Path) -> None:
+    """Bind the fixed trial's legacy disposition to its actual approval record."""
+
+    _check_locator(repo_root, record.approval_ref, f"approval ref for {record.key}")
+    _require(
+        record.approval_ref == EXPECTED_LEGACY_APPROVAL_REF,
+        f"{record.key} must use the fixed legacy approval decision",
+    )
+    approval_path = repo_root / EXPECTED_LEGACY_APPROVAL_REF.partition("#")[0]
+    decision_text = approval_path.read_text(encoding="utf-8")
+    for legacy_id, disposition in APPROVED_LEGACY_DISPOSITIONS.items():
+        _require(
+            re.search(
+                rf"`{re.escape(legacy_id)}`[^\n]*`{re.escape(disposition)}`",
+                decision_text,
+            )
+            is not None,
+            f"{record.key} approval decision lacks {legacy_id} {disposition} disposition",
+        )
 
 
 def _known_model_elements(repo_root: Path) -> set[str]:
@@ -275,7 +310,7 @@ def validate_records(records: Iterable[PilotRecord], repo_root: Path) -> None:
         if record.level == "applicability_record":
             _require(record.applicability == "not_applicable", f"{record.key} must state not_applicable applicability")
             _require(record.approval_ref, f"{record.key} lacks approval ref for not_applicable status")
-            _check_locator(repo_root, record.approval_ref, f"approval ref for {record.key}")
+            _validate_legacy_approval(record, repo_root)
         else:
             _require(record.applicability == "applicable", f"{record.key} must state applicable applicability")
             _require(record.allocation, f"{record.key} lacks allocation")
