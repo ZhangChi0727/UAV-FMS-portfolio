@@ -1,5 +1,5 @@
 [DOCUMENT]
-TITLE: B0 G1.5-B phase-one non-authoritative requirements-tooling pilot
+TITLE: B0 G1.5-B requirements-tooling pilot
 UID: PILOT-ONLY-DOCUMENT
 VERSION: @GIT_VERSION (Git branch: @GIT_BRANCH)
 CLASSIFICATION: Internal
