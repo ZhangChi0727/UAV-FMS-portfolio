@@ -1,0 +1,5 @@
+# Isolated G1.5-B phase-one requirements-tooling trial only.
+# Do not install into .venv-b0, the Windows literature environment, or a
+# project-wide development environment.
+pytest==8.3.5
+strictdoc==0.30.1
