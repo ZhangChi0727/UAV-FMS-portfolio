@@ -7,11 +7,18 @@
  */
 
 :root {
+  --g15b-pilot-ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+  --g15b-pilot-code-font: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  --code-font-family: var(--g15b-pilot-code-font);
   --g15b-pilot-accent: #1d4ed8;
   --g15b-pilot-accent-soft: #eff6ff;
   --g15b-pilot-border: #cbd5e1;
   --g15b-pilot-detail: #f8fafc;
   --g15b-pilot-text-muted: #475569;
+}
+
+body[data-viewtype="document"] {
+  font-family: var(--g15b-pilot-ui-font);
 }
 
 /* A one-document pilot does not need a second, empty-feeling project tree. */
