@@ -326,13 +326,18 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
 <html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
 <title>B0 G1.5-B structured pilot review</title>
 <style>
-:root {{ color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; color: #172033; background: #f4f7fb; }}
-body {{ margin: 0; line-height: 1.5; }} header {{ background: #102a43; color: #fff; padding: 1.5rem max(1.2rem, calc((100vw - 1120px)/2)); }}
-header p {{ max-width: 70rem; margin: .4rem 0 0; }} main {{ max-width: 1120px; margin: 0 auto; padding: 1.2rem; }}
-nav {{ background: #e6f0ff; border: 1px solid #b9d2f2; padding: .8rem 1rem; border-radius: .45rem; }} nav ul {{ columns: 2; margin: .3rem 0; padding-left: 1.2rem; }}
-article, section {{ background: #fff; border: 1px solid #d8e0eb; border-radius: .45rem; margin: 1rem 0; padding: 1rem 1.2rem; box-shadow: 0 1px 2px #102a4312; }}
-h1, h2, h3 {{ line-height: 1.2; }} h2 {{ color: #0c4a6e; }} h3 {{ margin-bottom: .25rem; }} dl {{ display: grid; grid-template-columns: max-content 1fr; gap: .25rem .8rem; }} dt {{ font-weight: 700; }} dd {{ margin: 0; }}
-code {{ overflow-wrap: anywhere; color: #7c2d12; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }} .scroll-table {{ overflow-x: auto; }} table {{ border-collapse: collapse; width: 100%; }} th, td {{ border: 1px solid #cbd5e1; padding: .45rem; text-align: left; vertical-align: top; }} th {{ background: #edf4ff; }}
+:root {{ color-scheme: dark; font-family: Consolas, "Cascadia Mono", "DejaVu Sans Mono", monospace; color: #d7d7d7; background: #1c1c1c; }}
+* {{ box-sizing: border-box; font-family: inherit; }} body {{ margin: 0; line-height: 1.55; background: #1c1c1c; }}
+header {{ background: #005f5f; color: #ffffff; padding: .8rem max(1.2rem, calc((100vw - 1120px)/2)); border-bottom: 2px solid #00afaf; }}
+header h1 {{ margin: 0; font-size: 1.25rem; }} header h1::before {{ content: ":review "; color: #afff5f; }}
+header p {{ max-width: 70rem; margin: .35rem 0 0; color: #d7ffff; }} main {{ max-width: 1120px; margin: 0 auto; padding: 1.2rem; }}
+a {{ color: #5fd7ff; text-decoration-color: #0087af; }} a:visited {{ color: #af87ff; }} a:focus-visible {{ outline: 1px solid #ffff5f; outline-offset: 2px; }}
+nav {{ background: #121212; border: 1px solid #585858; border-left: 4px solid #00af87; padding: .8rem 1rem; }} nav strong {{ color: #afff5f; }} nav ul {{ columns: 2; margin: .3rem 0; padding-left: 1.2rem; }}
+article, section {{ background: #262626; border: 1px solid #585858; border-left: 3px solid #5f5f5f; margin: 1rem 0; padding: 1rem 1.2rem; }}
+article:target, section:target {{ border-left-color: #ffff5f; background: #303030; }}
+h1, h2, h3 {{ line-height: 1.25; }} h2 {{ color: #87d7ff; }} h3 {{ margin-bottom: .25rem; color: #afff5f; }} dl {{ display: grid; grid-template-columns: max-content 1fr; gap: .25rem .8rem; }} dt {{ color: #87d7ff; font-weight: 700; }} dd {{ margin: 0; }}
+code {{ overflow-wrap: anywhere; color: #ffd75f; font-family: inherit; }} .scroll-table {{ overflow-x: auto; }} table {{ border-collapse: collapse; width: 100%; }} th, td {{ border: 1px solid #585858; padding: .45rem; text-align: left; vertical-align: top; }} th {{ background: #303030; color: #afff5f; }} tr:nth-child(even) td {{ background: #2b2b2b; }}
+::selection {{ color: #1c1c1c; background: #ffff5f; }}
 @media (max-width: 720px) {{ nav ul {{ columns: 1; }} dl {{ grid-template-columns: 1fr; gap: .1rem; }} dd {{ margin-bottom: .5rem; }} main {{ padding: .7rem; }} article, section {{ padding: .8rem; }} }}
 </style></head><body>
 <header><h1>B0 G1.5-B structured pilot review</h1><p>Local review-only projection. Non-authoritative; planned/not-run is not execution evidence, a satisfied requirement, or a frozen baseline.</p></header>
