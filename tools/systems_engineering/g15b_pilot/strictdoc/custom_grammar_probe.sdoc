@@ -1,0 +1,30 @@
+[DOCUMENT]
+TITLE: StrictDoc 0.30.1 custom-grammar capability probe
+UID: PILOT-CUSTOM-GRAMMAR-PROBE
+
+[GRAMMAR]
+ELEMENTS:
+- TAG: REQUIREMENT
+  PROPERTIES:
+    IS_COMPOSITE: False
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ACCEPTANCE
+    TYPE: String
+    REQUIRED: True
+  RELATIONS:
+  - TYPE: Parent
+
+[REQUIREMENT]
+UID: PILOT-CUSTOM-FIELD-01
+TITLE: Custom field probe
+STATEMENT: StrictDoc shall parse a declared custom field in this fixed-version probe.
+ACCEPTANCE: The StrictDoc 0.30.1 reader and native HTML exporter accept and render this value.

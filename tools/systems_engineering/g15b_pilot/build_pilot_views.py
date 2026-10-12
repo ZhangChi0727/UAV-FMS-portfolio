@@ -8,9 +8,9 @@ from pathlib import Path
 from typing import Any
 
 try:  # direct script execution and package import are both supported in CI
-    from .pilot_contract import MODEL_PATH, PILOT_ROOT, PilotError, load_validated_pilot
+    from .pilot_contract import PILOT_ROOT, PilotError, load_validated_pilot
 except ImportError:  # pragma: no cover - exercised by the direct CLI invocation
-    from pilot_contract import MODEL_PATH, PILOT_ROOT, PilotError, load_validated_pilot
+    from pilot_contract import PILOT_ROOT, PilotError, load_validated_pilot
 
 
 OUTPUTS = {
@@ -46,9 +46,9 @@ def _identity_link(identity: str, label: str | None = None) -> str:
 def render_sdoc(contract: dict[str, Any]) -> str:
     """Render body and native Parent hierarchy as a StrictDoc projection.
 
-    StrictDoc 0.30.1 accepts only its fixed requirement field set.  Rich pilot
-    fields therefore stay in the JSON contract and are displayed by the
-    generated Markdown/HTML views rather than being smuggled into COMMENT.
+    This projection deliberately uses the default grammar. StrictDoc 0.30.1
+    also supports declared custom grammars; the separate comparison fixture
+    evaluates that option without making this generated file another source.
     """
 
     result = [
@@ -107,7 +107,7 @@ def render_markdown(contract: dict[str, Any]) -> str:
                 "",
                 f"- **Title:** {record['title']}",
                 f"- **Record type:** {record['level']}",
-                f"- **Approval status:** candidate_only",
+                "- **Approval status:** candidate_only",
                 f"- **Applicability:** {record['applicability']['state']}",
                 f"- **Scope:** {record['applicability']['scope']}",
                 f"- **Parent:** {record['parent'] or 'none'}",
@@ -148,6 +148,10 @@ def render_model_view(contract: dict[str, Any], model: Any) -> str:
     """Render a readable project view from contract relations and parser AST."""
 
     model_elements = {item["id"]: item for item in contract["model_elements"]}
+    related_records: dict[str, list[str]] = {identity: [] for identity in model_elements}
+    for relation in contract["relations"]:
+        if relation["type"] == "models":
+            related_records[relation["target_id"]].append(relation["source_id"])
     result = [
         "# B0 truth/control model slice — generated review view",
         "",
@@ -163,7 +167,7 @@ def render_model_view(contract: dict[str, Any], model: Any) -> str:
     for identity in sorted(model.definitions):
         if identity in model_elements:
             element = model_elements[identity]
-            records = ", ".join(f"`{record}`" for record in element["related_record_keys"])
+            records = ", ".join(f"`{record}`" for record in sorted(related_records[identity]))
             result.append(
                 f"| `{identity}` | {element['display_name']} | `{model.definitions[identity]}` | {element['scope']} | {records} | {element['intended_role']} |"
             )
@@ -210,6 +214,10 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
 
     locators = _locator_map(contract)
     model_elements = {element["id"]: element for element in contract["model_elements"]}
+    related_records: dict[str, list[str]] = {identity: [] for identity in model_elements}
+    for relation in contract["relations"]:
+        if relation["type"] == "models":
+            related_records[relation["target_id"]].append(relation["source_id"])
     development_objects = {
         element["id"]: element for element in contract["development_objects"]
     }
@@ -270,7 +278,7 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
         "<td>"
         + ", ".join(
             _identity_link(record_key)
-            for record_key in model_elements[identity]["related_record_keys"]
+            for record_key in sorted(related_records[identity])
         )
         + "</td>"
         "</tr>"

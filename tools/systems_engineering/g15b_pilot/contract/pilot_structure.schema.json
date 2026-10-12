@@ -171,7 +171,7 @@
     "modelElement": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "display_name", "scope", "sysml_kind", "intended_role", "related_record_keys"],
+      "required": ["id", "display_name", "scope", "sysml_kind", "intended_role"],
       "properties": {
         "id": {"type": "string", "pattern": "^PILOT-MODEL-[A-Z0-9-]+$"},
         "display_name": {"type": "string", "minLength": 1},
@@ -179,13 +179,7 @@
         "sysml_kind": {
           "enum": ["item_definition", "part_definition", "interface_definition", "requirement_definition", "verification_definition"]
         },
-        "intended_role": {"type": "string", "minLength": 1},
-        "related_record_keys": {
-          "type": "array",
-          "minItems": 1,
-          "items": {"$ref": "#/$defs/pilotRecordId"},
-          "uniqueItems": true
-        }
+        "intended_role": {"type": "string", "minLength": 1}
       }
     },
     "developmentObject": {
@@ -196,7 +190,7 @@
         "id": {"type": "string", "pattern": "^PILOT-DEV-[A-Z0-9-]+$"},
         "kind": {"enum": ["integration_adapter", "controller_core", "review_boundary"]},
         "responsible_component": {"type": "string", "minLength": 1},
-        "lifecycle": {"enum": ["planned", "implemented"]},
+        "lifecycle": {"const": "planned"},
         "allocation_statement": {"type": "string", "minLength": 1},
         "implementation_path": {
           "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
@@ -239,8 +233,8 @@
       "properties": {
         "id": {"type": "string", "pattern": "^PILOT-VER-[A-Z0-9-]+$"},
         "method": {"enum": ["inspection", "configuration_review", "interface_review"]},
-        "planning_status": {"enum": ["planned", "defined"]},
-        "execution_status": {"enum": ["not_run", "pass", "fail"]},
+        "planning_status": {"const": "planned"},
+        "execution_status": {"const": "not_run"},
         "preconditions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "inputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "steps": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},

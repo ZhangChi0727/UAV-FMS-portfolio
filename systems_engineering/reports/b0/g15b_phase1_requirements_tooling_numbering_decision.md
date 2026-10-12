@@ -23,10 +23,11 @@ The active G1.5-B structured phase-one increment uses
 single editable pilot-record body and metadata source. It generates the
 StrictDoc and Markdown reader projections and uses the separate editable
 `model/b0_truth_control_slice.sysml` only for bounded model structure. The
-change is required because StrictDoc 0.30.1 accepts only its fixed native
-requirement fields: using it as the richer structured source would force
-locators, allocations, verification provisions, status separation and typed
-relations into `COMMENT` or a parallel hand-edited store.
+choice is not forced by a StrictDoc field limitation: StrictDoc 0.30.1 supports
+declared custom grammars and the retained probe successfully parses and renders
+an `ACCEPTANCE` field. JSON remains the experimental source because its schema
+and checker provide the current pilot's clearest cross-domain typing,
+phase-one state locks, deterministic projections, and migration oracle.
 
 This is a phase-one method experiment, not a maintainer-approved selection of
 a formal future source. It adds a JSON Schema, deterministic projections,
@@ -107,7 +108,10 @@ No fixture enters coverage accounting or claims implementation/verification.
 | Offline editing/review | UTF-8 text without a tool | UTF-8 text without a tool | Neither is generated or a database export. |
 | Key/hierarchy | Native `UID` plus `Parent` relation | Heading/key plus `Parent` field | Thin checker rejects duplicate/broken temporary relations. |
 | Rendering | Native HTML export to a temporary directory using the source-owned `strictdoc_config.py` and `presentation.css` | Directly reviewable text; no second renderer | Generated HTML is not committed or evidence of satisfaction. The native export copies the CSS as `html/_static/custom.css`; generated output is never hand-edited. |
-| Project-specific fields | Standard `COMMENT` labels in this fixture | Explicit labeled fields | Thin checker owns exact applicability/scope, approved-not-applicable reference, JSON pointers, Markdown anchors, model elements, verification and acceptance checks. |
+| Project-specific fields | Declared custom grammar fields are supported; the retained `ACCEPTANCE` probe parses and renders. The main generated projection deliberately uses the default grammar. | Explicit labeled fields | The JSON-led pilot checker owns applicability/scope, approval reference, locators, typed model/development/verification relations and phase-one state locks. |
+| Type/relationship expressiveness | Custom fields and native relations are available, but the trial has not designed a complete SDoc grammar for all cross-domain objects. | Labels require a separate checker and convention. | JSON Schema plus semantic checks currently provides the most explicit bounded contract. |
+| Generator/schema maintenance | A source-led SDoc design could reduce one projection but would require a reviewed custom grammar/import and equivalent project checks. | Low rendering cost but project semantics remain external. | JSON-led operation pays generator/schema cost and byte-drift checks. |
+| Recovery/drift | Plain text and native export are recoverable; a future SDoc-led migration must prove round-trip and relation preservation. | Plain text is recoverable; semantics depend on checker. | Current JSON source regenerates both reader formats and fails closed on drift. |
 | Git review | Plain-text diff | Plain-text diff | Five equivalent records only; not a full-baseline migration proof. |
 | Future migration | Plain-text source with rebuildable native output | Plain-text source | A later approved import is one-way and reviewed into one chosen source. The twin remains only as a fixture/conclusion. |
 
@@ -157,7 +161,8 @@ scoped commands there.
 # exit 0; 25 passed (timing recorded in the PR validation evidence)
 ```
 
-The native test suite proves that the evaluated StrictDoc CLI rejects a
+The native test suite proves that the evaluated StrictDoc CLI accepts and
+renders the retained declared `ACCEPTANCE` custom field, and rejects a
 duplicate temporary UID and a parent relation targeting an absent temporary
 UID; the thin checker separately proves the project-specific failures. The
 rendered HTML contained all five trial records, `planned/not_run`, and a
@@ -252,13 +257,15 @@ start C/G2/G3.
 
 ## Provisional recommendation, costs and stop conditions
 
-**Recommendation for PA review:** subject to the observed command evidence,
-provisionally prefer one StrictDoc `.sdoc` source for a future approved phase
-two baseline, retaining the small project checker for non-native semantics.
-It offers native hierarchy and readable temporary HTML while remaining text.
-Lightweight Markdown plus the same checker is the credible fallback, not a
-selection. Doorstop has not been installed/evaluated because StrictDoc is the
-requested first candidate, not because Doorstop is ruled out.
+**Current recommendation for PA review:** retain JSON-led operation for this
+bounded experimental pilot only, with generated default-grammar SDoc and
+Markdown readers. This minimizes immediate migration risk and keeps typed
+relations and phase-one truthfulness in one checked contract. It is not a
+formal-source selection. Before any later baseline, the maintainer must choose
+among (a) JSON-led continuation, (b) an SDoc-led custom-grammar pilot with
+equivalent relation/state validation and a one-way migration proof, or (c)
+another separately evaluated tool/governance approach. Doorstop remains
+unevaluated rather than rejected.
 
 Costs/limits: a pinned `strictdoc==0.30.1` dependency, isolated Ubuntu CI job,
 project checks for non-native semantics and a single future human-reviewed
@@ -291,7 +298,7 @@ This addendum records the active structured phase-one method. It does not rewrit
 |---|---|---|
 | Record body authority | `contract/pilot_structure.json` is the sole editable source for all five candidate statements and rationales. | No formal B0 requirement source has been selected or migrated. |
 | Rich metadata | Typed locator inventory, applicability, allocation, development objects, verification provisions, execution-evidence collection, and directed relations are schema-checked in the JSON contract. | No metadata is hidden in StrictDoc `COMMENT`; no evidence is fabricated. |
-| StrictDoc | Generated native-body/Parent projection with StrictDoc 0.30.1 HTML rendering. | StrictDoc's fixed field grammar is not represented as arbitrary custom native fields. |
+| StrictDoc | Generated default-grammar body/Parent projection plus a retained custom-grammar `ACCEPTANCE` capability probe under StrictDoc 0.30.1. | No claim that the main projection exhausts StrictDoc custom-field capability. |
 | SysML | A bounded textual `PILOT-MODEL-*` slice is parsed and AST-inspected. | No OMG conformance, graphical notation, execution, simulation, interchange, satisfaction, or verification verdict is claimed. |
 | G0/G1/G2/G3 | G0 field locators and the approved legacy disposition are checked; G2 objects remain planned/not-run. | No numerical threshold is copied, and no G1 behaviour or G2/G3 code is changed. |
 
@@ -303,11 +310,15 @@ The language reference is OMG SysML v2.0 Part 1 [`formal/2026-03-02`](https://ww
 
 The isolated dependency file pins `jsonschema==4.23.0`, `strictdoc==0.30.1`, and `sysmlpy==0.33.2` (plus the scoped test runner). `sysmlpy` is a third-party pure-Python parser/analyser. The implementation calls its grammar loader, model loader, and analyser, and consumes its AST to check stable model identities and flow endpoints. The observed fixed-version analysis issues are non-error naming-convention warnings caused by quoted, stable `PILOT-MODEL-*` identities; they are surfaced in the generated model view rather than suppressed. Metadata annotations are not used because this parser version's model builder does not support the needed annotation path.
 
-StrictDoc 0.30.1 rejected arbitrary fields during this increment. That actual tool result is why the generated SDoc contains only its supported native body and hierarchy fields, and why locators/relations/statuses remain typed JSON data instead of labels in `COMMENT`. The Markdown and local review HTML expose those fields for review. The HTML is a SHA-named, loopback-only temporary review page, not a standard SysML graphic or retained evidence artifact.
+StrictDoc 0.30.1 accepted the correctly declared custom `ACCEPTANCE` field and rendered it in native HTML. The main generated SDoc still uses the default body and hierarchy fields because this increment selected JSON-led cross-domain typing and deterministic projections for comparison. Locators/relations/statuses therefore remain typed JSON data instead of labels in `COMMENT`. The HTML is a SHA-named, loopback-only temporary review page, not a standard SysML graphic or retained evidence artifact.
+
+### Standard-view disposition
+
+The selected `sysmlpy==0.33.2` slice parses textual definitions and flows but does not render or validate the SysML v2 graphical/view notation required to close the work-order's standard-view item. The maintainer decision for this increment is therefore an explicit scoped deferral: retain the generated parser-AST reading aid for review, but do **not** claim it is a standard SysML view or that the standard-view acceptance item is closed. A later increment may close that item only with a standard-grounded view, notation/source mapping, and review evidence under a capable tool. Design-time verification definitions in this slice remain planned structure, never test verdicts.
 
 ### Migration coverage and checks
 
-The earlier fixture had 26 collected test instances: 21 text/checker instances including four JSON-pointer-index parameters, plus five native StrictDoc CLI instances. The structured suite retains the native five and replaces the hand-maintained two-text equivalence test with a test-only pre-structured semantic baseline plus controlled-projection drift checks. It expands to 37 collected instances, without skips, xfails, or `continue-on-error`.
+The earlier fixture had 26 collected test instances: 21 text/checker instances including four JSON-pointer-index parameters, plus five native StrictDoc CLI instances. The structured suite retains those checks, adds the native custom-grammar capability probe, and replaces the hand-maintained two-text equivalence test with a test-only pre-structured semantic baseline plus controlled-projection drift checks. It expands to 43 collected instances, including raw-request actuation, fabricated lifecycle/result, orphan evidence, and wrong-existing model-target counterexamples, without skips, xfails, or `continue-on-error`.
 
 | Earlier coverage | Structured replacement / retention |
 |---|---|

@@ -58,7 +58,7 @@ link to the next step.
 
 | View | Purpose and primary audience | Source elements / update path | Limit |
 |---|---|---|---|
-| Generated StrictDoc HTML | Requirement-reader review of title, statement, rationale, and native parent hierarchy. | Generated SDoc from the JSON contract, then native StrictDoc export. Regenerate; never edit HTML/SDoc as a record source. | It does not expose arbitrary custom StrictDoc fields or prove satisfaction. |
+| Generated StrictDoc HTML | Requirement-reader review of title, statement, rationale, and native parent hierarchy. | Generated SDoc from the JSON contract, then native StrictDoc export. Regenerate; never edit HTML/SDoc as a record source. | This default-grammar projection does not expose the richer fields; StrictDoc custom grammars can do so, as the retained probe demonstrates. It does not prove satisfaction. |
 | Generated Markdown review projection | Systems-engineering reviewer inspection of scope, acceptance, locators, allocations, planned verification, and evidence status. | JSON contract plus parser result; rebuilt by `build_pilot_views.py --write`. | Project reading aid, not a second requirements source or a SysML graphic. |
 | Generated model reading aid | Reviewer trace from stable model identity to parsed interface/flow boundary. | JSON model inventory plus AST from `b0_truth_control_slice.sysml`; rebuilt by the same generator. | Textual parser-facing view only; no graphical notation, execution, simulation, or interchange claim. |
 
@@ -80,13 +80,14 @@ contract, approval decision, and legacy records retain their own authorities.
 The model may refer to a pilot record through a proxy identity, but does not
 duplicate its normative statement or declare a `satisfy`/`verify` result.
 
-StrictDoc 0.30.1 accepts only its native fixed requirement fields (`UID`,
-`LEVEL`, `STATUS`, `TAGS`, `TITLE`, `STATEMENT`, `RATIONALE`, and `COMMENT`).
-Accordingly, its generated projection carries the editable body projection and
-native `Parent` hierarchy only.  It does **not** place structural metadata in
-`COMMENT` or pretend that custom fields are native StrictDoc fields.  The
-generated Markdown/HTML review views display the source locators, allocation,
-verification, evidence status, and cross-domain links from the JSON contract.
+StrictDoc 0.30.1 supports document grammars with declared custom fields.  The
+retained `custom_grammar_probe.sdoc` proves that an `ACCEPTANCE` field parses
+and renders under the pinned version.  The generated pilot projection uses the
+default grammar and native `Parent` hierarchy by deliberate workflow choice;
+it does not place structural metadata in `COMMENT`.  The generated
+Markdown/HTML views display locators, allocation, verification, evidence
+status, and cross-domain links from the JSON authority.  This choice is not a
+claim that StrictDoc cannot represent custom fields.
 
 ## Field dictionary
 
@@ -104,7 +105,7 @@ fields that matter in review.
 | `source_locator_ids` | References into a typed locator inventory.  Every locator is resolved against the repository, with Markdown anchors or JSON Pointers checked separately. |
 | `acceptance_condition` | A planned inspection criterion.  It may reference an approved G0 field but may not reproduce G0 thresholds. |
 | `evidence_status` | Pilot record status, currently `planned/not_run`; it is not an execution result. |
-| `model_elements[]` | Stable `PILOT-MODEL-*` identity, display name, scope, expected SysML definition type, intended role, and related candidate-record keys. |
+| `model_elements[]` | Stable `PILOT-MODEL-*` identity, display name, scope, expected SysML definition type, and intended role. Related records are derived only from typed `relations[type=models]`. |
 | `development_objects[]` | Responsible component, allocation, lifecycle, and path/symbol/version slots.  A `planned` object has null implementation slots and no execution claim. |
 | `verification_provisions[]` | Planned review/verification definitions with preconditions, inputs, steps, independent oracle, acceptance condition, and execution state. |
 | `execution_evidence[]` | Reserved for a real future execution only; every future item must name test-case, code and configuration versions, command, environment, result, and locator. The current list is empty. |
@@ -145,7 +146,7 @@ each construct and, equally importantly, what it does not claim.
 | Requirement definition/proxy | §7.21, pp. 129–137; §8.2.2.21, pp. 188–189 | Parsed as a definition. | A model proxy identifies the G2 pilot topic only; its authoritative body stays in the JSON contract. |
 | Verification case definition | §7.24, pp. 141–144; §8.2.2.24, p. 190 | Parsed as a definition. | Represents a planned check only; no `verify` usage or pass verdict is modelled. |
 | Metadata | §7.27, pp. 157–161; §8.2.2.27, p. 192 | The parser version can parse some syntax but its model builder does not support the needed annotation path. | Not used as an identity mechanism; stable quoted definition names are used instead and the limitation is recorded. |
-| Graphical notation / views | §8.2.3, p. 193 onward | Not rendered by the fixed parser. | The generated HTML/Markdown is a project review view, not standard graphical notation. |
+| Graphical notation / views | §8.2.3, p. 193 onward | Not rendered by the fixed parser. | Explicitly deferred for this parser-only slice. The generated HTML/Markdown remains a project reading aid and does not close a standard graphical-view acceptance item. |
 
 The pilot intentionally does **not** use a `satisfy requirement` or `verify
 requirement` usage.  Under the standard those terms carry semantic assertions;
@@ -173,7 +174,7 @@ trigger rather than a silent capability claim.
 
 | Component | Fixed source / version | License record at evaluation | Install, prerequisite, and removal boundary | Maintenance cost / decision limit |
 |---|---|---|---|---|
-| StrictDoc | Public PyPI resolution from `requirements/g15b-pilot.txt`; `strictdoc==0.30.1`. | Its project repository identifies Apache-2.0; the installed distribution's `License` metadata is empty. | Python 3.11+ isolated pilot virtual environment only. Remove only the explicitly named temporary pilot environment after stopping any loopback preview; do not touch the repository or `.venv-b0`. | Retained native projection/export capability, but fixed grammar rejects arbitrary fields; an upgrade requires export and regression review. |
+| StrictDoc | Public PyPI resolution from `requirements/g15b-pilot.txt`; `strictdoc==0.30.1`. | Its project repository identifies Apache-2.0; the installed distribution's `License` metadata is empty. | Python 3.11+ isolated pilot virtual environment only. Remove only the explicitly named temporary pilot environment after stopping any loopback preview; do not touch the repository or `.venv-b0`. | Native default/custom grammar and export capability are proven only for the retained fixtures; broader adoption still requires workflow, migration, relation, and regression review. |
 | sysmlpy | Public PyPI resolution from `requirements/g15b-pilot.txt`; `sysmlpy==0.33.2`. | The evaluated distribution reports no `License`, homepage, or project-URL metadata. Broader adoption is blocked pending maintainer license/source due diligence. | Python 3.11+ plus the isolated pilot dependency directory; no account, service, global install, or B0/literature environment change. Remove only that explicit temporary dependency directory after use. | Small local AST parser for this slice only. Parser/model-builder limitations, dependency changes, or any need for graphical/executable/interchange support trigger method review. |
 | jsonschema | Public PyPI resolution from `requirements/g15b-pilot.txt`; `jsonschema==4.23.0`. | The evaluated package metadata declares MIT. | Installed only beside the pilot parser/checker dependencies. Remove with the same explicit temporary dependency directory; no global installation. | Validates record shape only; cross-object and model semantics stay in the project checker. |
 

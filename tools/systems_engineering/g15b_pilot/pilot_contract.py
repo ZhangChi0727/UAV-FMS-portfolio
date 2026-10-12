@@ -81,9 +81,9 @@ EXPECTED_FLOWS = {
     ),
     (
         "PILOT-MODEL-CONTROLLER-01",
-        "torque_request",
+        "paired_command",
         "PILOT-MODEL-ACTUATOR-01",
-        "torque_request",
+        "paired_command",
     ),
     (
         "PILOT-MODEL-ACTUATOR-01",
@@ -97,6 +97,17 @@ EXPECTED_FLOWS = {
         "PILOT-MODEL-EVALUATOR-01",
         "truth",
     ),
+}
+
+REQUIRED_MODEL_LINKS = {
+    ("PILOT-ONLY-NEED-01", "PILOT-MODEL-B0-BOUNDARY-01"),
+    ("PILOT-ONLY-INTERFACE-02", "PILOT-MODEL-IF-TRUTH-EVALUATOR-01"),
+    ("PILOT-ONLY-INTERFACE-02", "PILOT-MODEL-CONTROLLER-01"),
+    ("PILOT-ONLY-ACCEPTANCE-03", "PILOT-MODEL-VER-BOUNDARY-01"),
+    ("PILOT-ONLY-LEGACY-04", "PILOT-MODEL-B0-BOUNDARY-01"),
+    ("PILOT-ONLY-G2-05", "PILOT-MODEL-CONTROLLER-01"),
+    ("PILOT-ONLY-G2-05", "PILOT-MODEL-REQ-PROXY-G2-05"),
+    ("PILOT-ONLY-G2-05", "PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01"),
 }
 
 RELATION_ENDPOINTS = {
@@ -430,21 +441,20 @@ def _validate_execution_truthfulness(
     evidence: Mapping[str, Mapping[str, Any]],
 ) -> None:
     for identity, object_ in development.items():
-        if object_["lifecycle"] == "planned":
-            _require(
-                all(object_.get(field) is None for field in ("implementation_path", "symbol", "version_ref")),
-                f"planned development object claims implementation: {identity}",
-            )
+        _require(object_["lifecycle"] == "planned", f"phase-one development object must remain planned: {identity}")
+        _require(
+            all(object_.get(field) is None for field in ("implementation_path", "symbol", "version_ref")),
+            f"planned development object claims implementation: {identity}",
+        )
     for identity, provision in verification.items():
         status = provision["execution_status"]
         evidence_ids = provision["evidence_ids"]
         for evidence_id in evidence_ids:
             _require(evidence_id in evidence, f"verification provision references unknown evidence: {evidence_id}")
-        if provision["planning_status"] == "planned":
-            _require(status == "not_run", f"planned verification provision falsely claims {status}: {identity}")
-            _require(not evidence_ids, f"planned verification provision carries execution evidence: {identity}")
-        if status == "not_run":
-            _require(not evidence_ids, f"not_run verification provision carries execution evidence: {identity}")
+        _require(provision["planning_status"] == "planned", f"phase-one verification must remain planned: {identity}")
+        _require(status == "not_run", f"planned verification provision falsely claims {status}: {identity}")
+        _require(not evidence_ids, f"planned verification provision carries execution evidence: {identity}")
+    _require(not evidence, "phase-one execution_evidence must remain empty")
 
 
 def _validate_relations(
@@ -482,6 +492,15 @@ def _validate_relations(
             any(relation["type"] == "specified_by" and relation["source_id"] == record_id for relation in relations),
             f"record lacks verification relation: {record_id}",
         )
+    actual_model_links = {
+        (relation["source_id"], relation["target_id"])
+        for relation in relations
+        if relation["type"] == "models"
+    }
+    _require(
+        REQUIRED_MODEL_LINKS <= actual_model_links,
+        "required record-to-model relation is missing or retargeted",
+    )
     _require(
         any(
             relation["type"] == "allocated_to"
@@ -505,14 +524,11 @@ def _validate_relations(
 def _validate_model(
     model: ModelIndex,
     model_elements: Mapping[str, Mapping[str, Any]],
-    records: Mapping[str, Mapping[str, Any]],
 ) -> None:
     actual = {identity: kind for identity, kind in model.definitions.items() if identity.startswith("PILOT-MODEL-")}
     _require(set(actual) == set(model_elements), "SysML model identity set is incomplete or contains an uncontracted identity")
     for identity, element in model_elements.items():
         _require(actual[identity] == element["sysml_kind"], f"SysML model type mismatch for {identity}")
-        for record_key in element["related_record_keys"]:
-            _require(record_key in records, f"SysML model element has an unknown related record: {identity} -> {record_key}")
     missing = EXPECTED_FLOWS - set(model.flows)
     if missing:
         raise PilotError(f"required SysML flow is missing: {sorted(missing)[0]}")
@@ -551,7 +567,7 @@ def validate_contract(repo_root: Path, contract: Mapping[str, Any], model: Model
         locators,
         repo_root,
     )
-    _validate_model(model, model_elements, records)
+    _validate_model(model, model_elements)
 
 
 def load_validated_pilot(
