@@ -34,6 +34,8 @@ This is a textual project reading aid, not a SysML graphical notation view, simu
 | `PILOT-MODEL-REQ-PROXY-G2-05` | G2 record proxy | `requirement_definition` | planned G2 controller interface boundary | `PILOT-ONLY-G2-05` | Reference-only proxy for the planned G2 pilot record. |
 | `PILOT-MODEL-VER-BOUNDARY-01` | Boundary verification definition | `verification_definition` | current B0 phase-one bounded attitude experiment | `PILOT-ONLY-ACCEPTANCE-03` | Planned boundary review definition. |
 | `PILOT-MODEL-VER-TRUTH-01` | Truth verification definition | `verification_definition` | current B0 truth-isolation boundary |  | Planned truth-isolation review definition. |
+| `PILOT-MODEL-VIEW-B0-STRUCTURE-01` | B0 structure view usage | `view_usage` | current B0 phase-one bounded attitude experiment | `PILOT-ONLY-NEED-01` | Standard SysML v2 textual view usage exposing the same B0 boundary modeled in this source. |
+| `PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01` | B0 structure view definition | `view_definition` | current B0 phase-one bounded attitude experiment |  | Standard SysML v2 textual view definition for the bounded structure review. |
 
 ## Parsed flow endpoints
 
@@ -44,6 +46,13 @@ This is a textual project reading aid, not a SysML graphical notation view, simu
 - `PILOT-MODEL-IMU-01.sample` → `PILOT-MODEL-ESTIMATOR-01.sample`
 - `PILOT-MODEL-PLANT-01.truth` → `PILOT-MODEL-EVALUATOR-01.truth`
 - `PILOT-MODEL-PLANT-01.truth` → `PILOT-MODEL-IMU-01.truth`
+
+## Standard textual view declaration
+
+- View definition: `PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01` (`view def`).
+- View usage: `PILOT-MODEL-VIEW-B0-STRUCTURE-01` (`view`) exposes `PILOT-MODEL-B0-BOUNDARY-01` from the same SysML source.
+- Notation basis: OMG SysML v2.0 Part 1 §8.2.2.26 (Views and Viewpoints Textual Notation).
+- Tool boundary: the fixed parser confirms both view identities/types but does not retain the expose relationship in its AST or render graphical notation; the source declaration remains the review authority for that expose statement.
 
 ## Cross-domain trace links
 
@@ -57,6 +66,7 @@ This is a textual project reading aid, not a SysML graphical notation view, simu
 | `models` | `PILOT-ONLY-G2-05` | `PILOT-MODEL-CONTROLLER-01` | project_extension / planned where stated |
 | `models` | `PILOT-ONLY-G2-05` | `PILOT-MODEL-REQ-PROXY-G2-05` | project_extension / planned where stated |
 | `models` | `PILOT-ONLY-G2-05` | `PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01` | project_extension / planned where stated |
+| `models` | `PILOT-ONLY-NEED-01` | `PILOT-MODEL-VIEW-B0-STRUCTURE-01` | project_extension / planned where stated |
 | `allocated_to` | `PILOT-ONLY-NEED-01` | `PILOT-DEV-REVIEW-BOUNDARY-01` | project_extension / planned where stated |
 | `allocated_to` | `PILOT-ONLY-INTERFACE-02` | `PILOT-DEV-INTEGRATION-ADAPTER-01` | project_extension / planned where stated |
 | `allocated_to` | `PILOT-ONLY-G2-05` | `PILOT-DEV-CONTROLLER-CORE-01` | project_extension / planned where stated |

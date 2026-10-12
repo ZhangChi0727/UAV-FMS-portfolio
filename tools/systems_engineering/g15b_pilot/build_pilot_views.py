@@ -174,6 +174,17 @@ def render_model_view(contract: dict[str, Any], model: Any) -> str:
     result.extend(["", "## Parsed flow endpoints", ""])
     for source, source_feature, target, target_feature in sorted(model.flows):
         result.append(f"- `{source}.{source_feature}` → `{target}.{target_feature}`")
+    result.extend(
+        [
+            "",
+            "## Standard textual view declaration",
+            "",
+            "- View definition: `PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01` (`view def`).",
+            "- View usage: `PILOT-MODEL-VIEW-B0-STRUCTURE-01` (`view`) exposes `PILOT-MODEL-B0-BOUNDARY-01` from the same SysML source.",
+            "- Notation basis: OMG SysML v2.0 Part 1 §8.2.2.26 (Views and Viewpoints Textual Notation).",
+            "- Tool boundary: the fixed parser confirms both view identities/types but does not retain the expose relationship in its AST or render graphical notation; the source declaration remains the review authority for that expose statement.",
+        ]
+    )
     result.extend(["", "## Cross-domain trace links", "", "| Relation | Source | Target | Status boundary |", "|---|---|---|---|"])
     for relation in contract["relations"]:
         result.append(

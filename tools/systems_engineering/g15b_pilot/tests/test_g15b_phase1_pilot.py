@@ -339,6 +339,34 @@ def test_raw_torque_request_only_actuation_fails_closed(tmp_path: Path) -> None:
         load_validated_pilot(REPO_ROOT, model_path=model_path)
 
 
+@pytest.mark.parametrize(
+    ("old", "new"),
+    (
+        (
+            "out item paired_command : 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01';",
+            "out item paired_command : 'PILOT-MODEL-ITEM-TORQUE-REQUEST-01';",
+        ),
+        (
+            "in item paired_command : 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01';",
+            "out item paired_command : 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01';",
+        ),
+        (
+            "item limited_target : 'PILOT-MODEL-ITEM-LIMITED-TARGET-01';",
+            "item limited_target : 'PILOT-MODEL-ITEM-TORQUE-REQUEST-01';",
+        ),
+    ),
+)
+def test_paired_command_type_members_and_direction_fail_closed(
+    tmp_path: Path, old: str, new: str
+) -> None:
+    source = MODEL_PATH.read_text(encoding="utf-8").replace(old, new, 1)
+    assert source != MODEL_PATH.read_text(encoding="utf-8")
+    model_path = tmp_path / "wrong-paired-command.sysml"
+    model_path.write_text(source, encoding="utf-8")
+    with pytest.raises(PilotError, match="SysML feature type or direction mismatch"):
+        load_validated_pilot(REPO_ROOT, model_path=model_path)
+
+
 def test_g2_trace_chain_cannot_be_removed() -> None:
     data = contract_copy()
     data["relations"] = [

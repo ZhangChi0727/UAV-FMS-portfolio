@@ -101,6 +101,11 @@ package B0PhaseOnePilot {
         doc /* Planned truth-isolation review only; no execution or verdict is asserted. */
     }
 
+    view def 'PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01';
+    view 'PILOT-MODEL-VIEW-B0-STRUCTURE-01' : 'PILOT-MODEL-VIEWDEF-B0-STRUCTURE-01' {
+        expose 'PILOT-MODEL-B0-BOUNDARY-01';
+    }
+
     part def 'PILOT-MODEL-B0-BOUNDARY-01' {
         part command_source : 'PILOT-MODEL-COMMAND-SOURCE-01';
         part plant : 'PILOT-MODEL-PLANT-01';
