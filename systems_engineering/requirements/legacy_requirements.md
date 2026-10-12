@@ -6,7 +6,7 @@ B0 v0.2 preserves all existing IDs and thresholds as legacy candidate requiremen
 They are not automatically B0 release criteria. NAV requirements belong to EXT-NAV;
 CTL-REQ-001/002 require B0 applicability review; CTL-REQ-003 belongs to EXT-FLIGHT
 or EXT-FW; FDI requirements belong to EXT-HEALTH. No compliance is claimed.
-B0 process/component gates are defined in development_baseline.md and are not
+B0 process/component gates are defined in [development_baseline.md](../development_baseline.md) and are not
 new system requirement IDs. Performance applicability and operating conditions
 must be approved before compliance testing.
 
@@ -21,7 +21,7 @@ must be approved before compliance testing.
 
 Before compliance testing, the scenario configuration shall identify:
 
-- the navigation and body conventions from `architecture.md`;
+- the navigation and body conventions from [architecture.md](../models/architecture.md);
 - whether visual odometry or another aiding source remains available;
 - the position, velocity, attitude, and bias initialization errors;
 - the vehicle trajectory and maneuver envelope during the outage;

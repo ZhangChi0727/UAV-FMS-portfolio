@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -13,6 +14,7 @@ import pytest
 TRACK_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TRACK_ROOT))
 
+import validate_config as validator  # noqa: E402
 from validate_config import (  # noqa: E402
     ROOT_REQUIRED,
     ContractValidationError,
@@ -139,6 +141,37 @@ def test_v2_rejects_untrusted_approval_source_reference(value: str) -> None:
     config["contract_status"]["approval_record"]["decision_source"] = value
     with pytest.raises(ContractValidationError, match="decision_source"):
         validate_config(config)
+
+
+def test_v2_historical_approval_source_resolves_to_migrated_target() -> None:
+    record = approved_config()["contract_status"]["approval_record"]
+    resolved = validator._resolve_approval_record_source(record["decision_source"])
+    assert resolved == (
+        TRACK_ROOT.parents[1] / validator.MIGRATED_APPROVAL_TARGET
+    ).resolve()
+    assert resolved.is_file()
+
+
+def test_v2_approval_source_compatibility_is_independent_of_cwd(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    record = approved_config()["contract_status"]["approval_record"]
+    monkeypatch.chdir(tmp_path)
+    validate_config(approved_config())
+    assert os.getcwd() == str(tmp_path)
+    assert validator._resolve_approval_record_source(record["decision_source"]).is_file()
+
+
+def test_v2_missing_migrated_approval_target_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        validator,
+        "MIGRATED_APPROVAL_TARGET",
+        Path("systems_engineering/reports/b0/missing-approval-decision.md"),
+    )
+    with pytest.raises(ContractValidationError, match="referenced file is missing"):
+        validate_config(approved_config())
 
 
 def test_v1_to_v2_migration_changes_only_governance_metadata() -> None:

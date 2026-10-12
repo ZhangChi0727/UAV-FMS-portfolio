@@ -15,4 +15,4 @@ No compliance or safety conclusion is established.
 
 Future entries must link an actual test, configuration, revision, retained artifact
 and metric calculation. Do not use planned test IDs as if executed.
-See [verification plan](verification/verification_plan.md).
+See [verification plan](../verification/verification_plan.md).
