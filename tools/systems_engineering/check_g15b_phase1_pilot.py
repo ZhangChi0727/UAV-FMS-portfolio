@@ -24,6 +24,7 @@ EXPECTED_KEYS = {
 REQUIRED_METADATA = (
     "source locators",
     "applicability",
+    "scope",
     "allocation",
     "model refs",
     "verification plan",
@@ -46,6 +47,7 @@ class PilotRecord:
     parent: str
     source_locators: str
     applicability: str
+    scope: str
     allocation: str
     model_refs: str
     verification_plan: str
@@ -119,6 +121,7 @@ def parse_sdoc_records(text: str) -> list[PilotRecord]:
                 parent=_parent_from_sdoc(block),
                 source_locators=metadata["source locators"],
                 applicability=metadata["applicability"],
+                scope=metadata["scope"],
                 allocation=metadata["allocation"],
                 model_refs=metadata["model refs"],
                 verification_plan=metadata["verification plan"],
@@ -162,6 +165,7 @@ def parse_markdown_records(text: str) -> list[PilotRecord]:
                 parent=values["parent"],
                 source_locators=values["source locators"],
                 applicability=values["applicability"],
+                scope=values["scope"],
                 allocation=values["allocation"],
                 model_refs=values["model refs"],
                 verification_plan=values["verification plan"],
@@ -195,7 +199,11 @@ def _check_locator(repo_root: Path, locator: str, label: str) -> None:
     except ValueError as exc:
         raise PilotError(f"{label} escapes the repository: {locator}") from exc
     _require(path.is_file(), f"{label} file is missing: {locator}")
-    if separator and fragment.startswith("/") and path.suffix == ".json":
+    if not separator:
+        return
+    _require(fragment, f"{label} fragment is empty: {locator}")
+    if path.suffix == ".json":
+        _require(fragment.startswith("/"), f"{label} must use a JSON Pointer: {locator}")
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
             for segment in fragment[1:].split("/"):
@@ -203,8 +211,11 @@ def _check_locator(repo_root: Path, locator: str, label: str) -> None:
                 value = value[int(segment)] if isinstance(value, list) else value[segment]
         except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise PilotError(f"{label} JSON pointer is missing: {locator}") from exc
-    if separator and fragment and not fragment.startswith("/") and path.suffix == ".md":
+    elif path.suffix == ".md":
+        _require(not fragment.startswith("/"), f"{label} must use a Markdown anchor: {locator}")
         _require(fragment in _anchors(path.read_text(encoding="utf-8")), f"{label} anchor is missing: {locator}")
+    else:
+        raise PilotError(f"{label} uses an unsupported fragment format: {locator}")
 
 
 def _known_model_elements(repo_root: Path) -> set[str]:
@@ -248,11 +259,16 @@ def validate_records(records: Iterable[PilotRecord], repo_root: Path) -> None:
         for locator in (item.strip() for item in record.source_locators.split(";")):
             _check_locator(repo_root, locator, f"source locator for {record.key}")
         _check_locator(repo_root, record.verification_plan, f"verification locator for {record.key}")
-        is_not_applicable = "not_applicable" in record.applicability.lower()
+        _require(
+            record.applicability in {"applicable", "not_applicable"},
+            f"{record.key} has invalid applicability value: {record.applicability}",
+        )
         if record.level == "applicability_record":
-            _require(is_not_applicable, f"{record.key} must state not_applicable applicability")
+            _require(record.applicability == "not_applicable", f"{record.key} must state not_applicable applicability")
             _require(record.approval_ref, f"{record.key} lacks approval ref for not_applicable status")
+            _check_locator(repo_root, record.approval_ref, f"approval ref for {record.key}")
         else:
+            _require(record.applicability == "applicable", f"{record.key} must state applicable applicability")
             _require(record.allocation, f"{record.key} lacks allocation")
         for model_ref in (item.strip() for item in record.model_refs.split(",")):
             _require(model_ref in model_elements, f"unknown model reference for {record.key}: {model_ref}")

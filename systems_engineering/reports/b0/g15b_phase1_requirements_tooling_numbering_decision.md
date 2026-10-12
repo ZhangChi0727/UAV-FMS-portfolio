@@ -68,9 +68,10 @@ represent exactly the same five records and the thin checker fails on drift.
 | `PILOT-ONLY-G2-05` | Planned controller allocation/interface and planned verification obligation | candidate only; planned/not run |
 
 Each fixture has a temporary key, level, title, single statement, parent,
-source locator, rationale, applicability, allocation, `view:element` model
-reference, verification-plan locator, acceptance condition, evidence status and
-`candidate_only: true`. The legacy record also requires an approval reference.
+source locator, rationale, applicability, scope, allocation, `view:element`
+model reference, verification-plan locator, acceptance condition, evidence
+status and `candidate_only: true`. The legacy record also requires an approval
+reference.
 No fixture enters coverage accounting or claims implementation/verification.
 
 ## Tool and source-format trial
@@ -80,15 +81,16 @@ No fixture enters coverage accounting or claims implementation/verification.
 | Offline editing/review | UTF-8 text without a tool | UTF-8 text without a tool | Neither is generated or a database export. |
 | Key/hierarchy | Native `UID` plus `Parent` relation | Heading/key plus `Parent` field | Thin checker rejects duplicate/broken temporary relations. |
 | Rendering | Native HTML export to a temporary directory | Directly reviewable text; no second renderer | Generated HTML is not committed or evidence of satisfaction. |
-| Project-specific fields | Standard `COMMENT` labels in this fixture | Explicit labeled fields | Thin checker owns applicability, JSON pointers, model elements, verification and acceptance checks. |
+| Project-specific fields | Standard `COMMENT` labels in this fixture | Explicit labeled fields | Thin checker owns exact applicability/scope, approved-not-applicable reference, JSON pointers, Markdown anchors, model elements, verification and acceptance checks. |
 | Git review | Plain-text diff | Plain-text diff | Five equivalent records only; not a full-baseline migration proof. |
 | Future migration | Plain-text source with rebuildable native output | Plain-text source | A later approved import is one-way and reviewed into one chosen source. The twin remains only as a fixture/conclusion. |
 
 The native command is deliberately described narrowly: `strictdoc export` is a
 parser/export exercise, not an all-purpose project requirement validator.
-Duplicate keys, broken parents, unknown model elements, required fields, JSON
-pointers and cross-format drift are tested by the dedicated thin checker and
-its negative fixtures.
+Duplicate keys, broken parents, unknown model elements, required fields,
+approved-not-applicable references, JSON pointers, Markdown anchors and
+cross-format drift are tested by the dedicated thin checker and its negative
+fixtures.
 
 ### Tool provenance and reproducibility record
 
@@ -103,9 +105,9 @@ its negative fixtures.
 
 ### Observed execution evidence
 
-The following were actually run from the WSL checkout after the trial source,
-checker and isolated test placement were final, before the candidate change was
-committed. The remaining evidence-report text does not alter those executable
+The following were actually run from the WSL checkout after the PA rework of
+the trial source, checker and isolated test placement, before its response
+commit. The remaining evidence-report text does not alter those executable
 assets; the PR handoff supplies the final reviewed head and CI reruns the same
 scoped commands there.
 
@@ -124,7 +126,7 @@ scoped commands there.
 /tmp/uav-fms-g15b-strictdoc/bin/python -m pytest -q \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_phase1_pilot.py \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_native_strictdoc.py
-# exit 0; 13 passed in 9.03s
+# exit 0; 17 passed in 9.73s
 ```
 
 The native test suite proves that the evaluated StrictDoc CLI rejects a

@@ -11,7 +11,8 @@ requirements source, a coverage basis, or an allocation of formal B0 IDs.
 - **Title:** Bounded attitude experiment use
 - **Parent:** none
 - **Source locators:** systems_engineering/project_charter.md#purpose; systems_engineering/development_baseline.md#single-objective
-- **Applicability:** current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions
+- **Applicability:** applicable
+- **Scope:** current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions
 - **Allocation:** integration execution adapter and reader-facing system boundary
 - **Model refs:** SE-MODEL-CONTEXT-001:B0
 - **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
@@ -34,7 +35,8 @@ This is a source-format trial of a user-need record. It is not a formal B0 requi
 - **Title:** Runtime truth isolation
 - **Parent:** PILOT-ONLY-NEED-01
 - **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility; 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden; systems_engineering/models/architecture.md#modular-boundaries
-- **Applicability:** current B0 after explicit reset initialization
+- **Applicability:** applicable
+- **Scope:** current B0 after explicit reset initialization
 - **Allocation:** estimation and control components; execution adapter preserves the boundary
 - **Model refs:** SE-MODEL-INTERFACE-001:Controller
 - **Verification plan:** systems_engineering/verification/verification_plan.md#evidence-chain
@@ -57,7 +59,8 @@ This trial represents an interface constraint and a child relationship without t
 - **Title:** Frozen acceptance-field reference
 - **Parent:** PILOT-ONLY-NEED-01
 - **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance
-- **Applicability:** current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed
+- **Applicability:** applicable
+- **Scope:** current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed
 - **Allocation:** independent verification and configuration validator consumers
 - **Model refs:** SE-MODEL-BEHAVIOR-001:Ready
 - **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
@@ -80,7 +83,8 @@ This trial represents a performance/acceptance reference while preserving the JS
 - **Title:** Preserved legacy control applicability
 - **Parent:** PILOT-ONLY-NEED-01
 - **Source locators:** systems_engineering/requirements/legacy_requirements.md#control-requirements; systems_engineering/reports/b0/g0_approval_decision.md#决定; 05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability
-- **Applicability:** current B0 only; CTL-REQ-001 and CTL-REQ-002 are not_applicable under the approved disposition and remain preserved for their historical scopes
+- **Applicability:** not_applicable
+- **Scope:** current B0 only; CTL-REQ-001 and CTL-REQ-002 remain preserved for their historical scopes under the approved disposition
 - **Allocation:** requirements applicability record and approval-decision reference
 - **Model refs:** SE-MODEL-CONTEXT-001:B0
 - **Verification plan:** systems_engineering/verification/g0_acceptance.md#ctl-req-适用性审查
@@ -104,7 +108,8 @@ This trial represents a non-applicable legacy relationship. The legacy identifie
 - **Title:** Planned controller interface boundary
 - **Parent:** PILOT-ONLY-INTERFACE-02
 - **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller
-- **Applicability:** planned G2 controller only; not an implemented or accepted component
+- **Applicability:** applicable
+- **Scope:** planned G2 controller only; not an implemented or accepted component
 - **Allocation:** planned C++ controller core and execution adapter interface boundary
 - **Model refs:** SE-MODEL-ARCH-001:Control, SE-MODEL-INTERFACE-001:Controller
 - **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
