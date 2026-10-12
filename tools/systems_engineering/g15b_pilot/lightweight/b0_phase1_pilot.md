@@ -18,6 +18,7 @@ This is a non-authoritative five-record trial. It does not freeze formal require
   - `systems_engineering/development_baseline.md#single-objective`
 - **Cross-domain links:**
   - `models` → `PILOT-MODEL-B0-BOUNDARY-01` (project_extension)
+  - `models` → `PILOT-MODEL-VIEW-B0-STRUCTURE-01` (project_extension)
   - `allocated_to` → `PILOT-DEV-REVIEW-BOUNDARY-01` (project_extension)
   - `specified_by` → `PILOT-VER-BOUNDARY-01` (project_extension)
 

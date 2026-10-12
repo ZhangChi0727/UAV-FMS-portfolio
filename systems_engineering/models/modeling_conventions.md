@@ -146,7 +146,8 @@ each construct and, equally importantly, what it does not claim.
 | Requirement definition/proxy | §7.21, pp. 129–137; §8.2.2.21, pp. 188–189 | Parsed as a definition. | A model proxy identifies the G2 pilot topic only; its authoritative body stays in the JSON contract. |
 | Verification case definition | §7.24, pp. 141–144; §8.2.2.24, p. 190 | Parsed as a definition. | Represents a planned check only; no `verify` usage or pass verdict is modelled. |
 | Metadata | §7.27, pp. 157–161; §8.2.2.27, p. 192 | The parser version can parse some syntax but its model builder does not support the needed annotation path. | Not used as an identity mechanism; stable quoted definition names are used instead and the limitation is recorded. |
-| Graphical notation / views | §8.2.3, p. 193 onward | Not rendered by the fixed parser. | Explicitly deferred for this parser-only slice. The generated HTML/Markdown remains a project reading aid and does not close a standard graphical-view acceptance item. |
+| Views and viewpoints textual notation | §8.2.2.26, pp. 190–192 | The parser accepts and identifies the bounded `view def` and `view` usage; it does not retain `expose` in its AST. | The view usage exposes the B0 boundary in the same SysML source. The generated model reading aid records the source mapping and parser limit. |
+| Graphical notation | §8.2.3, p. 193 onward | Not rendered by the fixed parser. | No graphical-notation, layout, interchange, or conformance claim is made; the accepted work-order item is the standard textual view usage, not a diagram. |
 
 The pilot intentionally does **not** use a `satisfy requirement` or `verify
 requirement` usage.  Under the standard those terms carry semantic assertions;

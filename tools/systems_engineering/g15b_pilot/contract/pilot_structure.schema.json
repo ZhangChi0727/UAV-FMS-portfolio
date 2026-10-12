@@ -177,7 +177,7 @@
         "display_name": {"type": "string", "minLength": 1},
         "scope": {"type": "string", "minLength": 1},
         "sysml_kind": {
-          "enum": ["item_definition", "part_definition", "interface_definition", "requirement_definition", "verification_definition"]
+          "enum": ["item_definition", "part_definition", "interface_definition", "requirement_definition", "verification_definition", "view_definition", "view_usage"]
         },
         "intended_role": {"type": "string", "minLength": 1}
       }

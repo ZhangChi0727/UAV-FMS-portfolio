@@ -52,6 +52,8 @@ SYSML_NODE_KINDS = {
     "RequirementDefinition": "requirement_definition",
     "VerificationDefinition": "verification_definition",
     "VerificationCaseDefinition": "verification_definition",
+    "ViewDefinition": "view_definition",
+    "ViewUsage": "view_usage",
 }
 
 EXPECTED_FLOWS = {
@@ -108,6 +110,7 @@ REQUIRED_MODEL_LINKS = {
     ("PILOT-ONLY-G2-05", "PILOT-MODEL-CONTROLLER-01"),
     ("PILOT-ONLY-G2-05", "PILOT-MODEL-REQ-PROXY-G2-05"),
     ("PILOT-ONLY-G2-05", "PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01"),
+    ("PILOT-ONLY-NEED-01", "PILOT-MODEL-VIEW-B0-STRUCTURE-01"),
 }
 
 RELATION_ENDPOINTS = {
@@ -125,6 +128,7 @@ class ModelIndex:
 
     definitions: dict[str, str]
     flows: frozenset[tuple[str, str, str, str]]
+    features: dict[tuple[str, str], tuple[str, str]]
     analysis_warnings: tuple[str, ...]
 
 
@@ -183,10 +187,34 @@ def _definition(value: Mapping[str, Any]) -> tuple[str, str] | None:
         return None
     try:
         definition = value.get("definition", value)
-        name = _canonical_name(definition["declaration"]["identification"]["declaredName"])
+        declaration = definition["declaration"]
+        if value.get("name") == "ViewUsage":
+            declaration = declaration["declaration"]
+        name = _canonical_name(declaration["identification"]["declaredName"])
     except (KeyError, TypeError):
         return None
     return (name, kind) if name else None
+
+
+def _item_feature(value: Mapping[str, Any]) -> tuple[str, str, str] | None:
+    if value.get("name") != "ItemUsage":
+        return None
+    try:
+        declaration = value["usage"]["declaration"]["declaration"]
+        name = _canonical_name(declaration["identification"]["declaredName"])
+        typing = declaration["specialization"]["specialization"][0]["ownedRelationship"]
+        type_name = _canonical_name(
+            typing["typedby"]["ownedRelationship"][0]["ownedRelationship"]
+            ["type"]["type"]["names"][-1]
+        )
+        direction_node = value.get("prefix")
+        direction = ""
+        if direction_node is not None:
+            direction_values = direction_node["prefix"]["prefix"]["direction"]
+            direction = "out" if direction_values["out"] else "in" if direction_values["in"] else ""
+    except (IndexError, KeyError, TypeError):
+        return None
+    return (name, type_name, direction) if name and type_name else None
 
 
 def _role_types(definition: Mapping[str, Any]) -> dict[str, str]:
@@ -231,9 +259,10 @@ def _flow(value: Mapping[str, Any]) -> tuple[str, str, str, str] | None:
     return source_role, source_feature, target_role, target_feature
 
 
-def _collect_model_ast(ast: Mapping[str, Any]) -> tuple[dict[str, str], set[tuple[str, str, str, str]]]:
+def _collect_model_ast(ast: Mapping[str, Any]) -> tuple[dict[str, str], set[tuple[str, str, str, str]], dict[tuple[str, str], tuple[str, str]]]:
     definitions: dict[str, str] = {}
     flows: set[tuple[str, str, str, str]] = set()
+    features: dict[tuple[str, str], tuple[str, str]] = {}
 
     def visit(value: Any, scope: str | None = None, roles: Mapping[str, str] | None = None) -> None:
         if isinstance(value, dict):
@@ -256,6 +285,10 @@ def _collect_model_ast(ast: Mapping[str, Any]) -> tuple[dict[str, str], set[tupl
                     f"SysML flow endpoint does not resolve to a stable model identity: {source_role} -> {target_role}",
                 )
                 flows.add((source, source_feature, target, target_feature))
+            feature = _item_feature(value)
+            if feature is not None and scope is not None:
+                name, type_name, direction = feature
+                features[(scope, name)] = (type_name, direction)
             for child in value.values():
                 visit(child, scope, roles)
         elif isinstance(value, list):
@@ -263,7 +296,7 @@ def _collect_model_ast(ast: Mapping[str, Any]) -> tuple[dict[str, str], set[tupl
                 visit(child, scope, roles)
 
     visit(ast)
-    return definitions, flows
+    return definitions, flows, features
 
 
 def load_sysml_model(model_path: Path = MODEL_PATH) -> ModelIndex:
@@ -286,8 +319,8 @@ def load_sysml_model(model_path: Path = MODEL_PATH) -> ModelIndex:
     if errors:
         raise PilotError(f"sysmlpy reported semantic error: {errors[0]}")
     warnings = tuple(str(issue) for issue in analysis if str(getattr(issue, "severity", "")).lower() == "warning")
-    definitions, flows = _collect_model_ast(ast)
-    return ModelIndex(definitions=definitions, flows=frozenset(flows), analysis_warnings=warnings)
+    definitions, flows, features = _collect_model_ast(ast)
+    return ModelIndex(definitions=definitions, flows=frozenset(flows), features=features, analysis_warnings=warnings)
 
 
 def _anchors(text: str) -> set[str]:
@@ -532,6 +565,18 @@ def _validate_model(
     missing = EXPECTED_FLOWS - set(model.flows)
     if missing:
         raise PilotError(f"required SysML flow is missing: {sorted(missing)[0]}")
+    expected_features = {
+        ("PILOT-MODEL-CONTROLLER-01", "paired_command"): ("PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "out"),
+        ("PILOT-MODEL-ACTUATOR-01", "paired_command"): ("PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "in"),
+        ("PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "requested"): ("PILOT-MODEL-ITEM-TORQUE-REQUEST-01", ""),
+        ("PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "limited_target"): ("PILOT-MODEL-ITEM-LIMITED-TARGET-01", ""),
+        ("PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01", "saturation_status"): ("PILOT-MODEL-ITEM-SATURATION-STATUS-01", ""),
+    }
+    for feature, expected in expected_features.items():
+        _require(
+            model.features.get(feature) == expected,
+            f"SysML feature type or direction mismatch: {feature[0]}.{feature[1]}",
+        )
     truth_consumers = {
         target
         for source, source_feature, target, _ in model.flows
