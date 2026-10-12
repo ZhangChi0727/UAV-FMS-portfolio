@@ -1,0 +1,121 @@
+# B0 G1.5-B phase-one lightweight-text pilot
+
+**Status:** non-authoritative comparison fixture. This file duplicates five
+`PILOT-ONLY-*` records solely to compare source formats. It is not an active
+requirements source, a coverage basis, or an allocation of formal B0 IDs.
+
+## PILOT-ONLY-NEED-01
+
+- **Level:** user_need
+- **Status:** pilot_only_candidate
+- **Title:** Bounded attitude experiment use
+- **Parent:** none
+- **Source locators:** systems_engineering/project_charter.md#purpose; systems_engineering/development_baseline.md#single-objective
+- **Applicability:** current B0 bounded attitude experiments only; excludes hardware, flight, and unactivated extensions
+- **Allocation:** integration execution adapter and reader-facing system boundary
+- **Model refs:** SE-MODEL-CONTEXT-001:B0
+- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
+- **Acceptance condition:** planned inspection confirms the declared experiment boundary and exclusions are present
+- **Evidence status:** planned/not_run
+- **Candidate only:** true
+
+### Statement
+
+The B0 system shall support a configured, repeatable bounded attitude experiment for engineering review without claiming full-flight capability.
+
+### Rationale
+
+This is a source-format trial of a user-need record. It is not a formal B0 requirement and is not part of coverage accounting.
+
+## PILOT-ONLY-INTERFACE-02
+
+- **Level:** system_constraint
+- **Status:** pilot_only_candidate
+- **Title:** Runtime truth isolation
+- **Parent:** PILOT-ONLY-NEED-01
+- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/plant_contract/truth_visibility; 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract/truth_inputs_forbidden; systems_engineering/models/architecture.md#modular-boundaries
+- **Applicability:** current B0 after explicit reset initialization
+- **Allocation:** estimation and control components; execution adapter preserves the boundary
+- **Model refs:** SE-MODEL-INTERFACE-001:Controller
+- **Verification plan:** systems_engineering/verification/verification_plan.md#evidence-chain
+- **Acceptance condition:** planned inspection verifies declared runtime inputs exclude live truth and evaluation remains independent
+- **Evidence status:** planned/not_run
+- **Candidate only:** true
+
+### Statement
+
+After explicit reset initialization, the estimator and controller shall not receive live truth as a runtime input; truth is limited to plant, sensor, and evaluation responsibilities.
+
+### Rationale
+
+This trial represents an interface constraint and a child relationship without treating existing component behavior as the sole source of the obligation.
+
+## PILOT-ONLY-ACCEPTANCE-03
+
+- **Level:** system_constraint
+- **Status:** pilot_only_candidate
+- **Title:** Frozen acceptance-field reference
+- **Parent:** PILOT-ONLY-NEED-01
+- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/acceptance_policy/metric_definitions; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/id; 05_integration/b0/configs/b0_g0_contract.v2.json#/scenarios/6/acceptance
+- **Applicability:** current B0 signed three-axis step assessment; configuration evidence remains proposed_not_executed
+- **Allocation:** independent verification and configuration validator consumers
+- **Model refs:** SE-MODEL-BEHAVIOR-001:Ready
+- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
+- **Acceptance condition:** planned inspection verifies each assessment points to a versioned JSON field and does not duplicate a numeric threshold
+- **Evidence status:** planned/not_run
+- **Candidate only:** true
+
+### Statement
+
+Any assessment of the signed three-axis step scenario shall cite the approved G0 v2 configuration fields for its event window and metrics instead of copying numerical thresholds into a second requirement source.
+
+### Rationale
+
+This trial represents a performance/acceptance reference while preserving the JSON contract as the sole parameter source and avoiding a false performance result.
+
+## PILOT-ONLY-LEGACY-04
+
+- **Level:** applicability_record
+- **Status:** pilot_only_candidate
+- **Title:** Preserved legacy control applicability
+- **Parent:** PILOT-ONLY-NEED-01
+- **Source locators:** systems_engineering/requirements/legacy_requirements.md#control-requirements; systems_engineering/reports/b0/g0_approval_decision.md#决定; 05_integration/b0/configs/b0_g0_contract.v2.json#/contract_status/approval_record/ctl_applicability
+- **Applicability:** current B0 only; CTL-REQ-001 and CTL-REQ-002 are not_applicable under the approved disposition and remain preserved for their historical scopes
+- **Allocation:** requirements applicability record and approval-decision reference
+- **Model refs:** SE-MODEL-CONTEXT-001:B0
+- **Verification plan:** systems_engineering/verification/g0_acceptance.md#ctl-req-适用性审查
+- **Acceptance condition:** planned inspection verifies both legacy identifiers, their decision locator, and the absence of a satisfaction claim
+- **Evidence status:** planned/not_run
+- **Candidate only:** true
+- **Approval ref:** systems_engineering/reports/b0/g0_approval_decision.md#决定
+
+### Statement
+
+For current B0, the applicability record shall preserve CTL-REQ-001 and CTL-REQ-002 unchanged and record their approved not-applicable status without claiming that either legacy performance threshold is satisfied.
+
+### Rationale
+
+This trial represents a non-applicable legacy relationship. The legacy identifiers remain references only and are never candidate identifiers for reuse.
+
+## PILOT-ONLY-G2-05
+
+- **Level:** component_constraint
+- **Status:** pilot_only_candidate
+- **Title:** Planned controller interface boundary
+- **Parent:** PILOT-ONLY-INTERFACE-02
+- **Source locators:** 05_integration/b0/configs/b0_g0_contract.v2.json#/controller_contract; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/messages/torque_command; 05_integration/b0/configs/b0_g0_contract.v2.json#/interface_contract/component_calls/controller
+- **Applicability:** planned G2 controller only; not an implemented or accepted component
+- **Allocation:** planned C++ controller core and execution adapter interface boundary
+- **Model refs:** SE-MODEL-ARCH-001:Control, SE-MODEL-INTERFACE-001:Controller
+- **Verification plan:** systems_engineering/verification/verification_plan.md#b0-checks
+- **Acceptance condition:** planned G2 verification defines inputs, reset and step behavior, an independent oracle, and execution evidence before any pass claim
+- **Evidence status:** planned/not_run
+- **Candidate only:** true
+
+### Statement
+
+The planned G2 controller shall consume the declared command, state estimate, and paired actuator feedback; it shall expose requested torque, limited target, and saturation status under the approved reset and step contract.
+
+### Rationale
+
+This is a planned component candidate used to test truthful planned/not-run status. It does not claim a G2 implementation or closed-loop evidence.
