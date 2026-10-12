@@ -90,8 +90,10 @@ def test_native_export_copies_the_source_owned_presentation_asset(tmp_path: Path
     assert '.layout_tree' in source_css.read_text(encoding="utf-8")
     assert 'structured review projection' in source_css.read_text(encoding="utf-8")
     assert 'data-field-label="statement"' in source_css.read_text(encoding="utf-8")
-    assert 'BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif' in source_css.read_text(encoding="utf-8")
-    assert 'ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' in source_css.read_text(encoding="utf-8")
+    assert 'Consolas, "Cascadia Mono", "DejaVu Sans Mono", monospace' in source_css.read_text(encoding="utf-8")
+    assert 'font-family: var(--g15b-pilot-ui-font) !important' in source_css.read_text(encoding="utf-8")
+    assert 'background: #1c1c1c' in source_css.read_text(encoding="utf-8")
+    assert 'background: #005f5f' in source_css.read_text(encoding="utf-8")
 
 
 def test_native_export_has_record_navigation_and_parent_links(tmp_path: Path) -> None:
