@@ -9,6 +9,12 @@ package B0PhaseOnePilot {
     item def 'PILOT-MODEL-ITEM-ACTUATOR-FEEDBACK-01';
     item def 'PILOT-MODEL-ITEM-LIMITED-TARGET-01';
     item def 'PILOT-MODEL-ITEM-SATURATION-STATUS-01';
+    item def 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01' {
+        item requested : 'PILOT-MODEL-ITEM-TORQUE-REQUEST-01';
+        item limited_target : 'PILOT-MODEL-ITEM-LIMITED-TARGET-01';
+        item saturation_status : 'PILOT-MODEL-ITEM-SATURATION-STATUS-01';
+        doc /* All three fields are from one due tick; actuator dynamics consume limited_target only. */
+    }
     item def 'PILOT-MODEL-ITEM-PLANT-TRUTH-01';
 
     part def 'PILOT-MODEL-COMMAND-SOURCE-01' {
@@ -33,13 +39,13 @@ package B0PhaseOnePilot {
         in item command : 'PILOT-MODEL-ITEM-COMMAND-01';
         in item estimate : 'PILOT-MODEL-ITEM-STATE-ESTIMATE-01';
         in item feedback : 'PILOT-MODEL-ITEM-ACTUATOR-FEEDBACK-01';
-        out item torque_request : 'PILOT-MODEL-ITEM-TORQUE-REQUEST-01';
-        out item limited_target : 'PILOT-MODEL-ITEM-LIMITED-TARGET-01';
-        out item saturation_status : 'PILOT-MODEL-ITEM-SATURATION-STATUS-01';
+        // The bundle denotes requested, limited-target, and saturation fields
+        // sampled from one due tick; actuator dynamics consume limited_target only.
+        out item paired_command : 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01';
     }
 
     part def 'PILOT-MODEL-ACTUATOR-01' {
-        in item torque_request : 'PILOT-MODEL-ITEM-TORQUE-REQUEST-01';
+        in item paired_command : 'PILOT-MODEL-ITEM-PAIRED-TORQUE-COMMAND-01';
         out item feedback : 'PILOT-MODEL-ITEM-ACTUATOR-FEEDBACK-01';
     }
 
@@ -68,7 +74,7 @@ package B0PhaseOnePilot {
     interface def 'PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01' {
         end supplier : 'PILOT-MODEL-CONTROLLER-01';
         end consumer : 'PILOT-MODEL-ACTUATOR-01';
-        flow supplier.torque_request to consumer.torque_request;
+        flow supplier.paired_command to consumer.paired_command;
     }
 
     interface def 'PILOT-MODEL-IF-ACTUATOR-CONTROLLER-01' {
@@ -108,7 +114,7 @@ package B0PhaseOnePilot {
         flow plant.truth to imu.truth;
         flow imu.sample to estimator.sample;
         flow estimator.estimate to controller.estimate;
-        flow controller.torque_request to actuator.torque_request;
+        flow controller.paired_command to actuator.paired_command;
         flow actuator.feedback to controller.feedback;
         flow plant.truth to evaluator.truth;
     }

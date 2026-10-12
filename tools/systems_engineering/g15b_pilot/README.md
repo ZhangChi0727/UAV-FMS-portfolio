@@ -22,7 +22,7 @@ The method, field dictionary, relation rules, standard clauses, and fixed-tool l
 | `tests/fixtures/prestructured_semantic_baseline.json` | Test-only immutable migration oracle from `ce350a488ff9b0c50cf32bb4d22c5833b33db597`; never an editable record authority. |
 | Temporary HTML / screenshot | Review-only output outside Git; never an evidence artifact. |
 
-StrictDoc 0.30.1 accepts only its fixed native requirement fields. The rich structured data therefore remains in the JSON contract and is displayed by the generated Markdown/HTML views rather than being hidden in `COMMENT`.
+StrictDoc 0.30.1 supports declared custom grammars and fields; the retained `custom_grammar_probe.sdoc` and test prove that `ACCEPTANCE` parses and renders. This pilot nevertheless keeps JSON as its experimental record source because JSON Schema plus the project checker currently give the clearest typed cross-domain relations, phase-one status locks, deterministic projections, and migration oracle. That is a bounded workflow choice, not a StrictDoc technical necessity or a formal-source approval.
 
 ## Isolated reproduction
 

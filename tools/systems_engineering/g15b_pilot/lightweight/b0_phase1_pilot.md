@@ -139,6 +139,7 @@ Planned inspection verifies both legacy identifiers, their decision locator, and
 - **Cross-domain links:**
   - `models` → `PILOT-MODEL-CONTROLLER-01` (project_extension)
   - `models` → `PILOT-MODEL-REQ-PROXY-G2-05` (project_extension)
+  - `models` → `PILOT-MODEL-IF-CONTROLLER-ACTUATOR-01` (project_extension)
   - `allocated_to` → `PILOT-DEV-CONTROLLER-CORE-01` (project_extension)
   - `specified_by` → `PILOT-VER-G2-INTERFACE-01` (project_extension)
 

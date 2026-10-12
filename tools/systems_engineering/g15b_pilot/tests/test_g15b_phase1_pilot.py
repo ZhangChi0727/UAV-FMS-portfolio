@@ -22,8 +22,7 @@ from g15b_pilot.build_pilot_views import (  # noqa: E402
     render_preview_html,
 )
 from g15b_pilot.pilot_contract import (  # noqa: E402
-    CONTRACT_PATH,
-MODEL_PATH,
+    MODEL_PATH,
     PilotError,
     load_contract,
     load_sysml_model,
@@ -197,7 +196,40 @@ def test_not_applicable_with_unapproved_reference_fails_closed() -> None:
 def test_planned_verification_cannot_claim_pass() -> None:
     data = contract_copy()
     data["verification_provisions"][0]["execution_status"] = "pass"
-    with pytest.raises(PilotError, match="falsely claims pass"):
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
+
+
+def test_defined_verification_with_pass_and_no_evidence_fails_closed() -> None:
+    data = contract_copy()
+    data["verification_provisions"][0]["planning_status"] = "defined"
+    data["verification_provisions"][0]["execution_status"] = "pass"
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
+
+
+def test_implemented_development_without_references_fails_closed() -> None:
+    data = contract_copy()
+    data["development_objects"][0]["lifecycle"] = "implemented"
+    with pytest.raises(PilotError, match="schema validation failed"):
+        validate(data)
+
+
+def test_orphan_execution_evidence_fails_closed() -> None:
+    data = contract_copy()
+    data["execution_evidence"].append(
+        {
+            "id": "PILOT-EVID-ORPHAN-01",
+            "test_case_ref": "fabricated-test",
+            "code_version": "fabricated-code",
+            "configuration_version": "fabricated-config",
+            "command": "not run",
+            "environment": "none",
+            "result": "pass",
+            "locator": "systems_engineering/project_charter.md#purpose",
+        }
+    )
+    with pytest.raises(PilotError, match="execution_evidence must remain empty"):
         validate(data)
 
 
@@ -249,6 +281,17 @@ def test_legal_many_to_many_relation_and_planned_not_applicable_states_pass() ->
     validate(data)
 
 
+def test_required_model_relation_cannot_be_retargeted_to_existing_element() -> None:
+    data = contract_copy()
+    relation = next(
+        item for item in data["relations"]
+        if item["id"] == "PILOT-REL-G2-MODEL-01"
+    )
+    relation["target_id"] = "PILOT-MODEL-ACTUATOR-01"
+    with pytest.raises(PilotError, match="required record-to-model relation"):
+        validate(data)
+
+
 def test_model_type_mismatch_fails_closed() -> None:
     data = contract_copy()
     model = next(item for item in data["model_elements"] if item["id"] == "PILOT-MODEL-CONTROLLER-01")
@@ -283,6 +326,16 @@ def test_live_truth_flow_to_controller_fails_closed(tmp_path: Path) -> None:
     model_path = tmp_path / "truth_leak.sysml"
     model_path.write_text(source, encoding="utf-8")
     with pytest.raises(PilotError, match="live truth must not flow"):
+        load_validated_pilot(REPO_ROOT, model_path=model_path)
+
+
+def test_raw_torque_request_only_actuation_fails_closed(tmp_path: Path) -> None:
+    source = MODEL_PATH.read_text(encoding="utf-8").replace(
+        "paired_command", "torque_request"
+    )
+    model_path = tmp_path / "raw-request-only.sysml"
+    model_path.write_text(source, encoding="utf-8")
+    with pytest.raises(PilotError, match="required SysML flow is missing"):
         load_validated_pilot(REPO_ROOT, model_path=model_path)
 
 

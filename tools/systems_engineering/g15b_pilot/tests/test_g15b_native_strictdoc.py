@@ -10,6 +10,7 @@ import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PILOT_DIRECTORY = REPO_ROOT / "tools/systems_engineering/g15b_pilot/strictdoc"
+CUSTOM_GRAMMAR_PROBE = PILOT_DIRECTORY / "custom_grammar_probe.sdoc"
 PILOT_KEYS = (
     "PILOT-ONLY-NEED-01",
     "PILOT-ONLY-INTERFACE-02",
@@ -59,6 +60,23 @@ def test_native_export_generates_readable_html(tmp_path: Path) -> None:
     assert "Generated review projection; edit pilot_structure.json" in html
     assert "Git branch:" in html
     assert "@GIT_VERSION" not in html
+
+
+def test_fixed_version_accepts_and_renders_declared_custom_field(tmp_path: Path) -> None:
+    """Retain the exact positive counterexample to the former fixed-field claim."""
+    source = tmp_path / "custom-grammar"
+    source.mkdir()
+    shutil.copy2(CUSTOM_GRAMMAR_PROBE, source / CUSTOM_GRAMMAR_PROBE.name)
+    shutil.copy2(PILOT_DIRECTORY / "strictdoc_config.py", source / "strictdoc_config.py")
+    shutil.copy2(PILOT_DIRECTORY / "presentation.css", source / "presentation.css")
+    result = export(source, tmp_path / "custom-html")
+    assert result.returncode == 0, result.stderr or result.stdout
+    html = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in (tmp_path / "custom-html").rglob("*.html")
+    )
+    assert "ACCEPTANCE" in html
+    assert "reader and native HTML exporter accept and render" in html
 
 
 def test_native_export_copies_the_source_owned_presentation_asset(tmp_path: Path) -> None:
