@@ -54,6 +54,22 @@ def test_missing_json_field_locator_fails_closed() -> None:
         validate_records(parse_sdoc_records(source), REPO_ROOT)
 
 
+def test_malformed_json_locator_fails_closed() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
+        "#/controller_contract/truth_inputs_forbidden", "#controller_contract/truth_inputs_forbidden"
+    )
+    with pytest.raises(PilotError, match="must use a JSON Pointer"):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
+def test_malformed_markdown_locator_fails_closed() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
+        "architecture.md#modular-boundaries", "architecture.md#/modular-boundaries"
+    )
+    with pytest.raises(PilotError, match="must use a Markdown anchor"):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
 def test_missing_required_metadata_fails_closed() -> None:
     source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
         "Evidence status: planned/not_run\n", "", 1
@@ -89,6 +105,23 @@ def test_not_applicable_record_without_approval_reference_fails_closed() -> None
         1,
     )
     with pytest.raises(PilotError, match="lacks approval ref"):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
+def test_not_applicable_record_with_invalid_approval_reference_fails_closed() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
+        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#决定",
+        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#missing-decision",
+    )
+    with pytest.raises(PilotError, match="approval ref.*anchor is missing"):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
+def test_not_applicable_record_cannot_claim_applicability() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
+        "Applicability: not_applicable", "Applicability: applicable"
+    )
+    with pytest.raises(PilotError, match="must state not_applicable applicability"):
         validate_records(parse_sdoc_records(source), REPO_ROOT)
 
 
