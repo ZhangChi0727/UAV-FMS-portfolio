@@ -398,3 +398,5 @@ def test_local_review_preview_links_records_model_parent_and_planned_objects() -
     assert 'id="PILOT-MODEL-CONTROLLER-01"' in preview
     assert 'id="PILOT-DEV-CONTROLLER-CORE-01"' in preview
     assert 'id="PILOT-VER-G2-INTERFACE-01"' in preview
+    assert 'BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif' in preview
+    assert 'ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace' in preview

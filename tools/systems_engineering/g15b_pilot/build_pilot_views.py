@@ -326,13 +326,13 @@ def render_preview_html(contract: dict[str, Any], model: Any) -> str:
 <html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
 <title>B0 G1.5-B structured pilot review</title>
 <style>
-:root {{ color-scheme: light; font-family: Inter, Segoe UI, sans-serif; color: #172033; background: #f4f7fb; }}
+:root {{ color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif; color: #172033; background: #f4f7fb; }}
 body {{ margin: 0; line-height: 1.5; }} header {{ background: #102a43; color: #fff; padding: 1.5rem max(1.2rem, calc((100vw - 1120px)/2)); }}
 header p {{ max-width: 70rem; margin: .4rem 0 0; }} main {{ max-width: 1120px; margin: 0 auto; padding: 1.2rem; }}
 nav {{ background: #e6f0ff; border: 1px solid #b9d2f2; padding: .8rem 1rem; border-radius: .45rem; }} nav ul {{ columns: 2; margin: .3rem 0; padding-left: 1.2rem; }}
 article, section {{ background: #fff; border: 1px solid #d8e0eb; border-radius: .45rem; margin: 1rem 0; padding: 1rem 1.2rem; box-shadow: 0 1px 2px #102a4312; }}
 h1, h2, h3 {{ line-height: 1.2; }} h2 {{ color: #0c4a6e; }} h3 {{ margin-bottom: .25rem; }} dl {{ display: grid; grid-template-columns: max-content 1fr; gap: .25rem .8rem; }} dt {{ font-weight: 700; }} dd {{ margin: 0; }}
-code {{ overflow-wrap: anywhere; color: #7c2d12; }} .scroll-table {{ overflow-x: auto; }} table {{ border-collapse: collapse; width: 100%; }} th, td {{ border: 1px solid #cbd5e1; padding: .45rem; text-align: left; vertical-align: top; }} th {{ background: #edf4ff; }}
+code {{ overflow-wrap: anywhere; color: #7c2d12; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace; }} .scroll-table {{ overflow-x: auto; }} table {{ border-collapse: collapse; width: 100%; }} th, td {{ border: 1px solid #cbd5e1; padding: .45rem; text-align: left; vertical-align: top; }} th {{ background: #edf4ff; }}
 @media (max-width: 720px) {{ nav ul {{ columns: 1; }} dl {{ grid-template-columns: 1fr; gap: .1rem; }} dd {{ margin-bottom: .5rem; }} main {{ padding: .7rem; }} article, section {{ padding: .8rem; }} }}
 </style></head><body>
 <header><h1>B0 G1.5-B structured pilot review</h1><p>Local review-only projection. Non-authoritative; planned/not-run is not execution evidence, a satisfied requirement, or a frozen baseline.</p></header>
