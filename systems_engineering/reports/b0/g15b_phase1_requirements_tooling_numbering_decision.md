@@ -87,10 +87,10 @@ No fixture enters coverage accounting or claims implementation/verification.
 
 The native command is deliberately described narrowly: `strictdoc export` is a
 parser/export exercise, not an all-purpose project requirement validator.
-Duplicate keys, broken parents, unknown model elements, required fields,
-approved-not-applicable references, JSON pointers, Markdown anchors and
-cross-format drift are tested by the dedicated thin checker and its negative
-fixtures.
+Duplicate keys, broken parents, unknown model elements, required fields, the
+fixed CTL applicability decision, JSON pointers (including array-index form),
+Markdown anchors and cross-format drift are tested by the dedicated thin
+checker and its negative fixtures.
 
 ### Tool provenance and reproducibility record
 
@@ -126,7 +126,7 @@ scoped commands there.
 /tmp/uav-fms-g15b-strictdoc/bin/python -m pytest -q \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_phase1_pilot.py \
   tools/systems_engineering/g15b_pilot/tests/test_g15b_native_strictdoc.py
-# exit 0; 18 passed (timing recorded in the PR validation evidence)
+# exit 0; 25 passed (timing recorded in the PR validation evidence)
 ```
 
 The native test suite proves that the evaluated StrictDoc CLI rejects a
@@ -139,6 +139,26 @@ last committed state at that moment; it must not be mistaken for a hash of
 uncommitted source. The CI test asserts that the macro is resolved, and the PR
 head/CI run are the authoritative final render identity.
 
+### Execution provenance for PA recheck
+
+The local source checkout used for the recheck was Windows
+`E:\\Project\\uav-fms-portfolio`, mounted in WSL as
+`/mnt/e/Project/uav-fms-portfolio`. Its recorded `git rev-parse HEAD` before
+the rework response was
+`7d486b1b417cd1a93f63a75f1ef496f9b411a9ce`. The scoped commands ran after
+`cd /mnt/e/Project/uav-fms-portfolio`; source and test paths therefore resolved
+from that checkout. The similarly named `/home/chi/src/uav-fms-portfolio`
+checkout observed by PA remains at `56fe38b7…`; it was not the source under
+test and supplied only the pre-existing `.venv-b0` interpreter executable.
+This path split explains the differing HEAD values without claiming that the
+stale checkout executed this pilot.
+
+The recheck command sequence included the G0 default/v1/v2 config CLIs, G0
+and G1 track-local pytest/Ruff commands, the phase-one checker, the isolated
+StrictDoc export, the two phase-one test modules, and `git diff --check`.
+The exact commands and 25-test result are recorded in PR #16; the remote CI
+run `38217640484` independently reran all six jobs at the reviewed head.
+
 `strictdoc --help` exposed `export` but no native `validate` subcommand in
 0.30.1. The direct trial inputs are pinned, while StrictDoc's large transitive
 dependency closure is not a separately hash-locked file; that resolver surface
@@ -148,11 +168,15 @@ evidence.
 ### User-facing temporary preview, not a repository artifact
 
 The same successful native export was also written outside Git to
-`%LOCALAPPDATA%\Temp\uav-fms-g15b-strictdoc-preview-20261012\html\strictdoc\b0_phase1_pilot.html`.
+`%LOCALAPPDATA%\Temp\uav-fms-g15b-strictdoc-preview-7d486b1\html\strictdoc\b0_phase1_pilot.html`.
 It is a short-lived, local browser preview of the five `PILOT-ONLY-*` fixtures,
-not a formal requirements view or retained evidence artifact. Recreate it with
-the documented `strictdoc export` command and a local temporary output path;
-do not copy it into the repository.
+not a formal requirements view or retained evidence artifact. The native test
+also asserts that all five generated anchors occur in the navigation and that
+the four parent links target the declared parent records. Visual acceptance is
+still a human review action: inspect those five entries, the navigation, and
+the four parent links in the local preview before any phase-one approval.
+Recreate it with the documented `strictdoc export` command and a local temporary
+output path; do not copy it into the repository.
 
 The browser-automation policy in this task rejects `file://` URLs, so the
 executor did not bypass that protection or fabricate a browser screenshot.

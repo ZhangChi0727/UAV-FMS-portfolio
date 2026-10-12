@@ -117,6 +117,15 @@ def test_not_applicable_record_with_invalid_approval_reference_fails_closed() ->
         validate_records(parse_sdoc_records(source), REPO_ROOT)
 
 
+def test_not_applicable_record_with_unrelated_approval_reference_fails_closed() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
+        "Approval ref: systems_engineering/reports/b0/g0_approval_decision.md#决定",
+        "Approval ref: systems_engineering/project_charter.md#purpose",
+    )
+    with pytest.raises(PilotError, match="fixed legacy approval decision"):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
 def test_not_applicable_record_cannot_claim_applicability() -> None:
     source = SDOC_SOURCE.read_text(encoding="utf-8").replace(
         "Applicability: not_applicable", "Applicability: applicable"
@@ -131,6 +140,26 @@ def test_broken_parent_relation_fails_closed() -> None:
     )
     with pytest.raises(PilotError, match="unknown parent relation"):
         validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
+@pytest.mark.parametrize(
+    ("replacement", "message"),
+    (
+        ("/scenarios/-1/id", "invalid JSON array index"),
+        ("/scenarios/06/id", "invalid JSON array index"),
+        ("/scenarios/one/id", "invalid JSON array index"),
+        ("/scenarios/99/id", "JSON pointer is missing"),
+    ),
+)
+def test_invalid_json_array_index_fails_closed(replacement: str, message: str) -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace("/scenarios/6/id", replacement)
+    with pytest.raises(PilotError, match=message):
+        validate_records(parse_sdoc_records(source), REPO_ROOT)
+
+
+def test_valid_json_array_index_remains_accepted() -> None:
+    source = SDOC_SOURCE.read_text(encoding="utf-8").replace("/scenarios/6/id", "/scenarios/0/id")
+    validate_records(parse_sdoc_records(source), REPO_ROOT)
 
 
 def test_cross_format_drift_fails_closed() -> None:
