@@ -16,13 +16,18 @@ The ledger separates:
 - independent review acceptance.
 
 A passing command alone does not satisfy a requirement. The checker counts a
-record toward requirement satisfaction only when it is a complete pass, its
-evidence is available, its version applicability is established, and its review
-status is accepted. Fixtures never enter production totals.
+record toward requirement satisfaction only when it is a complete pass, the
+exact evidence bytes are present in an explicitly supplied cache and match the
+recorded digest, retention is current, two-sided version applicability is
+established, and independent review is accepted. A remote label or URI alone is
+not verification: unavailable remote bytes remain `remote_unverified` and never
+count toward acceptance. Fixture records are prohibited in the production ledger.
 
-Relevant-file applicability hashes use committed Git bytes rather than working
-tree bytes, so Windows/Unix checkout line-ending conversion cannot change the
-recorded identity.
+Relevant-file applicability hashes bind both the evidence source commit and the
+controlled target commit. The checker reads each revision through Git, confirms
+the declared dependency closure has identical bytes, and then confirms committed
+`HEAD` still matches the target. It deliberately ignores uncommitted worktree
+bytes, so checkout line endings and unrelated local edits cannot change identity.
 
 Run the offline gate from the repository root:
 

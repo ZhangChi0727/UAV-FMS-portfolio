@@ -32,23 +32,32 @@
         "criterion_locators": ["systems_engineering/verification/b0_verification_specifications.json#B0-VER-PLANT-DYNAMICS", "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ACTUATOR-DYNAMICS", "systems_engineering/verification/b0_verification_specifications.json#B0-VER-IMU-GYRO"]
       },
       "evidence": {
-        "availability": "remote_verified",
-        "uri": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/actions/runs/38370792650/artifacts",
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465",
+        "artifact_id": 11798583465,
+        "artifact_file": "g1_component_evidence.json",
         "sha256": "e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e",
+        "archive_sha256": "319ffe7b7bf07ac5d52a6821cdc3e27bb5c72e5244ad1bdb6e40da9205ac3f9c",
         "source_run": "38370792650",
-        "source_commit": "669df46a930f751e8b206fdffd7354c2ad828167",
+        "source_commit": "bd4ff5e8deb85e7656d8e195507ca3595ca1926b",
+        "verified_at": null,
+        "expires_at": "2027-01-11T08:39:50Z",
         "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
       },
       "applicability": {
         "status": "applicable_by_analysis",
-        "basis": "The Actions merge revision differs from the branch head; applicability is limited to the listed implementation/configuration bytes, whose SHA-256 values are checked locally.",
+        "basis": "The workflow source branch revision and the G1.5-C closeout target have identical committed bytes for the complete declared dependency closure. Both revisions and the committed target HEAD are checked; uncommitted worktree bytes are not evidence.",
+        "source_commit": "bd4ff5e8deb85e7656d8e195507ca3595ca1926b",
+        "target_commit": "62aad74babd41d31c472038db2cdd10999ea426e",
         "relevant_files": [
-          {"path": "01_simulation/b0/plant.py", "sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"},
-          {"path": "01_simulation/b0/actuator.py", "sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"},
-          {"path": "01_simulation/b0/imu.py", "sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"},
-          {"path": "01_simulation/b0/evidence.py", "sha256": "8773e647f71ba5185526fae2b4e2e1dd85905979b45bd68bcb5f9f9db5b53c1a"},
-          {"path": "01_simulation/b0/tests/test_components.py", "sha256": "6bfbc22b6c10c8b79833e746155c616ff3a5f3529d1cb4392208050f56957e53"},
-          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"}
+          {"path": "01_simulation/b0/plant.py", "source_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90", "target_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"},
+          {"path": "01_simulation/b0/actuator.py", "source_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f", "target_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"},
+          {"path": "01_simulation/b0/imu.py", "source_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a", "target_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"},
+          {"path": "01_simulation/b0/evidence.py", "source_sha256": "8773e647f71ba5185526fae2b4e2e1dd85905979b45bd68bcb5f9f9db5b53c1a", "target_sha256": "8773e647f71ba5185526fae2b4e2e1dd85905979b45bd68bcb5f9f9db5b53c1a"},
+          {"path": "01_simulation/b0/tests/test_components.py", "source_sha256": "6bfbc22b6c10c8b79833e746155c616ff3a5f3529d1cb4392208050f56957e53", "target_sha256": "6bfbc22b6c10c8b79833e746155c616ff3a5f3529d1cb4392208050f56957e53"},
+          {"path": "01_simulation/b0/contract.py", "source_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013", "target_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013"},
+          {"path": "01_simulation/b0/quaternion.py", "source_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa", "target_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa"},
+          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c", "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"}
         ]
       },
       "review": {"status": "pending", "reviewer": null, "source": null},

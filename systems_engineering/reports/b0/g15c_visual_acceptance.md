@@ -27,3 +27,11 @@ font for Western text.
 The first attempted render revealed literal Markdown emphasis and an empty
 execution-record section. The HTML generator was corrected and both viewports
 were re-rendered before this acceptance record was written.
+
+After PA rework, both viewports were rendered again from the revised generator.
+The first screen now distinguishes structural design coverage from execution and
+accepted evidence, states the offline-unverified gap, and exposes the version
+boundary. Below the fold, static level/result groups link to all 30 requirement
+chains; each chain separates source, requirement statement, rationale, model and
+responsibility, planned verification, execution/evidence/review, and the open gap.
+The re-render retained the accepted typography, wrapping and scrolling behavior.
