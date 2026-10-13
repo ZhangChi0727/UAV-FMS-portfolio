@@ -14,7 +14,9 @@
   "events": [
     {
       "type": "d2_joint_freeze_approved",
-      "occurred_at": "2026-10-13T03:28:22Z",
+      "occurred_at": null,
+      "time_basis": "The direct GitHub source records the approval but does not prove the approval event occurred at the comment publication second.",
+      "source_recorded_at": "2026-10-13T03:28:22Z",
       "actor": "controlling user",
       "object": "S+M joint baseline",
       "effective_scope": "23 manifest assets",
@@ -27,11 +29,15 @@
       "object": "PR #17",
       "effective_scope": "G1.5-B joint baseline",
       "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17",
-      "authorization_source": "docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md#2-baseline-existing-conclusions-and-protected-objects"
+      "authorization_source": "codex-thread:019fa435-f674-71e3-85ba-10e28ad94470/turn/01a13368-eee4-7430-94eb-68847aa24ddb/user-message/01a13368-ef4d-7060-ad3f-d378570a0970",
+      "authorization_scope": "User '授权。' response to the immediately preceding D3 request: mark Ready, perform an ordinary merge, retain the branch, and keep Issue #18 open.",
+      "supporting_source": "docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md section 2"
     },
     {
       "type": "post_merge_accepted",
-      "occurred_at": "2026-10-13T03:56:30Z",
+      "occurred_at": null,
+      "time_basis": "The retained GitHub comments record the historical PA conclusion but do not prove the acceptance event occurred at the comment publication second.",
+      "source_recorded_at": "2026-10-13T03:56:30Z",
       "actor": "Project Administrator (historical acceptance, transcribed by TC)",
       "object": "merge c2aa92ea5459b2112af9fa3f76c94621e93a0b1b",
       "effective_scope": "G1.5-B complete and C technical inputs ready",
