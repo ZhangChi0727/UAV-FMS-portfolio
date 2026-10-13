@@ -181,6 +181,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements/b0-dev.txt
+          python -m pip install -r requirements/g15b-pilot.txt
 
       - name: Check migration, model allocation and evidence references
         run: python tools/systems_engineering/check_governance.py
@@ -211,9 +212,18 @@ jobs:
         run: python -B check_g15b_phase1_pilot.py
         working-directory: tools/systems_engineering
 
+      - name: Check formal joint baseline and deterministic projections
+        run: |
+          python -B check_g15b_joint_baseline.py
+          python -B build_g15b_joint_views.py --check
+        working-directory: tools/systems_engineering
+
       - name: Render the native StrictDoc trial to temporary HTML
         run: strictdoc export --config g15b_pilot/strictdoc/strictdoc_config.py --formats=html --output-dir "$RUNNER_TEMP/g15b-pilot-html" --no-parallelization g15b_pilot/strictdoc
         working-directory: tools/systems_engineering
+
+      - name: Render the formal candidate reading view to temporary HTML
+        run: strictdoc export --config systems_engineering/requirements/strictdoc_config.py --formats=html --output-dir "$RUNNER_TEMP/g15b-joint-html" --no-parallelization systems_engineering/requirements/generated
 
       - name: Run phase-one positive and negative fixtures
         run: python -B -m pytest -q g15b_pilot/tests -p no:cacheprovider

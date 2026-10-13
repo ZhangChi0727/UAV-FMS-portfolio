@@ -1,0 +1,27 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --fg: #c9d1d9;
+  --muted: #8b949e;
+  --green: #7ee787;
+  --cyan: #79c0ff;
+  --border: #30363d;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, monospace;
+  line-height: 1.55;
+}
+
+main, .main, .content {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+h1, h2, h3, a { color: var(--green); }
+code, pre { color: var(--cyan); background: var(--panel); }
+table, th, td { border-color: var(--border); }
+.requirement, article, section { border-color: var(--border); }
+.requirement__status, .document-view-meta-fields { color: var(--muted); }
