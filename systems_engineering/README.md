@@ -3,11 +3,10 @@
 This directory is the reader-facing engineering entry for B0. It separates
 system relationships and their sources from executable module code, daily
 operation notes, and retained evidence. G0 and the G1.5-B joint baseline are
-approved, and G1 plant/actuator/IMU component acceptance is merged. G1.5-C is
-the planned next verification-traceability/reporting increment. The combined
-work remains in K closeout rework and the original PA has not released C; this
-does not claim G2, G3, G4, overall B0 completion, hardware, flight, or research
-results.
+approved, and G1 plant/actuator/IMU component acceptance is merged. The original
+PA accepted closeout K3; G1.5-C is now the active verification-traceability and
+reporting increment. This does not claim G2, G3, G4, overall B0 completion,
+hardware, flight, or research results.
 
 ## Reading route
 
@@ -33,10 +32,14 @@ results.
 4. **Development state** — [current status snapshot](reports/current_status.md)
    and the module-local implementations under `01_simulation/` and
    `05_integration/`.
-5. **Verification** — [verification plan](verification/verification_plan.md),
+5. **Verification evidence** — [execution/evidence contract](verification/README.md)
+   and the [current G1.5-C traceability status](reports/b0/g15c_verification_status.md).
+   The report keeps design links, execution results, evidence availability,
+   version applicability and review acceptance separate.
+6. **Verification** — [verification plan](verification/verification_plan.md),
    [G0 acceptance](verification/g0_acceptance.md), and the
    [V&V report](reports/v_and_v_report.md).
-6. **Evidence** — [RESULTS.md](../RESULTS.md), the G1 evidence generator and
+7. **Evidence** — [RESULTS.md](../RESULTS.md), the G1 evidence generator and
    its CI artifact, and the versioned reports under `reports/`.
 
 ## Source-of-truth boundaries

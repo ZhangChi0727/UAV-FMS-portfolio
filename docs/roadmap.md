@@ -15,8 +15,8 @@ the completed [G1.5-B joint-baseline work order](work_orders/B0_G1_5_B_joint_bas
 and the current [B-closeout/G1.5-C work order](work_orders/B0_G1_5_C_closeout_and_verification_work_order.md).
 G1.5-A established the document/model structure and the pilot remains a
 non-authoritative method record. G1.5-B is approved, frozen and merged. The
-combined increment remains in K closeout rework; G1.5-C implementation is not
-released by the original PA and does not authorize G2 implementation.
+original PA accepted closeout K3; G1.5-C is active from that gate forward and
+does not authorize G2 implementation.
 
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
@@ -40,7 +40,7 @@ component-level dependencies shown below.
 | Implement rotational plant and IMU | G0 | Before G1.5-A | G1 |
 | Establish systems-engineering structure and model views | G1 | G1.5-A | G1.5-A (governance increment; not a new product baseline) |
 | Establish requirements/model joint baseline | G1.5-A | G1.5-B | G1.5-B formal joint baseline (approved, frozen and merged) |
-| Establish verification traceability and report presentation | G1.5-B | G1.5-C | Planned; blocked at original-PA closeout gate |
+| Establish verification traceability and report presentation | G1.5-B | G1.5-C | Active after original-PA `CLOSEOUT_ACCEPT`; not yet accepted as complete |
 | Implement basic attitude estimator | G1 sensor fixtures | After G1.5-C; estimator part of G2 | Estimator part of G2 |
 | Implement C++ cascaded controller | G0 | After G1.5-C; controller part of G2 | Controller part of G2 |
 | Integrate estimated-state loop | G1, G2 | After G1.5-C | G3 |

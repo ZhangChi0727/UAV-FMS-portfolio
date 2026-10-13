@@ -10,10 +10,11 @@ verification specifications into executed results.
 
 - G1.5-B is approved, frozen, merged and post-merge accepted.
 - The 23 assets listed by M match the PR #17 merge tree.
-- G1.5-C technical inputs are ready, but the original PA returned `REWORK` on K
-  `bd4ff5e`. Local uncommitted C1/C2 work was started prematurely after an
-  internal same-name subagent was mistaken for the original gate authority. It
-  is paused and is not a C start authorization, completed increment or result.
+- G1.5-C technical inputs are ready. The original PA accepted exact K3
+  `62aad74babd41d31c472038db2cdd10999ea426e`; C execution resumed at
+  2026-10-13T10:35:12.0677549Z. Earlier local C1/C2 work remains recorded as a
+  sequence deviation and is not retrospectively authorized or counted as
+  post-gate validation.
 - G2/G3 and overall B0 remain outside this increment.
 
 ## Version and decision chain
@@ -26,6 +27,8 @@ verification specifications into executed results.
 | Post-merge acceptance | event time not independently proven; source published 2026-10-13 03:56:30Z; main CI `38343895365` | [complete TC transcription](https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6142639167); [retained complete source](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/18#issuecomment-6137888147); [truncated original](https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6137887761) | historical PA completes B and makes C inputs ready |
 | Combined follow-on authorization | event time not independently preserved | [current work order](../../../docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md) | controlling user permits K, then C only after original-PA closeout gate |
 | Sequence deviation | after K `bd4ff5e`, before original-PA REWORK | original PA turn `01a13480-e45e-7841-a56d-ed51b22e3ea4` in controlling thread | TC paused uncommitted local C work; no retrospective authorization claimed |
+| Closeout acceptance | K3 `62aad74` | original PA thread `019f9ef3-4a0c-79f1-99d4-c8415f62bd29` | `CLOSEOUT_ACCEPT` releases C from this decision forward only |
+| C resumed | 2026-10-13T10:35:12.0677549Z | TC local execution record | resumes scoped C1/C2/C3; G2 remains unauthorized |
 
 ## Historical integrity and current-difference classification
 
