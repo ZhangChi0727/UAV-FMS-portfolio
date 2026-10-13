@@ -58,6 +58,16 @@ def _git_blob(repo: Path, path: str) -> str:
         raise TraceabilityError(f"cannot hash controlled path: {path}") from exc
 
 
+def _git_file_sha256(repo: Path, path: str) -> str:
+    """Hash committed bytes so checkout line-ending policy cannot change identity."""
+
+    try:
+        content = subprocess.check_output(["git", "show", f"HEAD:{path}"], cwd=repo)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise TraceabilityError(f"cannot read committed applicability path: {path}") from exc
+    return hashlib.sha256(content).hexdigest()
+
+
 def validate_ledger(
     repo: Path,
     ledger_data: Mapping[str, Any] | None = None,
@@ -130,7 +140,7 @@ def validate_ledger(
             for item in applicability["relevant_files"]:
                 path = _inside(repo, item["path"], "applicability path")
                 _need(path.is_file(), f"missing applicability file: {record_id} -> {item['path']}")
-                digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                digest = _git_file_sha256(repo, item["path"])
                 _need(digest == item["sha256"], f"stale applicability hash: {record_id} -> {item['path']}")
 
     for record_id in records:
