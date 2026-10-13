@@ -13,8 +13,8 @@ they do not prescribe B0 state dimensions or sample rates.
 |---|---|---|---|
 | Plant/sensors | Truth and timestamped IMU | Bounded actuator output, environment | Truth only to sensors/evaluation |
 | Estimation | Quaternion, rate, validity/status | IMU and explicit initial conditions | No live truth access |
-| Control | Body torque demand | Setpoint, estimated attitude/rate, dt | Platform-independent C++ core |
-| Actuation | Applied torque and saturation status | Requested torque | Limits/dynamics explicit |
+| Control | Timestamped paired torque command: raw request, controller-limited target and saturation status | Setpoint, estimated attitude/rate, dt, paired actuator feedback | Platform-independent C++ core; sole torque-limit owner |
+| Actuation | Applied torque and feedback paired to the command timestamp | Controller-limited target only | Response dynamics explicit; never recompute a limit from the raw request |
 | Health/recovery | Health and mode decisions | Declared observations | Optional; no hidden controller mutations |
 | Execution adapter | Ordered samples and logs | Scenario and component contracts | Owns clock/reset/platform mapping |
 | Verification | Metrics and outcomes | Truth, observations, commands, configuration | Independent of tested algorithm |
@@ -149,7 +149,8 @@ Jacobian shall be used consistently in propagation and correction.
 | GPS fix | GPS model | EKF | timestamp, position (3), velocity (3), validity | 10 Hz |
 | Camera frame | Sensor model | Later VO module | 640 by 480 RGB | 30 Hz |
 | State estimate | EKF | Controller, later TCN, analysis | timestamp, nominal state (16), covariance (15 by 15) | 100 Hz |
-| Control command | Controller | Plant model | thrust, torques (3) | 100 Hz |
+| Paired torque command | Controller | Actuator | timestamp, requested torque (3), limited target (3), saturation status (3) | G0 integer-tick schedule |
+| Actuator feedback | Actuator | Controller, plant adapter, analysis | timestamp, actual torque (3), paired command timestamp | G0 base tick |
 | Fault flag | TCN | Mode manager | class, confidence, timestamp | 10 Hz |
 
 ## Deterministic Fixture Contract

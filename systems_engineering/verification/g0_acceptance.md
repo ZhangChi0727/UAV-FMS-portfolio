@@ -128,12 +128,13 @@ command timestamp 与 reset_epoch，才构成将来 G3 可审计的 replay 证�
 
 原有编号和阈值保持不变；本轮未修改需求，也没有产生符合性证据。
 
-| 需求 | 原始阈值 | 当前结论 | 维护者待决事项 |
+| 需求 | 原始阈值 | 当前结论 | 后续处理 |
 |---|---|---|---|
-| CTL-REQ-001 | Attitude settling time — 10 degree step input，< 0.8 s，Test | 条件化适用，未批准、未执行 | 是否在相同对象、command、band、dwell 与指标口径下采纳旧阈值 |
-| CTL-REQ-002 | Attitude overshoot，< 15%，Test | 条件化适用、候选阈值冲突，未执行 | 是否采纳旧阈值，或正式记录不适用并批准 B0 工程阈值 |
+| CTL-REQ-001 | Attitude settling time — 10 degree step input，< 0.8 s，Test | 当前 B0 `not_applicable`；不是满足，未执行 | 保留原文；未来扩展重新评估适用性 |
+| CTL-REQ-002 | Attitude overshoot，< 15%，Test | 当前 B0 `not_applicable`；不是满足，未执行 | 保留原文；未来扩展重新评估适用性 |
 
-候选 B0 阈值不能替换、重编号或暗中放宽这些旧阈值。批准记录须连同新的配置版本保存。
+上述处置由 [G0 批准记录](../reports/b0/g0_approval_decision.md#决定) 明确批准。
+候选 B0 阈值不能替换、重编号或暗中放宽这些旧阈值。
 
 ## 未来 G3/G4 执行规则
 

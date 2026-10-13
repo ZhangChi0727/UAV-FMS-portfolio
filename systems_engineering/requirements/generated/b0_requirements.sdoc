@@ -1,0 +1,302 @@
+[DOCUMENT]
+TITLE: B0 Joint Requirement Baseline
+
+[REQUIREMENT]
+UID: B0-REQ-0001
+TITLE: Bounded attitude experiment
+STATEMENT: >>>
+The B0 system shall execute a configured bounded multirotor attitude-estimation and control experiment without representing the experiment as full-flight capability.
+<<<
+RATIONALE: >>>
+Defines the single B0 product use while preventing scaffold and extension scope from becoming an implicit obligation.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0002
+TITLE: Deterministic configuration and replay
+STATEMENT: >>>
+The B0 system shall produce repeatable samples and state evolution for identical approved configuration, seed, initial state, input sequence, reset sequence and software revision.
+<<<
+RATIONALE: >>>
+Repeatability is required for engineering comparison and release evidence.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0003
+TITLE: Runtime truth isolation
+STATEMENT: >>>
+The B0 system shall prevent live plant truth from entering estimator or controller runtime inputs after explicit initialization while permitting truth to reach sensor generation and independent evaluation.
+<<<
+RATIONALE: >>>
+Prevents circular validation and unrealistically privileged control or estimation.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0004
+TITLE: Shared frames units and quaternion convention
+STATEMENT: >>>
+The B0 system shall represent exchanged quantities using the approved NED and body frames, SI units, and scalar-first Hamilton quaternion convention.
+<<<
+RATIONALE: >>>
+A single convention prevents silent sign, frame and ordering defects across components.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0005
+TITLE: Rigid-body rotational dynamics
+STATEMENT: >>>
+The B0 plant shall propagate body angular velocity using the approved rigid-body rotational equation and positive-definite inertia contract.
+<<<
+RATIONALE: >>>
+Defines the physical responsibility required by the bounded attitude experiment.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0006
+TITLE: Quaternion plant state
+STATEMENT: >>>
+The B0 plant shall propagate and normalize its scalar-first attitude quaternion using the approved body-rate and frame convention.
+<<<
+RATIONALE: >>>
+Attitude propagation must remain consistent with the shared representation.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0007
+TITLE: Paired torque command
+STATEMENT: >>>
+The B0 controller shall publish one timestamped torque command that pairs requested torque, limited target and saturation status from the same controller due tick.
+<<<
+RATIONALE: >>>
+The pairing closes ambiguity between request, clamp result and anti-windup feedback.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0008
+TITLE: Limited-target actuator dynamics
+STATEMENT: >>>
+The B0 actuator shall advance its response using only the held limited target from the latest eligible paired torque command.
+<<<
+RATIONALE: >>>
+Prevents a raw request from bypassing the controller's unique saturation responsibility.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0009
+TITLE: Actuator feedback pairing
+STATEMENT: >>>
+The B0 actuator shall publish actual torque and the originating paired-command timestamp in actuator feedback.
+<<<
+RATIONALE: >>>
+Controller anti-windup must associate actual response with the correct limited target.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0010
+TITLE: Gyroscope measurement
+STATEMENT: >>>
+The B0 IMU shall produce timestamped body-frame angular-rate measurements with the approved bias, noise, validity and seed semantics.
+<<<
+RATIONALE: >>>
+Defines the estimator's angular-rate observation boundary.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0011
+TITLE: Accelerometer specific force
+STATEMENT: >>>
+The B0 IMU shall produce timestamped body-frame specific-force measurements using the approved gravity sign, bias, noise, validity and seed semantics.
+<<<
+RATIONALE: >>>
+Specific force rather than inertial acceleration is the estimator input.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0012
+TITLE: Estimator propagation
+STATEMENT: >>>
+The B0 estimator shall propagate and normalize a scalar-first attitude estimate from valid gyroscope samples and approved positive time increments.
+<<<
+RATIONALE: >>>
+Defines the minimum planned G2 attitude propagation responsibility.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0013
+TITLE: Roll and pitch fusion
+STATEMENT: >>>
+The B0 estimator shall apply bounded accelerometer-based roll and pitch correction only when the approved validity and bounded-specific-force conditions permit it.
+<<<
+RATIONALE: >>>
+Gravity-based tilt correction is conditional and must not silently treat all acceleration as gravity.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0014
+TITLE: Yaw observability limitation
+STATEMENT: >>>
+The B0 system shall report yaw as relative propagation and drift without claiming absolute yaw observability from gyroscope and accelerometer measurements alone.
+<<<
+RATIONALE: >>>
+Gravity provides no absolute heading reference.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0015
+TITLE: Acceleration contamination handling
+STATEMENT: >>>
+The B0 estimator shall expose the approved limitation or correction-gating status when non-gravitational specific force violates its bounded tilt-correction assumptions.
+<<<
+RATIONALE: >>>
+The bounded attitude model lacks complete translational dynamics and must characterize rather than hide this limitation.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0016
+TITLE: Cascaded attitude and rate control
+STATEMENT: >>>
+The B0 controller shall compute body-torque request through the approved attitude-error and body-rate feedback signs in a cascaded attitude and rate structure.
+<<<
+RATIONALE: >>>
+Defines the planned G2 controller responsibility without importing legacy geometric or LQR scaffolds.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0017
+TITLE: Unique controller saturation responsibility
+STATEMENT: >>>
+The B0 controller shall be the sole component that limits requested body torque to the approved target bounds and sets the paired saturation status.
+<<<
+RATIONALE: >>>
+A single clamp authority prevents inconsistent targets and ambiguous feedback.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0018
+TITLE: Anti-windup update
+STATEMENT: >>>
+The B0 controller shall update each rate-integral contribution using the approved conditional-integration and paired-feedback back-calculation rule and shall enforce the approved per-axis integral bounds.
+<<<
+RATIONALE: >>>
+The complete discrete rule must respond to both clamp saturation and actuator lag without silently accumulating beyond bounds.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0019
+TITLE: Invalid input rejection
+STATEMENT: >>>
+The B0 system shall reject invalid, non-finite, stale, mis-shaped or non-positive-time inputs according to the owning component contract without silently advancing state.
+<<<
+RATIONALE: >>>
+Explicit rejection preserves state ownership and makes invalid trials auditable.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0020
+TITLE: Reset contract
+STATEMENT: >>>
+The B0 system shall reset all stateful components to explicit initial state, seed and epoch-local scheduling while preserving the monotonically increasing scenario clock and discarding pre-reset held commands and feedback.
+<<<
+RATIONALE: >>>
+A single reset boundary is necessary for deterministic replay without stale state leakage.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0021
+TITLE: Deterministic scheduling and timestamps
+STATEMENT: >>>
+The B0 execution adapter shall schedule component updates and construct timestamps from integer base ticks using the approved due-phase, consumption and held-command rules.
+<<<
+RATIONALE: >>>
+The execution adapter owns ordering and prevents timing drift or ambiguous sample consumption.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0022
+TITLE: Approved scenario suite
+STATEMENT: >>>
+The B0 system shall support the approved normal, initial-offset, signed-step, disturbance, noise-and-bias, saturation-withdrawal, acceleration-contamination, and invalid-input-and-reset scenarios.
+<<<
+RATIONALE: >>>
+These scenarios bound the required engineering questions without extending to flight.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0023
+TITLE: Independent evaluation
+STATEMENT: >>>
+The B0 evaluator shall compute acceptance metrics independently of estimator and controller implementations using the approved raw signals, windows, units, aggregation and invalid-data rules.
+<<<
+RATIONALE: >>>
+Independent oracles prevent the tested algorithm from grading itself.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0024
+TITLE: Evidence provenance
+STATEMENT: >>>
+The B0 release evidence shall identify software revision, approved configuration hash, scenario, seed, environment, command, raw artifact, metric implementation and terminal result classification.
+<<<
+RATIONALE: >>>
+A pass/fail statement without provenance is not reproducible evidence.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0025
+TITLE: Defect-detection demonstration
+STATEMENT: >>>
+The B0 release process shall demonstrate that selected independent checks detect isolated sign, unit, quaternion-ordering or anti-windup defects without modifying the approved production baseline.
+<<<
+RATIONALE: >>>
+A limited mutation demonstration provides evidence that critical checks are capable of failing.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0026
+TITLE: Implementation language boundary
+STATEMENT: >>>
+The B0 implementation shall provide the control core in C++17 and may use Python for simulation, orchestration and independent analysis through the approved interface boundary.
+<<<
+RATIONALE: >>>
+Preserves the intended portable control core while retaining productive analysis tooling.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0027
+TITLE: Clean-checkout reproduction
+STATEMENT: >>>
+The B0 release shall be reproducible from a clean checkout using documented dependency versions and commands without relying on untracked developer state.
+<<<
+RATIONALE: >>>
+A local green workspace is insufficient release evidence.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0028
+TITLE: Legacy control disposition
+STATEMENT: >>>
+The B0 system shall retain CTL-REQ-001 and CTL-REQ-002 unchanged as historical references and shall record their approved not-applicable disposition for current B0 without a satisfaction claim.
+<<<
+RATIONALE: >>>
+Preserves historical identifiers while preventing incompatible legacy thresholds from silently becoming B0 criteria.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0029
+TITLE: Invalid measurement handling
+STATEMENT: >>>
+The B0 estimator and controller shall not consume an invalid or stale measurement as a valid update and shall expose the approved rejection or hold status.
+<<<
+RATIONALE: >>>
+Validity must affect consumption rather than serving as passive metadata.
+<<<
+
+[REQUIREMENT]
+UID: B0-REQ-0030
+TITLE: B0 exclusion boundary
+STATEMENT: >>>
+The B0 system shall exclude position and velocity loops, waypoint flight, full INS or GNSS estimation, advanced-control comparisons, learning algorithms, embedded targets, HIL and flight claims unless a separately approved extension activates them.
+<<<
+RATIONALE: >>>
+Makes the stopping rule reviewable and prevents legacy scaffolds from expanding B0.
+<<<
