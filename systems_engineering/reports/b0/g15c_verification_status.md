@@ -8,7 +8,7 @@
 - Execution: **5/29 specifications** have at least one current production execution record.
 - Accepted evidence: **0/1 production records**.
 - Requirement satisfaction: **0/30**. A requirement counts only when every required specification has complete, applicable, available and accepted pass evidence.
-- Current gap: The retained G1 component artifact is identified and hash-bound but is offline-unverified, partial and pending independent review; it proves no requirement satisfied.
+- Current gap: 0/30 requirements currently have accepted complete evidence; all remaining gaps are listed per requirement.
 
 ## Version boundary
 
@@ -62,7 +62,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-SYSTEM`, `B0-MODEL-COMMAND-SOURCE`; responsible `B0-MODEL-SYSTEM`.
 - Verification: `B0-VER-SCOPE-INSPECTION` (inspection; systems engineering reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-SCOPE-INSPECTION.
 
 ### B0-REQ-0002
 
@@ -73,7 +73,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-SCENARIO`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-REPLAY` (test; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-REPLAY.
 
 ### B0-REQ-0003
 
@@ -84,7 +84,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-TRUTH`, `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-TRUTH-BOUNDARY` (inspection; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-TRUTH-BOUNDARY.
 
 ### B0-REQ-0004
 
@@ -95,7 +95,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-SYSTEM`; responsible `B0-MODEL-SYSTEM`.
 - Verification: `B0-VER-CONVENTIONS` (inspection; systems engineering reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-CONVENTIONS.
 
 ### B0-REQ-0005
 
@@ -106,7 +106,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-PLANT`; responsible `B0-MODEL-PLANT`.
 - Verification: `B0-VER-PLANT-DYNAMICS` (test; plant verification; planned `not_run`)
 - Execution/evidence/review: `B0-EXEC-G1-COMPONENT-20261013`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465), SHA-256 `e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e`, implementation 01_simulation/b0/plant.py, 01_simulation/b0/actuator.py, 01_simulation/b0/imu.py, 01_simulation/b0/evidence.py, 01_simulation/b0/tests/test_components.py, 05_integration/b0/configs/b0_g0_contract.v2.json, review pending (no decision source), coverage partial
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-PLANT-DYNAMICS.
 
 ### B0-REQ-0006
 
@@ -117,7 +117,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-PLANT`, `B0-MODEL-TRUTH`; responsible `B0-MODEL-PLANT`.
 - Verification: `B0-VER-PLANT-QUATERNION` (test; plant verification; planned `not_run`)
 - Execution/evidence/review: `B0-EXEC-G1-COMPONENT-20261013`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465), SHA-256 `e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e`, implementation 01_simulation/b0/plant.py, 01_simulation/b0/actuator.py, 01_simulation/b0/imu.py, 01_simulation/b0/evidence.py, 01_simulation/b0/tests/test_components.py, 05_integration/b0/configs/b0_g0_contract.v2.json, review pending (no decision source), coverage partial
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-PLANT-QUATERNION.
 
 ### B0-REQ-0007
 
@@ -128,7 +128,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-TORQUE-COMMAND`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-PAIRED-COMMAND` (test; controller verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-PAIRED-COMMAND.
 
 ### B0-REQ-0008
 
@@ -139,7 +139,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ACTUATOR`, `B0-MODEL-TORQUE-COMMAND`; responsible `B0-MODEL-ACTUATOR`.
 - Verification: `B0-VER-ACTUATOR-DYNAMICS` (test; actuator verification; planned `not_run`)
 - Execution/evidence/review: `B0-EXEC-G1-COMPONENT-20261013`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465), SHA-256 `e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e`, implementation 01_simulation/b0/plant.py, 01_simulation/b0/actuator.py, 01_simulation/b0/imu.py, 01_simulation/b0/evidence.py, 01_simulation/b0/tests/test_components.py, 05_integration/b0/configs/b0_g0_contract.v2.json, review pending (no decision source), coverage partial
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-ACTUATOR-DYNAMICS.
 
 ### B0-REQ-0009
 
@@ -150,7 +150,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ACTUATOR`, `B0-MODEL-ACTUATOR-FEEDBACK`; responsible `B0-MODEL-ACTUATOR`.
 - Verification: `B0-VER-PAIRED-FEEDBACK` (test; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-PAIRED-FEEDBACK.
 
 ### B0-REQ-0010
 
@@ -161,7 +161,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-IMU`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-IMU`.
 - Verification: `B0-VER-IMU-GYRO` (test; IMU verification; planned `not_run`)
 - Execution/evidence/review: `B0-EXEC-G1-COMPONENT-20261013`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465), SHA-256 `e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e`, implementation 01_simulation/b0/plant.py, 01_simulation/b0/actuator.py, 01_simulation/b0/imu.py, 01_simulation/b0/evidence.py, 01_simulation/b0/tests/test_components.py, 05_integration/b0/configs/b0_g0_contract.v2.json, review pending (no decision source), coverage partial
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-IMU-GYRO.
 
 ### B0-REQ-0011
 
@@ -172,7 +172,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-IMU`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-IMU`.
 - Verification: `B0-VER-IMU-SPECIFIC-FORCE` (test; IMU verification; planned `not_run`)
 - Execution/evidence/review: `B0-EXEC-G1-COMPONENT-20261013`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11798583465), SHA-256 `e9b9246a1085d039d98c3b4e0326f86954f9f7b170b9c3630cc3e891c7d6f86e`, implementation 01_simulation/b0/plant.py, 01_simulation/b0/actuator.py, 01_simulation/b0/imu.py, 01_simulation/b0/evidence.py, 01_simulation/b0/tests/test_components.py, 05_integration/b0/configs/b0_g0_contract.v2.json, review pending (no decision source), coverage partial
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-IMU-SPECIFIC-FORCE.
 
 ### B0-REQ-0012
 
@@ -183,7 +183,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-PROPAGATION` (test; estimator verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-PROPAGATION.
 
 ### B0-REQ-0013
 
@@ -194,7 +194,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-FUSION` (test; estimator verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-FUSION.
 
 ### B0-REQ-0014
 
@@ -205,7 +205,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-YAW-LIMITATION` (analysis; estimator verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-YAW-LIMITATION.
 
 ### B0-REQ-0015
 
@@ -216,7 +216,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ACCEL-CONTAMINATION` (test; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-ACCEL-CONTAMINATION.
 
 ### B0-REQ-0016
 
@@ -227,7 +227,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-COMMAND`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-CONTROLLER-SIGN` (test; controller verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-CONTROLLER-SIGN.
 
 ### B0-REQ-0017
 
@@ -238,7 +238,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-TORQUE-COMMAND`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-CONTROLLER-SATURATION` (test; controller verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-CONTROLLER-SATURATION.
 
 ### B0-REQ-0018
 
@@ -249,7 +249,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-ACTUATOR-FEEDBACK`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-ANTI-WINDUP` (test; controller verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-ANTI-WINDUP.
 
 ### B0-REQ-0019
 
@@ -260,7 +260,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-IMU-SAMPLE`, `B0-MODEL-COMMAND`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-INVALID-INPUT` (test; component owners; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-INVALID-INPUT.
 
 ### B0-REQ-0020
 
@@ -271,7 +271,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-RESET`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-RESET` (test; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-RESET.
 
 ### B0-REQ-0021
 
@@ -282,7 +282,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EXECUTION`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-SCHEDULING` (test; integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-SCHEDULING.
 
 ### B0-REQ-0022
 
@@ -293,7 +293,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-SCENARIO`, `B0-MODEL-SYSTEM`; responsible `B0-MODEL-SCENARIO`.
 - Verification: `B0-VER-SCENARIO-CATALOGUE` (inspection; systems engineering reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-SCENARIO-CATALOGUE.
 
 ### B0-REQ-0023
 
@@ -304,7 +304,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EVALUATOR`, `B0-MODEL-TRUTH`; responsible `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-EVALUATOR-INDEPENDENCE` (inspection; independent verification reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-EVALUATOR-INDEPENDENCE.
 
 ### B0-REQ-0024
 
@@ -315,7 +315,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EVALUATOR`, `B0-MODEL-EVIDENCE`; responsible `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-EVIDENCE-PROVENANCE` (inspection; release verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-EVIDENCE-PROVENANCE.
 
 ### B0-REQ-0025
 
@@ -326,7 +326,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-DEFECT-DETECTION` (demonstration; release verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-DEFECT-DETECTION.
 
 ### B0-REQ-0026
 
@@ -337,7 +337,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-EXECUTION`; responsible `B0-MODEL-CONTROLLER`, `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-LANGUAGE-BOUNDARY` (inspection; architecture reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-LANGUAGE-BOUNDARY.
 
 ### B0-REQ-0027
 
@@ -348,7 +348,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-EVIDENCE`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-CLEAN-CHECKOUT` (demonstration; release verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-CLEAN-CHECKOUT.
 
 ### B0-REQ-0028
 
@@ -359,7 +359,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-SYSTEM`; responsible `B0-MODEL-SYSTEM`.
 - Verification: `B0-VER-LEGACY-DISPOSITION` (inspection; systems engineering reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-LEGACY-DISPOSITION.
 
 ### B0-REQ-0029
 
@@ -370,7 +370,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-INVALID-MEASUREMENT` (test; component and integration verification; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-INVALID-MEASUREMENT.
 
 ### B0-REQ-0030
 
@@ -381,7 +381,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Model/responsibility: `B0-MODEL-SYSTEM`; responsible `B0-MODEL-SYSTEM`.
 - Verification: `B0-VER-SCOPE-INSPECTION` (inspection; systems engineering reviewer; planned `not_run`)
 - Execution/evidence/review: Not executed; evidence and review are pending.
-- Gap: No accepted complete evidence.
+- Gap: Missing accepted evidence for: B0-VER-SCOPE-INSPECTION.
 
 ## Reading and filtering
 

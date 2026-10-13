@@ -66,6 +66,12 @@ def test_complete_accepted_evidence_counts_only_linked_requirements(tmp_path):
     summary = validate(doc, evidence_cache=tmp_path, now=now)
     assert summary["accepted_evidence_records"] == 1
     assert summary["satisfied_requirements"] == 5
+    report = render_markdown(REPO, doc, evidence_cache=tmp_path, now=now)
+    assert "5/30 requirements currently have accepted complete evidence" in report
+    assert "Satisfied by accepted complete evidence." in report
+    rendered = render_html(REPO, doc, evidence_cache=tmp_path, now=now)
+    assert "5/30 requirements currently have accepted complete evidence" in rendered
+    assert "Satisfied by accepted complete evidence." in rendered
 
 
 def test_not_run_is_legal_but_not_satisfied():
@@ -75,6 +81,9 @@ def test_not_run_is_legal_but_not_satisfied():
     record["evidence"].update({"availability": "none", "uri": None, "artifact_id": None, "artifact_file": None, "sha256": None, "archive_sha256": None, "source_run": None, "source_commit": None, "verified_at": None, "expires_at": None})
     record["applicability"].update({"status": "not_assessed", "source_commit": None, "target_commit": None, "relevant_files": []})
     assert validate(doc)["executed_specifications"] == 0
+    rendered = render_html(REPO, doc)
+    assert "id='group-with-execution'>Group: with execution</h3><p>None" in rendered
+    assert "Not executed; evidence and review are pending." in rendered
 
 
 @pytest.mark.parametrize("field", ["execution", "evidence", "applicability", "review"])
@@ -229,6 +238,21 @@ def test_declared_dependency_closure_cannot_be_reduced():
         validate(doc, files=True)
 
 
+def test_new_id_same_scope_still_requires_dependency_closure():
+    doc = ledger()
+    doc["records"][0]["id"] = "B0-EXEC-G1-COMPONENT-REPEAT"
+    doc["records"][0]["applicability"]["relevant_files"] = doc["records"][0]["applicability"]["relevant_files"][:1]
+    with pytest.raises(TraceabilityError, match="incomplete G1 dependency closure"):
+        validate(doc, files=True)
+
+
+def test_implementation_and_evidence_source_bytes_must_match():
+    doc = ledger()
+    doc["records"][0]["implementation"]["commit"] = "dfa1b23668076f8b41b9a4fc7372a6ef149493eb"
+    with pytest.raises(TraceabilityError, match="implementation/evidence source mismatch"):
+        validate(doc, files=True)
+
+
 def test_remote_null_uri_is_a_structured_error():
     doc = ledger()
     record = doc["records"][0]
@@ -281,6 +305,9 @@ def test_superseded_record_is_excluded():
     newer["supersedes"] = doc["records"][0]["id"]
     doc["records"].append(newer)
     assert validate(doc)["production_records"] == 1
+    rendered = render_html(REPO, doc)
+    assert doc["records"][0]["id"] not in rendered
+    assert newer["id"] in rendered
 
 
 def test_supersession_cannot_replace_an_unrelated_scope():
@@ -350,7 +377,7 @@ def test_report_is_deterministic_and_exposes_denominators():
     assert first == second
     assert "5/29 specifications" in first
     assert "0/30" in first
-    assert "proves no requirement satisfied" in first
+    assert "0/30 requirements currently have accepted complete evidence" in first
 
 
 def test_controlled_report_projection_is_current():
