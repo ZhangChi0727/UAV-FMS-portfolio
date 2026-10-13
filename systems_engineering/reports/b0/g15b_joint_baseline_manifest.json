@@ -1,0 +1,53 @@
+{
+  "manifest_version": "1.0",
+  "status": "candidate_pending_d2",
+  "candidate_asset_commit_s": "533a0b48e2ad918ba378f63f651fe6ebfdc0dee9",
+  "base_commit": "02e59d4654e87d85ef3543e0812a5e373be684ac",
+  "related_baselines": {
+    "g0_approval_package": "ab2e6b05b2d51d851b1c3dfada5b69a66f47b9b0",
+    "g15b_phase_one_pilot": "728ba39c8b207c7900ce077dc605eb672d5230e7",
+    "d1_decision_blob": "7729499bcde95d0329f830a84a8ee5d05fe96d69"
+  },
+  "fixed_tools": {
+    "python": "3.11.17",
+    "jsonschema": "4.23.0",
+    "pytest": "8.3.5",
+    "strictdoc": "0.30.1",
+    "sysmlpy": "0.33.2"
+  },
+  "generation": {
+    "authority": "systems_engineering/requirements/b0_requirements.json",
+    "command": "python tools/systems_engineering/build_g15b_joint_views.py --write",
+    "check": "python tools/systems_engineering/check_g15b_joint_baseline.py",
+    "outputs": [
+      "systems_engineering/requirements/generated/b0_requirements.md",
+      "systems_engineering/requirements/generated/b0_requirements.sdoc"
+    ]
+  },
+  "assets": [
+    {"path":".github/workflows/ci.yml","blob":"5daff1410cd9717d6fa6c3a201a774325ab67b66","role":"mandatory CI integration"},
+    {"path":"docs/roadmap.md","blob":"8bbeec83e004cba3cb147934230fc2fea474ffef","role":"scope and dependency navigation"},
+    {"path":"systems_engineering/README.md","blob":"f8d9997edc1d132fd7aa58d94e90efc836cbe76c","role":"reader entry and maturity boundary"},
+    {"path":"systems_engineering/models/architecture.md","blob":"70f10a0b53eeb11607ce983d2df7eace38147d44","role":"architecture summary"},
+    {"path":"systems_engineering/models/b0_model_manual_review.json","blob":"e0879c35874d784b32a8c65cf7e753097329e4c2","role":"hash-bound expose review"},
+    {"path":"systems_engineering/models/b0_system.sysml","blob":"5fe8151e90752ebbb52e06b346e56c47d32e5349","role":"formal model source"},
+    {"path":"systems_engineering/reports/b0/g15b_joint_baseline_review.md","blob":"10208bd194ca618e65fc59e14ce97f58c04c4729","role":"coverage, ambiguity and risk review"},
+    {"path":"systems_engineering/reports/b0/g15c_readiness.md","blob":"ed700c3e66fdc3c3fa338b0c2b0fe589d1ef3489","role":"candidate G1.5-C input contract"},
+    {"path":"systems_engineering/requirements/README.md","blob":"9f51e6cce13c5a77dfb1d0997388cd8fddb507e7","role":"authority and change guide"},
+    {"path":"systems_engineering/requirements/b0_id_registry.json","blob":"fd8a36f89330eba5f060720007fa88b874c90a63","role":"nonreusable identity registry"},
+    {"path":"systems_engineering/requirements/b0_requirements.json","blob":"e362fe0964a4dc8e8d04e30322d5868d5a367ca6","role":"normative requirement authority"},
+    {"path":"systems_engineering/requirements/b0_requirements.schema.json","blob":"4b02dbb80ab5467494b7837a31646fad29e5385a","role":"requirement structural schema"},
+    {"path":"systems_engineering/requirements/generated/b0_requirements.md","blob":"4d397cd7a4c1032eea31c35634bb6901fe3b0aa1","role":"generated Markdown projection"},
+    {"path":"systems_engineering/requirements/generated/b0_requirements.sdoc","blob":"f71453f059d2e49a78ff5bc57b895e7f8fa3f39f","role":"generated StrictDoc projection"},
+    {"path":"systems_engineering/requirements/legacy_requirements.md","blob":"0eb91e1d9adc666eb77b625131645134fa33745a","role":"retained legacy applicability"},
+    {"path":"systems_engineering/requirements/presentation.css","blob":"22409ffa68332ad3e8c5410224a03622f1cee100","role":"Vim-style reader presentation"},
+    {"path":"systems_engineering/requirements/strictdoc_config.py","blob":"622516a5afb9ec9b1819fae8b0a8d23bde126c5f","role":"StrictDoc export configuration"},
+    {"path":"systems_engineering/verification/b0_verification_specifications.json","blob":"6378b34925d0898c6539bceb66223c8153a02c6f","role":"verification planning authority"},
+    {"path":"systems_engineering/verification/g0_acceptance.md","blob":"b8f51348fa776de3e4800ba2ed4e6b6c7a6654c5","role":"current G0 and legacy summary"},
+    {"path":"tools/systems_engineering/build_g15b_joint_views.py","blob":"7aaaf402b120eda12039b93967606e73870347c2","role":"deterministic projection generator"},
+    {"path":"tools/systems_engineering/check_g15b_joint_baseline.py","blob":"1f8edfd7b10e5c4b7f54c09ffd5857d00b35989b","role":"formal check entry"},
+    {"path":"tools/systems_engineering/g15b_joint_baseline.py","blob":"02cf66c03d91a7c057a1d754071cdea08b916340","role":"cross-asset validation rules"},
+    {"path":"tools/systems_engineering/tests/test_g15b_joint_baseline.py","blob":"c013ce95548a54de0a88ee089c5074a097b7aec6","role":"positive and negative fixtures"}
+  ],
+  "approval_boundary": "The manifest is a D2 candidate. It does not record D2 approval, freeze, implementation, satisfaction, verification execution, C-ready status, merge authority, or issue closure."
+}
