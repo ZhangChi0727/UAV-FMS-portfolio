@@ -186,8 +186,17 @@ jobs:
       - name: Check migration, model allocation and evidence references
         run: python tools/systems_engineering/check_governance.py
 
+      - name: Check G1.5-C execution evidence and current report
+        run: python tools/systems_engineering/check_g15c_traceability.py --check-report --json --html-output "$RUNNER_TEMP/g15c-traceability/index.html"
+
       - name: Run positive and negative governance fixtures
         run: python -m pytest -q tools/systems_engineering/tests
+
+      - name: Upload G1.5-C reader report
+        uses: actions/upload-artifact@v4
+        with:
+          name: b0-g15c-traceability-report
+          path: ${{ runner.temp }}/g15c-traceability
 
   g15b-phase-one-pilot:
     name: G1.5-B phase-one requirements pilot (3.11)
