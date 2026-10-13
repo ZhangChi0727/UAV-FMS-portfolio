@@ -12,14 +12,19 @@ claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
    [development baseline](development_baseline.md).
 2. **Models** — [architecture source](models/architecture.md),
    [G0 model contract](models/g0_contract.md), [B0 system views](models/system_views.md),
-   and the [structured-pilot modelling conventions](models/modeling_conventions.md).
-3. **Requirements state** — [legacy requirements and applicability](requirements/legacy_requirements.md).
+   the [formal B0 model candidate](models/b0_system.sysml), and the
+   [structured-pilot modelling conventions](models/modeling_conventions.md).
+3. **Requirements state** — the [formal candidate source and reading guide](requirements/README.md)
+   plus [legacy requirements and applicability](requirements/legacy_requirements.md).
    The isolated [G1.5-B phase-one pilot](../tools/systems_engineering/g15b_pilot/README.md) and its
    [decision package](reports/b0/g15b_phase1_requirements_tooling_numbering_decision.md)
-   remain non-authoritative until PA review and maintainer approval; they do
-   not create or freeze new B0 requirement identifiers. The current pilot has
+   remain non-authoritative method records after their bounded acceptance; that
+   acceptance did not create or freeze new B0 requirement identifiers. The pilot has
    one structured JSON record source and controlled StrictDoc/Markdown/model
    projections; it is not a formal SysML conformance or graphical-view claim.
+   The formal joint baseline is now a D2 candidate only; its
+   [candidate review](reports/b0/g15b_joint_baseline_review.md) and
+   [G1.5-C input contract](reports/b0/g15c_readiness.md) do not imply freeze.
 4. **Development state** — [current status snapshot](reports/current_status.md)
    and the module-local implementations under `01_simulation/` and
    `05_integration/`.
@@ -48,6 +53,6 @@ claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
   execution is not claimed.
 - **not active** — an extension or future stage outside the current B0 scope.
 
-The G1.5-A model views are editable Markdown/Mermaid sources. They are a
-structural aid for the B0 work and intentionally do not replace the G0 JSON
-contract or the future requirements/model joint freeze.
+The G1.5-A model views remain editable Markdown/Mermaid structural aids. The
+G1.5-B JSON/SysML/verification assets remain `candidate_pending_d2` until an
+exact S/M candidate receives PA review and user D2 approval.

@@ -1,0 +1,20 @@
+{
+  "review_id": "B0-G15B-MANUAL-EXPOSE-REVIEW",
+  "baseline_status": "candidate_pending_d2",
+  "tool_version": "sysmlpy==0.33.2",
+  "model_path": "systems_engineering/models/b0_system.sysml",
+  "model_sha256": "52c130f100df7e38f9bc538fac3e1a494af2a8dd5d51e4de2a949b93af75543a",
+  "standard_locator": "SysML v2 specification, KerML/SysML textual notation: view definition, view usage and expose relationship",
+  "view_definition_id": "B0-MODEL-VIEWDEF-STRUCTURE",
+  "view_usage_id": "B0-MODEL-VIEW-STRUCTURE",
+  "exposed_element_id": "B0-MODEL-SYSTEM",
+  "review_steps": [
+    "Parse and analyse the exact model bytes with the fixed tool version.",
+    "Locate the view definition and typed view usage in the parser-backed source.",
+    "Confirm the expose statement selects B0-MODEL-SYSTEM and not an unrelated element.",
+    "Bind this review to the SHA-256 of the reviewed model bytes."
+  ],
+  "reviewer_role": "Technical Coordinator",
+  "decision": "candidate_review_pass",
+  "limitations": "This records a version-bound manual semantic check for D2 review; it is not PA approval, D2 approval, implementation evidence, or a SysML tool-conformance claim."
+}
