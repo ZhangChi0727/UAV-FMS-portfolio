@@ -2,9 +2,11 @@
 
 This directory is the reader-facing engineering entry for B0. It separates
 system relationships and their sources from executable module code, daily
-operation notes, and retained evidence. The current snapshot is based on G0
-approval and the merged G1 plant/actuator/IMU component acceptance; it does not
-claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
+operation notes, and retained evidence. G0 and the G1.5-B joint baseline are
+approved, and G1 plant/actuator/IMU component acceptance is merged. The original
+PA accepted closeout K3; G1.5-C is now the active verification-traceability and
+reporting increment. This does not claim G2, G3, G4, overall B0 completion,
+hardware, flight, or research results.
 
 ## Reading route
 
@@ -22,16 +24,22 @@ claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
    acceptance did not create or freeze new B0 requirement identifiers. The pilot has
    one structured JSON record source and controlled StrictDoc/Markdown/model
    projections; it is not a formal SysML conformance or graphical-view claim.
-   The formal joint baseline is now a D2 candidate only; its
-   [candidate review](reports/b0/g15b_joint_baseline_review.md) and
-   [G1.5-C input contract](reports/b0/g15c_readiness.md) do not imply freeze.
+   The formal joint baseline's [historical candidate review](reports/b0/g15b_joint_baseline_review.md)
+   and [candidate input contract](reports/b0/g15c_readiness.md) retain their
+   pre-approval wording. The [D2 approval](reports/b0/g15b_d2_approval.md) and
+   [current closeout record](reports/b0/g15b_closeout_current.md) describe the
+   effective lifecycle without rewriting those historical snapshots.
 4. **Development state** — [current status snapshot](reports/current_status.md)
    and the module-local implementations under `01_simulation/` and
    `05_integration/`.
-5. **Verification** — [verification plan](verification/verification_plan.md),
+5. **Verification evidence** — [execution/evidence contract](verification/README.md)
+   and the [current G1.5-C traceability status](reports/b0/g15c_verification_status.md).
+   The report keeps design links, execution results, evidence availability,
+   version applicability and review acceptance separate.
+6. **Verification** — [verification plan](verification/verification_plan.md),
    [G0 acceptance](verification/g0_acceptance.md), and the
    [V&V report](reports/v_and_v_report.md).
-6. **Evidence** — [RESULTS.md](../RESULTS.md), the G1 evidence generator and
+7. **Evidence** — [RESULTS.md](../RESULTS.md), the G1 evidence generator and
    its CI artifact, and the versioned reports under `reports/`.
 
 ## Source-of-truth boundaries
@@ -54,5 +62,7 @@ claim G2, G3, G4, overall B0 completion, hardware, flight, or research results.
 - **not active** — an extension or future stage outside the current B0 scope.
 
 The G1.5-A model views remain editable Markdown/Mermaid structural aids. The
-G1.5-B JSON/SysML/verification assets remain `candidate_pending_d2` until an
-exact S/M candidate receives PA review and user D2 approval.
+G1.5-B source files intentionally retain their reviewed pre-approval status
+bytes; the separate approval and current-status records establish the effective
+frozen baseline. G1.5-C execution evidence belongs in a new layer and must not
+rewrite the 29 frozen planned/not-run verification specifications.
