@@ -14,7 +14,7 @@
       "requirement_ids": ["B0-REQ-0005", "B0-REQ-0006", "B0-REQ-0008", "B0-REQ-0010", "B0-REQ-0011"],
       "model_ids": ["B0-MODEL-PLANT", "B0-MODEL-ACTUATOR", "B0-MODEL-IMU"],
       "implementation": {
-        "commit": "669df46a930f751e8b206fdffd7354c2ad828167",
+        "commit": "bd4ff5e8deb85e7656d8e195507ca3595ca1926b",
         "paths": ["01_simulation/b0/plant.py", "01_simulation/b0/actuator.py", "01_simulation/b0/imu.py", "01_simulation/b0/evidence.py", "01_simulation/b0/tests/test_components.py", "05_integration/b0/configs/b0_g0_contract.v2.json"],
         "symbols": ["Plant", "Actuator", "IMU", "_build_evidence"]
       },
