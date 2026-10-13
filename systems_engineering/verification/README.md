@@ -20,6 +20,10 @@ record toward requirement satisfaction only when it is a complete pass, its
 evidence is available, its version applicability is established, and its review
 status is accepted. Fixtures never enter production totals.
 
+Relevant-file applicability hashes use committed Git bytes rather than working
+tree bytes, so Windows/Unix checkout line-ending conversion cannot change the
+recorded identity.
+
 Run the offline gate from the repository root:
 
 ```text

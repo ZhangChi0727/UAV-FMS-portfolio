@@ -43,12 +43,12 @@
         "status": "applicable_by_analysis",
         "basis": "The Actions merge revision differs from the branch head; applicability is limited to the listed implementation/configuration bytes, whose SHA-256 values are checked locally.",
         "relevant_files": [
-          {"path": "01_simulation/b0/plant.py", "sha256": "51ea8504676d41c043e583c4746a256d3210a0d9d7f6fb7e33fd2874eb0a22e4"},
-          {"path": "01_simulation/b0/actuator.py", "sha256": "57506dc51e189baa05ed08cda97d101a2c89b6652d2766f608ae01191ef5e8c1"},
-          {"path": "01_simulation/b0/imu.py", "sha256": "b74f21f85f1a59bd35d12b45a1a1ac96256b547c5cff3c90e2a3dc3175d8af16"},
-          {"path": "01_simulation/b0/evidence.py", "sha256": "3b4d41d595c4dd951d8d26134dda3c25073ece559361a844ef1385a9b51259cf"},
-          {"path": "01_simulation/b0/tests/test_components.py", "sha256": "221e6d1c803ae4c5784174dc9b28667d9517491ee6ea4fbd9d8a4c608fd84581"},
-          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "sha256": "cf3ba49791a316e5c5f99b3eb0989633659327b544c95a89a0162828cc72c86a"}
+          {"path": "01_simulation/b0/plant.py", "sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"},
+          {"path": "01_simulation/b0/actuator.py", "sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"},
+          {"path": "01_simulation/b0/imu.py", "sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"},
+          {"path": "01_simulation/b0/evidence.py", "sha256": "8773e647f71ba5185526fae2b4e2e1dd85905979b45bd68bcb5f9f9db5b53c1a"},
+          {"path": "01_simulation/b0/tests/test_components.py", "sha256": "6bfbc22b6c10c8b79833e746155c616ff3a5f3529d1cb4392208050f56957e53"},
+          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"}
         ]
       },
       "review": {"status": "pending", "reviewer": null, "source": null},
