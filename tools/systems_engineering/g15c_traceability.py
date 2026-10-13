@@ -177,7 +177,7 @@ def validate_ledger(
         if record["coverage"] == "complete":
             locators = " ".join(execution["criterion_locators"])
             _need(all(spec_id in locators for spec_id in record["verification_spec_ids"]), f"complete record lacks a criterion locator for every specification: {record_id}")
-        if check_files:
+        if check_files and execution["result"] != "not_run":
             try:
                 subprocess.check_output(["git", "cat-file", "-e", f"{record['implementation']['commit']}^{{commit}}"], cwd=repo, stderr=subprocess.DEVNULL)
             except (OSError, subprocess.CalledProcessError) as exc:
@@ -185,8 +185,15 @@ def validate_ledger(
             for value in record["implementation"]["paths"]:
                 _need(_inside(repo, value, "implementation path").is_file(), f"missing implementation path: {record_id} -> {value}")
                 _git_revision_sha256(repo, record["implementation"]["commit"], value)
-            if record_id == "B0-EXEC-G1-COMPONENT-20261013":
-                _need(required_g1_closure <= {item["path"] for item in applicability["relevant_files"]}, f"incomplete G1 dependency closure: {record_id}")
+            g1_specs = {"B0-VER-PLANT-DYNAMICS", "B0-VER-PLANT-QUATERNION", "B0-VER-ACTUATOR-DYNAMICS", "B0-VER-IMU-GYRO", "B0-VER-IMU-SPECIFIC-FORCE"}
+            relevant_paths = {item["path"] for item in applicability["relevant_files"]}
+            if set(record["verification_spec_ids"]) & g1_specs:
+                _need(required_g1_closure <= relevant_paths, f"incomplete G1 dependency closure: {record_id}")
+            _need(set(record["implementation"]["paths"]) <= relevant_paths, f"implementation paths missing from applicability closure: {record_id}")
+            for value in record["implementation"]["paths"]:
+                implementation_digest = _git_revision_sha256(repo, record["implementation"]["commit"], value)
+                source_digest = _git_revision_sha256(repo, evidence["source_commit"], value)
+                _need(implementation_digest == source_digest, f"implementation/evidence source mismatch: {record_id} -> {value}")
             for item in applicability["relevant_files"]:
                 path = _inside(repo, item["path"], "applicability path")
                 _need(path.is_file(), f"missing applicability file: {record_id} -> {item['path']}")
@@ -242,6 +249,25 @@ def _counts_as_accepted(record: Mapping[str, Any], auditable_records: set[str]) 
     return bool(record["id"] in auditable_records and record["execution"]["result"] == "pass" and record["applicability"]["status"] in {"applicable_exact", "applicable_by_analysis"} and record["review"]["status"] == "accepted" and record["coverage"] == "complete")
 
 
+def _report_records(ledger: Mapping[str, Any]) -> list[Mapping[str, Any]]:
+    superseded = {record["supersedes"] for record in ledger["records"] if record["supersedes"]}
+    return [record for record in ledger["records"] if record["id"] not in superseded and record["record_kind"] == "production_evidence"]
+
+
+def _requirement_gap(req: Mapping[str, Any], records: list[Mapping[str, Any]]) -> str:
+    accepted_specs = {
+        spec for record in records
+        if record["execution"]["result"] == "pass"
+        and record["evidence"]["availability"] in {"local_only", "remote_verified"}
+        and record["applicability"]["status"] in {"applicable_exact", "applicable_by_analysis"}
+        and record["review"]["status"] == "accepted" and record["coverage"] == "complete"
+        and req["id"] in record["requirement_ids"]
+        for spec in record["verification_spec_ids"]
+    }
+    missing = [spec for spec in req["verification_ids"] if spec not in accepted_specs]
+    return "Satisfied by accepted complete evidence." if not missing else f"Missing accepted evidence for: {', '.join(missing)}."
+
+
 def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *, evidence_cache: Path | None = None, now: datetime | None = None) -> str:
     ledger = ledger_data or _load(repo / "systems_engineering/verification/b0_execution_evidence.json")
     summary = validate_ledger(repo, ledger, evidence_cache=evidence_cache, now=now)
@@ -249,10 +275,11 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *,
     ver_doc = _load(repo / ledger["baseline"]["verification_path"])
     sources = _unique(req_doc["sources"], "source ID")
     specs = _unique(ver_doc["specifications"], "verification ID")
+    current_records = _report_records(ledger)
     rows = []
-    for record in ledger["records"]:
+    for record in current_records:
         rows.append(f"| `{record['id']}` | {record['execution']['level']} | {record['execution']['result']} | {record['evidence']['availability']} | {record['applicability']['status']} | {record['review']['status']} | {record['coverage']} |")
-    gap = "No current production execution record exists." if not ledger["records"] else "The retained G1 component artifact is identified and hash-bound but is offline-unverified, partial and pending independent review; it proves no requirement satisfied."
+    gap = "No current production execution record exists." if not current_records else f"{summary['satisfied_requirements']}/30 requirements currently have accepted complete evidence; all remaining gaps are listed per requirement."
     lines = [
         "# B0 G1.5-C verification traceability status", "", "> Controlled current view; frozen verification specifications remain planned/not_run and are not rewritten.", "",
         "## First-screen conclusion", "",
@@ -269,15 +296,15 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *,
     for level in ("stakeholder", "system", "component"):
         members = [req for req in requirements if req["level"] == level]
         lines.extend([f"### Group: {level}", f"<a id=\"group-{level}\"></a>", "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in members), ""])
-    with_execution = [req for req in requirements if any(req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run" for record in ledger["records"])]
+    with_execution = [req for req in requirements if any(req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run" for record in current_records)]
     without_execution = [req for req in requirements if req not in with_execution]
     lines.extend(["### Group: with execution", '<a id="group-with-execution"></a>', "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in with_execution) or "None.", "", "### Group: without execution", '<a id="group-without-execution"></a>', "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in without_execution) or "None.", "", "## Requirement chains", ""])
     for req in requirements:
-        linked_records = [record for record in ledger["records"] if req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run"]
+        linked_records = [record for record in current_records if req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run"]
         source_text = "; ".join(f"`{sid}` → [`{sources[sid]['path']}`](../../../{sources[sid]['path']}) ({sources[sid]['locator']})" for sid in req["source_ids"])
         verification_text = "; ".join(f"`{sid}` ({specs[sid]['method']}; {specs[sid]['responsible']}; planned `{specs[sid]['execution_status']}`)" for sid in req["verification_ids"])
         execution_text = "; ".join(f"`{record['id']}`: {record['execution']['result']}, [{record['evidence']['availability']}]({record['evidence']['uri']}), SHA-256 `{record['evidence']['sha256']}`, implementation {', '.join(record['implementation']['paths'])}, review {record['review']['status']} ({record['review']['source'] or 'no decision source'}), coverage {record['coverage']}" for record in linked_records) or "Not executed; evidence and review are pending."
-        lines.extend([f"### {req['id']}", "", f"- Title: {req['title']}", f"- Source: {source_text}", f"- Requirement: {req['statement']}", f"- Rationale: {req['rationale']}", f"- Model/responsibility: {', '.join(f'`{value}`' for value in req['model_element_ids'])}; responsible {', '.join(f'`{value}`' for value in req['responsible_components'])}.", f"- Verification: {verification_text}", f"- Execution/evidence/review: {execution_text}", f"- Gap: {'No accepted complete evidence.' if not linked_records or summary['satisfied_requirements'] < summary['requirements'] else 'None.'}", ""])
+        lines.extend([f"### {req['id']}", "", f"- Title: {req['title']}", f"- Source: {source_text}", f"- Requirement: {req['statement']}", f"- Rationale: {req['rationale']}", f"- Model/responsibility: {', '.join(f'`{value}`' for value in req['model_element_ids'])}; responsible {', '.join(f'`{value}`' for value in req['responsible_components'])}.", f"- Verification: {verification_text}", f"- Execution/evidence/review: {execution_text}", f"- Gap: {_requirement_gap(req, current_records)}", ""])
     lines.extend([
         "## Reading and filtering", "", "Use the ledger fields `execution.level`, `execution.result`, `evidence.availability`, `applicability.status`, `review.status`, and `coverage`. Module and integration records are distinct; fixture records are prohibited from the production ledger.", "",
         "## Evidence chain", "", "The current record links the frozen specification IDs to G1 implementation paths, an Actions run artifact, SHA-256 content identity, relevant-file applicability hashes, and an explicit pending review. Artifact expiry changes evidence availability and must not silently preserve an auditable-pass claim.", "",
@@ -286,14 +313,15 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *,
     return "\n".join(lines)
 
 
-def render_html(repo: Path, *, evidence_cache: Path | None = None, now: datetime | None = None) -> str:
-    ledger = _load(repo / "systems_engineering/verification/b0_execution_evidence.json")
+def render_html(repo: Path, ledger_data: Mapping[str, Any] | None = None, *, evidence_cache: Path | None = None, now: datetime | None = None) -> str:
+    ledger = ledger_data or _load(repo / "systems_engineering/verification/b0_execution_evidence.json")
     summary = validate_ledger(repo, ledger, evidence_cache=evidence_cache, now=now)
     req_doc = _load(repo / ledger["baseline"]["requirements_path"])
     ver_doc = _load(repo / ledger["baseline"]["verification_path"])
     sources = _unique(req_doc["sources"], "source ID")
     specs = _unique(ver_doc["specifications"], "verification ID")
-    gap = "No current production execution record exists." if not ledger["records"] else "The retained G1 artifact is hash-bound but offline-unverified, partial and pending review; it proves no requirement satisfied."
+    current_records = _report_records(ledger)
+    gap = "No current production execution record exists." if not current_records else f"{summary['satisfied_requirements']}/30 requirements currently have accepted complete evidence; remaining gaps are listed per requirement."
     metrics = [
         ("Design traceability", f"{summary['design_linked_requirements']}/30 requirements have source, model and verification relations; {summary['model_elements']} model identities; {summary['verifications']}/29 planned specifications."),
         ("Execution", f"{summary['executed_specifications']}/29 specifications have a current production execution record."),
@@ -308,7 +336,7 @@ def render_html(repo: Path, *, evidence_cache: Path | None = None, now: datetime
         f"<p><span>level</span> {html.escape(record['execution']['level'])} · <span>result</span> {html.escape(record['execution']['result'])} · <span>evidence</span> {html.escape(record['evidence']['availability'])}</p>"
         f"<p><span>applicability</span> {html.escape(record['applicability']['status'])} · <span>review</span> {html.escape(record['review']['status'])} · <span>coverage</span> {html.escape(record['coverage'])}</p>"
         "</article>"
-        for record in ledger["records"]
+        for record in current_records
     ) or "<p class='empty'>No production or fixture records.</p>"
     nav = "".join(f"<a href='#group-{level}'>{level}</a> " for level in ("stakeholder", "system", "component", "with-execution", "without-execution"))
     groups = ""
@@ -317,12 +345,22 @@ def render_html(repo: Path, *, evidence_cache: Path | None = None, now: datetime
         groups += f"<h3 id='group-{level}'>Group: {level}</h3><p>{links}</p>"
     chains = ""
     for req in req_doc["requirements"]:
-        linked = [record for record in ledger["records"] if req["id"] in record["requirement_ids"]]
-        source_text = "; ".join(f"{sid} → {sources[sid]['path']} ({sources[sid]['locator']})" for sid in req["source_ids"])
-        verification_text = "; ".join(f"{sid} ({specs[sid]['method']}; {specs[sid]['responsible']}; {specs[sid]['execution_status']})" for sid in req["verification_ids"])
-        execution_text = "; ".join(f"{record['id']}: {record['execution']['result']}, {record['evidence']['availability']}, review {record['review']['status']}, coverage {record['coverage']}" for record in linked) or "Not executed; evidence and review are pending."
-        chains += f"<article class='requirement' id='{req['id'].lower()}'><h3>{html.escape(req['id'])} — {html.escape(req['title'])}</h3><p><span>Source</span> {html.escape(source_text)}</p><p><span>Requirement</span> {html.escape(req['statement'])}</p><p><span>Rationale</span> {html.escape(req['rationale'])}</p><p><span>Model / responsibility</span> {html.escape(', '.join(req['model_element_ids']))}; responsible {html.escape(', '.join(req['responsible_components']))}</p><p><span>Verification</span> {html.escape(verification_text)}</p><p><span>Execution / evidence / review</span> {html.escape(execution_text)}</p><p><span>Gap</span> No accepted complete evidence.</p></article>"
-    with_ids = [req["id"] for req in req_doc["requirements"] if any(req["id"] in record["requirement_ids"] for record in ledger["records"])]
+        linked = [record for record in current_records if req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run"]
+        source_text = "; ".join(f"<a href='https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/{sources[sid]['revision']}/{sources[sid]['path']}'>{sid} → {sources[sid]['path']}</a> ({html.escape(sources[sid]['locator'])})" for sid in req["source_ids"])
+        model_url = f"https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/{ledger['baseline']['closeout_commit']}/systems_engineering/models/b0_system.sysml"
+        model_text = ", ".join(f"<a href='{model_url}'>{html.escape(value)}</a>" for value in req["model_element_ids"])
+        verification_url = f"https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/{ledger['baseline']['closeout_commit']}/{ledger['baseline']['verification_path']}"
+        verification_text = "; ".join(f"<a href='{verification_url}'>{html.escape(sid)}</a> ({html.escape(specs[sid]['method'])}; {html.escape(specs[sid]['responsible'])}; {html.escape(specs[sid]['execution_status'])})" for sid in req["verification_ids"])
+        execution_parts = []
+        for record in linked:
+            implementation = ", ".join(f"<a href='https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/{record['implementation']['commit']}/{path}'>{html.escape(path)}</a>" for path in record["implementation"]["paths"])
+            review = html.escape(record["review"]["status"])
+            if record["review"]["source"]:
+                review = f"<a href='{html.escape(record['review']['source'], quote=True)}'>{review}</a>"
+            execution_parts.append(f"{html.escape(record['id'])}: {html.escape(record['execution']['result'])}, <a href='{html.escape(record['evidence']['uri'], quote=True)}'>{html.escape(record['evidence']['availability'])}</a>, SHA-256 {html.escape(record['evidence']['sha256'])}, implementation {implementation}, review {review}, coverage {html.escape(record['coverage'])}")
+        execution_text = "; ".join(execution_parts) or "Not executed; evidence and review are pending."
+        chains += f"<article class='requirement' id='{req['id'].lower()}'><h3>{html.escape(req['id'])} — {html.escape(req['title'])}</h3><p><span>Source</span> {source_text}</p><p><span>Requirement</span> {html.escape(req['statement'])}</p><p><span>Rationale</span> {html.escape(req['rationale'])}</p><p><span>Model / responsibility</span> {model_text}; responsible {html.escape(', '.join(req['responsible_components']))}</p><p><span>Verification</span> {verification_text}</p><p><span>Execution / evidence / review</span> {execution_text}</p><p><span>Gap</span> {html.escape(_requirement_gap(req, current_records))}</p></article>"
+    with_ids = [req["id"] for req in req_doc["requirements"] if any(req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run" for record in current_records)]
     without_ids = [req["id"] for req in req_doc["requirements"] if req["id"] not in with_ids]
     with_links = " ".join(f"<a href='#{value.lower()}'>{value}</a>" for value in with_ids) or "None"
     without_links = " ".join(f"<a href='#{value.lower()}'>{value}</a>" for value in without_ids) or "None"

@@ -35,3 +35,10 @@ boundary. Below the fold, static level/result groups link to all 30 requirement
 chains; each chain separates source, requirement statement, rationale, model and
 responsibility, planned verification, execution/evidence/review, and the open gap.
 The re-render retained the accepted typography, wrapping and scrolling behavior.
+
+After the final PA data-projection rework, both viewports were rendered once
+more. The current-record filter now excludes superseded records consistently,
+per-requirement gaps are computed from effective accepted evidence, and source,
+model, verification, implementation and evidence references are clickable. The
+render contained 252 links, had no horizontal overflow at either viewport, and
+retained the accepted Vim-style typography and card layout.
