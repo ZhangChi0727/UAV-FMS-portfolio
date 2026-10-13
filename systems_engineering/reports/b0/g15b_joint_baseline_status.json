@@ -1,0 +1,15 @@
+{
+  "record_version": "1.0",
+  "gate": "D2",
+  "decision": "approved",
+  "approved_at_local": "2026-10-13 Australia/Perth",
+  "asset_commit_s": "ddd281fd0a94ee59635accb5f41500fac05284b7",
+  "manifest_commit_m": "88074e21e1f5c71f24fc7b79e842b00e37ecdb7b",
+  "approval_record": "systems_engineering/reports/b0/g15b_d2_approval.md",
+  "lifecycle": "frozen_pending_d3_and_merge",
+  "verification_execution": "not_run",
+  "g15c_execution_authorized": false,
+  "c_ready": false,
+  "merge_authorized": false,
+  "issue_close_authorized": false
+}
