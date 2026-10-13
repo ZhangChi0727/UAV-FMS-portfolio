@@ -14,8 +14,8 @@
       "properties": {
         "requirements_path": {"type": "string"},
         "verification_path": {"type": "string"},
-        "frozen_asset_commit": {"pattern": "^[0-9a-f]{40}$"},
-        "closeout_commit": {"pattern": "^[0-9a-f]{40}$"}
+        "frozen_asset_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "closeout_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
       }
     },
     "records": {
@@ -29,15 +29,15 @@
       "additionalProperties": false,
       "required": ["id", "record_kind", "verification_spec_ids", "requirement_ids", "model_ids", "implementation", "execution", "evidence", "applicability", "review", "coverage", "supersedes"],
       "properties": {
-        "id": {"pattern": "^B0-EXEC-[A-Z0-9-]+$"},
+        "id": {"type": "string", "pattern": "^B0-EXEC-[A-Z0-9-]+$"},
         "record_kind": {"enum": ["production_evidence", "fixture"]},
-        "verification_spec_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^B0-VER-[A-Z0-9-]+$"}},
-        "requirement_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^B0-REQ-[0-9]{4}$"}},
-        "model_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^B0-MODEL-[A-Z0-9-]+$"}},
+        "verification_spec_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^B0-VER-[A-Z0-9-]+$"}},
+        "requirement_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^B0-REQ-[0-9]{4}$"}},
+        "model_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^B0-MODEL-[A-Z0-9-]+$"}},
         "implementation": {
           "type": "object", "additionalProperties": false,
           "required": ["commit", "paths", "symbols"],
-          "properties": {"commit": {"pattern": "^[0-9a-f]{40}$"}, "paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}, "symbols": {"type": "array", "items": {"type": "string"}}}
+          "properties": {"commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}, "paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}}, "symbols": {"type": "array", "items": {"type": "string"}}}
         },
         "execution": {
           "type": "object", "additionalProperties": false,
@@ -48,20 +48,20 @@
             "level": {"enum": ["module", "integration", "governance"]},
             "command": {"type": "string", "minLength": 1}, "working_directory": {"type": "string", "minLength": 1}, "environment": {"type": "string", "minLength": 1},
             "inputs": {"type": "array", "items": {"type": "string"}}, "seed": {"type": ["integer", "null"]}, "initial_conditions": {"type": "string", "minLength": 1},
-            "started_at": {"type": ["string", "null"]}, "completed_at": {"type": ["string", "null"]}, "exit_code": {"type": ["integer", "null"]},
+            "started_at": {"type": ["string", "null"], "format": "date-time"}, "completed_at": {"type": ["string", "null"], "format": "date-time"}, "exit_code": {"type": ["integer", "null"]},
             "tests": {"type": "object", "required": ["passed", "failed", "skipped", "xfailed"], "additionalProperties": false, "properties": {"passed": {"type": ["integer", "null"], "minimum": 0}, "failed": {"type": ["integer", "null"], "minimum": 0}, "skipped": {"type": ["integer", "null"], "minimum": 0}, "xfailed": {"type": ["integer", "null"], "minimum": 0}}},
             "raw_result": {"type": "string", "minLength": 1}, "criterion_locators": {"type": "array", "minItems": 1, "items": {"type": "string"}}
           }
         },
         "evidence": {
           "type": "object", "additionalProperties": false,
-          "required": ["availability", "uri", "sha256", "source_run", "source_commit", "retention"],
-          "properties": {"availability": {"enum": ["none", "local_only", "remote_unverified", "remote_verified", "missing", "expired"]}, "uri": {"type": ["string", "null"]}, "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}, "source_run": {"type": ["string", "null"]}, "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}, "retention": {"type": "string", "minLength": 1}}
+          "required": ["availability", "uri", "artifact_id", "artifact_file", "sha256", "archive_sha256", "source_run", "source_commit", "verified_at", "expires_at", "retention"],
+          "properties": {"availability": {"enum": ["none", "local_only", "remote_unverified", "remote_verified", "missing", "expired"]}, "uri": {"type": ["string", "null"], "format": "uri"}, "artifact_id": {"type": ["integer", "null"], "minimum": 1}, "artifact_file": {"type": ["string", "null"], "minLength": 1}, "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}, "archive_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}, "source_run": {"type": ["string", "null"]}, "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}, "verified_at": {"type": ["string", "null"], "format": "date-time"}, "expires_at": {"type": ["string", "null"], "format": "date-time"}, "retention": {"type": "string", "minLength": 1}}
         },
         "applicability": {
           "type": "object", "additionalProperties": false,
-          "required": ["status", "basis", "relevant_files"],
-          "properties": {"status": {"enum": ["not_assessed", "applicable_exact", "applicable_by_analysis", "stale", "not_applicable"]}, "basis": {"type": "string", "minLength": 1}, "relevant_files": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["path", "sha256"], "properties": {"path": {"type": "string"}, "sha256": {"pattern": "^[0-9a-f]{64}$"}}}}}
+          "required": ["status", "basis", "source_commit", "target_commit", "relevant_files"],
+          "properties": {"status": {"enum": ["not_assessed", "applicable_exact", "applicable_by_analysis", "stale", "not_applicable"]}, "basis": {"type": "string", "minLength": 1}, "source_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}, "target_commit": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"}, "relevant_files": {"type": "array", "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["path", "source_sha256", "target_sha256"], "properties": {"path": {"type": "string", "minLength": 1}, "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}, "target_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}}}}}
         },
         "review": {
           "type": "object", "additionalProperties": false,
@@ -69,7 +69,7 @@
           "properties": {"status": {"enum": ["not_reviewed", "pending", "accepted", "rejected"]}, "reviewer": {"type": ["string", "null"]}, "source": {"type": ["string", "null"]}}
         },
         "coverage": {"enum": ["supporting", "partial", "complete"]},
-        "supersedes": {"type": ["string", "null"]}
+        "supersedes": {"type": ["string", "null"], "pattern": "^B0-EXEC-[A-Z0-9-]+$"}
       }
     }
   }
