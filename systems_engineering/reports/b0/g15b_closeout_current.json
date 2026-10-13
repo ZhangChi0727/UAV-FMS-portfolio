@@ -1,0 +1,48 @@
+{
+  "record_version": "1.0",
+  "record_type": "current_lifecycle_overlay",
+  "recorded_at_local": "2026-10-13 Australia/Perth",
+  "historical_baseline": {
+    "asset_commit_s": "ddd281fd0a94ee59635accb5f41500fac05284b7",
+    "manifest_commit_m": "88074e21e1f5c71f24fc7b79e842b00e37ecdb7b",
+    "approval_commit_a": "c844922175834c70acc56c8a3b9d3569664d69c6",
+    "merge_commit": "c2aa92ea5459b2112af9fa3f76c94621e93a0b1b",
+    "asset_count": 23,
+    "integrity": "all_manifest_blobs_match_merge_tree"
+  },
+  "events": [
+    {
+      "type": "d2_joint_freeze_approved",
+      "object": "S+M joint baseline",
+      "effective_scope": "23 manifest assets",
+      "source": "systems_engineering/reports/b0/g15b_d2_approval.md"
+    },
+    {
+      "type": "merged",
+      "object": "PR #17",
+      "effective_scope": "G1.5-B joint baseline",
+      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17"
+    },
+    {
+      "type": "post_merge_accepted",
+      "object": "merge c2aa92ea5459b2112af9fa3f76c94621e93a0b1b",
+      "effective_scope": "G1.5-B complete and C technical inputs ready",
+      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6137887761"
+    },
+    {
+      "type": "combined_work_order_authorized",
+      "object": "B closeout then G1.5-C execution",
+      "effective_scope": "K0/K1 followed by C1/C2/C3 after PA closeout acceptance",
+      "source": "docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md"
+    }
+  ],
+  "current": {
+    "g15b": "complete",
+    "joint_baseline": "frozen_and_merged",
+    "g15c_technical_input": "ready",
+    "g15c_execution": "awaiting_pa_closeout_accept",
+    "g15c_verification_result": "not_established",
+    "g2": "not_authorized",
+    "b0": "incomplete"
+  }
+}
