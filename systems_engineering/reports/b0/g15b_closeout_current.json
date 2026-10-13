@@ -1,7 +1,8 @@
 {
-  "record_version": "1.0",
+  "record_version": "1.1",
   "record_type": "current_lifecycle_overlay",
   "recorded_at_local": "2026-10-13 Australia/Perth",
+  "recorded_by": "Task Carrier",
   "historical_baseline": {
     "asset_commit_s": "ddd281fd0a94ee59635accb5f41500fac05284b7",
     "manifest_commit_m": "88074e21e1f5c71f24fc7b79e842b00e37ecdb7b",
@@ -13,34 +14,57 @@
   "events": [
     {
       "type": "d2_joint_freeze_approved",
+      "occurred_at": "2026-10-13T03:28:22Z",
+      "actor": "controlling user",
       "object": "S+M joint baseline",
       "effective_scope": "23 manifest assets",
-      "source": "systems_engineering/reports/b0/g15b_d2_approval.md"
+      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6137541739"
     },
     {
-      "type": "merged",
+      "type": "merged_under_existing_d3_authorization",
+      "occurred_at": "2026-10-13T03:54:20Z",
+      "actor": "repository maintainer",
       "object": "PR #17",
       "effective_scope": "G1.5-B joint baseline",
-      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17"
+      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17",
+      "authorization_source": "docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md#2-baseline-existing-conclusions-and-protected-objects"
     },
     {
       "type": "post_merge_accepted",
+      "occurred_at": "2026-10-13T03:56:30Z",
+      "actor": "Project Administrator (historical acceptance, transcribed by TC)",
       "object": "merge c2aa92ea5459b2112af9fa3f76c94621e93a0b1b",
       "effective_scope": "G1.5-B complete and C technical inputs ready",
-      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6137887761"
+      "source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6142639167",
+      "retained_complete_source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/18#issuecomment-6137888147",
+      "damaged_original_source": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/17#issuecomment-6137887761"
     },
     {
       "type": "combined_work_order_authorized",
+      "occurred_at": null,
+      "time_basis": "Ordering is retained in the controlling conversation; no independently preserved wall-clock timestamp is asserted here.",
+      "actor": "controlling user through the original Project Administrator work order",
       "object": "B closeout then G1.5-C execution",
-      "effective_scope": "K0/K1 followed by C1/C2/C3 after PA closeout acceptance",
+      "effective_scope": "K0/K1 followed by C1/C2/C3 only after original-PA closeout acceptance",
       "source": "docs/work_orders/B0_G1_5_C_closeout_and_verification_work_order.md"
+    },
+    {
+      "type": "sequence_deviation_detected",
+      "occurred_at": null,
+      "time_basis": "Known to have occurred after K bd4ff5e and before original-PA REWORK; exact wall-clock time is not asserted.",
+      "actor": "Task Carrier after relying on an internal same-name subagent",
+      "object": "uncommitted local C1/C2 implementation",
+      "effective_scope": "local working tree only; no C commit or push",
+      "source": "codex-thread:019f9ef3-4a0c-79f1-99d4-c8415f62bd29/turn/01a13480-e45e-7841-a56d-ed51b22e3ea4",
+      "disposition": "paused; original PA returned REWORK; K must be repaired and accepted before C resumes"
     }
   ],
   "current": {
     "g15b": "complete",
     "joint_baseline": "frozen_and_merged",
     "g15c_technical_input": "ready",
-    "g15c_execution": "awaiting_pa_closeout_accept",
+    "g15c_execution": "paused_after_sequence_deviation_pending_original_pa_closeout_accept",
+    "original_pa_closeout_gate": "rework",
     "g15c_verification_result": "not_established",
     "g2": "not_authorized",
     "b0": "incomplete"
