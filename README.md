@@ -3,10 +3,11 @@
 A modular experimental platform for flight-control development, state estimation,
 embedded implementation, and reproducible verification.
 
-**Current status:** planning baseline B0 v0.2 is active. G0 contracts are approved
-and G1 plant/actuator/IMU component acceptance is complete; G2/G3/G4 and overall
-B0 completion remain open. No completed flight, hardware, broad performance, or
-research results are claimed. The repository name is retained for URL compatibility.
+**Current status:** planning baseline B0 v0.2 is active. G0 contracts and the
+G1.5-B joint requirements/model baseline are approved; G1 plant/actuator/IMU
+component acceptance is complete. G1.5-C verification traceability/reporting is
+the active governance increment. G2/G3/G4 and overall B0 completion remain open.
+No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
 
@@ -39,8 +40,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G0 approved; G1 component acceptance complete; B0 incomplete |
-| docs/ | Roadmap, environment and work orders | G1.5-A migration and execution records |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-B frozen; G1.5-C active; B0 incomplete |
+| docs/ | Roadmap, environment and work orders | G1.5-C closeout/verification work active |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
