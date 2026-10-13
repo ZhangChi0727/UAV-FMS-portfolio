@@ -4,8 +4,10 @@ This directory is the reader-facing engineering entry for B0. It separates
 system relationships and their sources from executable module code, daily
 operation notes, and retained evidence. G0 and the G1.5-B joint baseline are
 approved, and G1 plant/actuator/IMU component acceptance is merged. G1.5-C is
-the active verification-traceability/reporting increment; it does not claim G2,
-G3, G4, overall B0 completion, hardware, flight, or research results.
+the planned next verification-traceability/reporting increment. The combined
+work remains in K closeout rework and the original PA has not released C; this
+does not claim G2, G3, G4, overall B0 completion, hardware, flight, or research
+results.
 
 ## Reading route
 
