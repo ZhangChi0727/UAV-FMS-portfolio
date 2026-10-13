@@ -1,0 +1,636 @@
+[DOCUMENT]
+TITLE: B0 Joint Requirement Baseline
+UID: B0-JOINT-REQUIREMENT-BASELINE
+
+[GRAMMAR]
+ELEMENTS:
+- TAG: REQUIREMENT
+  PROPERTIES:
+    IS_COMPOSITE: False
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATUS
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: RATIONALE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ACCEPTANCE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: SOURCE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: MODEL
+    TYPE: String
+    REQUIRED: True
+  - TITLE: VERIFICATION
+    TYPE: String
+    REQUIRED: True
+  RELATIONS:
+  - TYPE: Parent
+
+[REQUIREMENT]
+UID: B0-REQ-0001
+TITLE: Bounded attitude experiment
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall execute a configured bounded multirotor attitude-estimation and control experiment without representing the experiment as full-flight capability.
+<<<
+RATIONALE: >>>
+Defines the single B0 product use while preventing scaffold and extension scope from becoming an implicit obligation.
+<<<
+ACCEPTANCE: >>>
+Inspection confirms the joint baseline includes the bounded experiment and excludes translation, flight, hardware and unactivated extensions.
+<<<
+SOURCE: B0-SRC-CHARTER, B0-SRC-BASELINE
+MODEL: B0-MODEL-SYSTEM, B0-MODEL-COMMAND-SOURCE
+VERIFICATION: B0-VER-SCOPE-INSPECTION (planned/not_run)
+
+[REQUIREMENT]
+UID: B0-REQ-0002
+TITLE: Deterministic configuration and replay
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall produce repeatable samples and state evolution for identical approved configuration, seed, initial state, input sequence, reset sequence and software revision.
+<<<
+RATIONALE: >>>
+Repeatability is required for engineering comparison and release evidence.
+<<<
+ACCEPTANCE: >>>
+The procedure in B0-VER-REPLAY compares two approved replays at the G0 reset-replay fields and tolerances and records configuration, seed and revision.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2
+MODEL: B0-MODEL-EXECUTION, B0-MODEL-SCENARIO
+VERIFICATION: B0-VER-REPLAY (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0003
+TITLE: Runtime truth isolation
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall prevent live plant truth from entering estimator or controller runtime inputs after explicit initialization while permitting truth to reach sensor generation and independent evaluation.
+<<<
+RATIONALE: >>>
+Prevents circular validation and unrealistically privileged control or estimation.
+<<<
+ACCEPTANCE: >>>
+Static interface inspection and a later integrated negative test show no runtime truth path to estimator or controller, using the G0 truth_visibility and truth_inputs_forbidden fields.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2, B0-SRC-ARCHITECTURE
+MODEL: B0-MODEL-TRUTH, B0-MODEL-ESTIMATOR, B0-MODEL-CONTROLLER, B0-MODEL-EVALUATOR
+VERIFICATION: B0-VER-TRUTH-BOUNDARY (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0004
+TITLE: Shared frames units and quaternion convention
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall represent exchanged quantities using the approved NED and body frames, SI units, and scalar-first Hamilton quaternion convention.
+<<<
+RATIONALE: >>>
+A single convention prevents silent sign, frame and ordering defects across components.
+<<<
+ACCEPTANCE: >>>
+Inspection and component analytical cases confirm every interface and oracle references the approved G0 convention fields without a conflicting local definition.
+<<<
+SOURCE: B0-SRC-ARCHITECTURE, B0-SRC-G0-V2
+MODEL: B0-MODEL-SYSTEM
+VERIFICATION: B0-VER-CONVENTIONS (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0005
+TITLE: Rigid-body rotational dynamics
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 plant shall propagate body angular velocity using the approved rigid-body rotational equation and positive-definite inertia contract.
+<<<
+RATIONALE: >>>
+Defines the physical responsibility required by the bounded attitude experiment.
+<<<
+ACCEPTANCE: >>>
+Analytical zero-torque and principal-axis cases match an independent equation oracle at the G0 precision and inertia references.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2, B0-SRC-G1
+MODEL: B0-MODEL-PLANT
+VERIFICATION: B0-VER-PLANT-DYNAMICS (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0006
+TITLE: Quaternion plant state
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 plant shall propagate and normalize its scalar-first attitude quaternion using the approved body-rate and frame convention.
+<<<
+RATIONALE: >>>
+Attitude propagation must remain consistent with the shared representation.
+<<<
+ACCEPTANCE: >>>
+Independent constant-rate analytical cases account for q/-q equivalence and confirm normalization within the approved G0 tolerance.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-ARCHITECTURE, B0-SRC-G1
+MODEL: B0-MODEL-PLANT, B0-MODEL-TRUTH
+VERIFICATION: B0-VER-PLANT-QUATERNION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0005
+
+[REQUIREMENT]
+UID: B0-REQ-0007
+TITLE: Paired torque command
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 controller shall publish one timestamped torque command that pairs requested torque, limited target and saturation status from the same controller due tick.
+<<<
+RATIONALE: >>>
+The pairing closes ambiguity between request, clamp result and anti-windup feedback.
+<<<
+ACCEPTANCE: >>>
+Interface inspection and a later timing test confirm the three fields and timestamp correspond to one due tick as defined by the G0 torque-command and request-limit-pairing fields.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-CONTROLLER, B0-MODEL-TORQUE-COMMAND
+VERIFICATION: B0-VER-PAIRED-COMMAND (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0008
+TITLE: Limited-target actuator dynamics
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 actuator shall advance its response using only the held limited target from the latest eligible paired torque command.
+<<<
+RATIONALE: >>>
+Prevents a raw request from bypassing the controller's unique saturation responsibility.
+<<<
+ACCEPTANCE: >>>
+Component tests compare the response with an independent first-order and clamp oracle and reject a raw-request dynamics path using the G0 dynamics_input field.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-G1
+MODEL: B0-MODEL-ACTUATOR, B0-MODEL-TORQUE-COMMAND
+VERIFICATION: B0-VER-ACTUATOR-DYNAMICS (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0007
+
+[REQUIREMENT]
+UID: B0-REQ-0009
+TITLE: Actuator feedback pairing
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 actuator shall publish actual torque and the originating paired-command timestamp in actuator feedback.
+<<<
+RATIONALE: >>>
+Controller anti-windup must associate actual response with the correct limited target.
+<<<
+ACCEPTANCE: >>>
+A multi-rate interface test confirms feedback preserves the eligible command timestamp and corresponding limited target according to the G0 held-command contract.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-ACTUATOR, B0-MODEL-ACTUATOR-FEEDBACK
+VERIFICATION: B0-VER-PAIRED-FEEDBACK (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0007
+
+[REQUIREMENT]
+UID: B0-REQ-0010
+TITLE: Gyroscope measurement
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 IMU shall produce timestamped body-frame angular-rate measurements with the approved bias, noise, validity and seed semantics.
+<<<
+RATIONALE: >>>
+Defines the estimator's angular-rate observation boundary.
+<<<
+ACCEPTANCE: >>>
+Stationary, constant-rate, bias and deterministic-noise component cases match independent signal and random-sequence oracles.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-ARCHITECTURE, B0-SRC-G1
+MODEL: B0-MODEL-IMU, B0-MODEL-IMU-SAMPLE
+VERIFICATION: B0-VER-IMU-GYRO (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0011
+TITLE: Accelerometer specific force
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 IMU shall produce timestamped body-frame specific-force measurements using the approved gravity sign, bias, noise, validity and seed semantics.
+<<<
+RATIONALE: >>>
+Specific force rather than inertial acceleration is the estimator input.
+<<<
+ACCEPTANCE: >>>
+Aligned and rotated stationary cases, bias and deterministic-noise cases match the independent G0 specific-force equation and sign oracle.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-ARCHITECTURE, B0-SRC-G1
+MODEL: B0-MODEL-IMU, B0-MODEL-IMU-SAMPLE
+VERIFICATION: B0-VER-IMU-SPECIFIC-FORCE (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0012
+TITLE: Estimator propagation
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 estimator shall propagate and normalize a scalar-first attitude estimate from valid gyroscope samples and approved positive time increments.
+<<<
+RATIONALE: >>>
+Defines the minimum planned G2 attitude propagation responsibility.
+<<<
+ACCEPTANCE: >>>
+Planned component tests compare constant-rate propagation with an independent quaternion oracle and verify normalization and invalid-dt rejection.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2
+MODEL: B0-MODEL-ESTIMATOR, B0-MODEL-STATE-ESTIMATE
+VERIFICATION: B0-VER-ESTIMATOR-PROPAGATION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0013
+TITLE: Roll and pitch fusion
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 estimator shall apply bounded accelerometer-based roll and pitch correction only when the approved validity and bounded-specific-force conditions permit it.
+<<<
+RATIONALE: >>>
+Gravity-based tilt correction is conditional and must not silently treat all acceleration as gravity.
+<<<
+ACCEPTANCE: >>>
+Planned stationary-tilt and gated-contamination tests compare with an independent tilt oracle and the G0 estimator correction conditions.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2
+MODEL: B0-MODEL-ESTIMATOR, B0-MODEL-IMU-SAMPLE
+VERIFICATION: B0-VER-ESTIMATOR-FUSION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0012
+
+[REQUIREMENT]
+UID: B0-REQ-0014
+TITLE: Yaw observability limitation
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall report yaw as relative propagation and drift without claiming absolute yaw observability from gyroscope and accelerometer measurements alone.
+<<<
+RATIONALE: >>>
+Gravity provides no absolute heading reference.
+<<<
+ACCEPTANCE: >>>
+Inspection and the noise/bias scenario report separate roll/pitch correction from relative yaw drift and contain no absolute-yaw recovery claim.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2
+MODEL: B0-MODEL-ESTIMATOR, B0-MODEL-EVALUATOR
+VERIFICATION: B0-VER-YAW-LIMITATION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0012
+
+[REQUIREMENT]
+UID: B0-REQ-0015
+TITLE: Acceleration contamination handling
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 estimator shall expose the approved limitation or correction-gating status when non-gravitational specific force violates its bounded tilt-correction assumptions.
+<<<
+RATIONALE: >>>
+The bounded attitude model lacks complete translational dynamics and must characterize rather than hide this limitation.
+<<<
+ACCEPTANCE: >>>
+The planned contamination provision observes required raw signals and limitation status and classifies the case as limitation characterization rather than performance pass.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2, B0-SRC-G0-ACCEPTANCE
+MODEL: B0-MODEL-ESTIMATOR, B0-MODEL-STATE-ESTIMATE
+VERIFICATION: B0-VER-ACCEL-CONTAMINATION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0013
+
+[REQUIREMENT]
+UID: B0-REQ-0016
+TITLE: Cascaded attitude and rate control
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 controller shall compute body-torque request through the approved attitude-error and body-rate feedback signs in a cascaded attitude and rate structure.
+<<<
+RATIONALE: >>>
+Defines the planned G2 controller responsibility without importing legacy geometric or LQR scaffolds.
+<<<
+ACCEPTANCE: >>>
+Planned unit tests use independent sign and axis oracles for positive/negative attitude and rate errors and reject the opposite-feedback mutation.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-G0-V2
+MODEL: B0-MODEL-CONTROLLER, B0-MODEL-COMMAND, B0-MODEL-STATE-ESTIMATE
+VERIFICATION: B0-VER-CONTROLLER-SIGN (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0017
+TITLE: Unique controller saturation responsibility
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 controller shall be the sole component that limits requested body torque to the approved target bounds and sets the paired saturation status.
+<<<
+RATIONALE: >>>
+A single clamp authority prevents inconsistent targets and ambiguous feedback.
+<<<
+ACCEPTANCE: >>>
+Boundary tests exercise every axis and confirm request, limited target and saturation status against the G0 controller limits while no downstream component reclamps the target.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-CONTROLLER, B0-MODEL-TORQUE-COMMAND
+VERIFICATION: B0-VER-CONTROLLER-SATURATION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0016
+
+[REQUIREMENT]
+UID: B0-REQ-0018
+TITLE: Anti-windup update
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 controller shall update each rate-integral contribution using the approved conditional-integration and paired-feedback back-calculation rule and shall enforce the approved per-axis integral bounds.
+<<<
+RATIONALE: >>>
+The complete discrete rule must respond to both clamp saturation and actuator lag without silently accumulating beyond bounds.
+<<<
+ACCEPTANCE: >>>
+Planned discrete-step tests independently calculate conditional integration, back-calculation and each axis bound from the approved G0 anti-windup fields.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-CONTROLLER, B0-MODEL-ACTUATOR-FEEDBACK
+VERIFICATION: B0-VER-ANTI-WINDUP (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0016
+
+[REQUIREMENT]
+UID: B0-REQ-0019
+TITLE: Invalid input rejection
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall reject invalid, non-finite, stale, mis-shaped or non-positive-time inputs according to the owning component contract without silently advancing state.
+<<<
+RATIONALE: >>>
+Explicit rejection preserves state ownership and makes invalid trials auditable.
+<<<
+ACCEPTANCE: >>>
+Negative-dt, stale-timestamp and representative invalid-value tests observe the approved rejection reason and unchanged owned state.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-G0-ACCEPTANCE
+MODEL: B0-MODEL-EXECUTION, B0-MODEL-IMU-SAMPLE, B0-MODEL-COMMAND
+VERIFICATION: B0-VER-INVALID-INPUT (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0020
+TITLE: Reset contract
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall reset all stateful components to explicit initial state, seed and epoch-local scheduling while preserving the monotonically increasing scenario clock and discarding pre-reset held commands and feedback.
+<<<
+RATIONALE: >>>
+A single reset boundary is necessary for deterministic replay without stale state leakage.
+<<<
+ACCEPTANCE: >>>
+The reset provision verifies the G0 reset tick, epoch-local first due updates, scenario timestamps, cleared held data and deterministic comparison window.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-G0-ACCEPTANCE
+MODEL: B0-MODEL-EXECUTION, B0-MODEL-RESET
+VERIFICATION: B0-VER-RESET (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0002
+
+[REQUIREMENT]
+UID: B0-REQ-0021
+TITLE: Deterministic scheduling and timestamps
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 execution adapter shall schedule component updates and construct timestamps from integer base ticks using the approved due-phase, consumption and held-command rules.
+<<<
+RATIONALE: >>>
+The execution adapter owns ordering and prevents timing drift or ambiguous sample consumption.
+<<<
+ACCEPTANCE: >>>
+A trace inspection and later multi-rate test match every produced/consumed sample and command to the G0 sequence, period, first-due-tick and timestamp rules.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-EXECUTION
+VERIFICATION: B0-VER-SCHEDULING (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0002
+
+[REQUIREMENT]
+UID: B0-REQ-0022
+TITLE: Approved scenario suite
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall support the approved normal, initial-offset, signed-step, disturbance, noise-and-bias, saturation-withdrawal, acceleration-contamination, and invalid-input-and-reset scenarios.
+<<<
+RATIONALE: >>>
+These scenarios bound the required engineering questions without extending to flight.
+<<<
+ACCEPTANCE: >>>
+Inspection confirms each approved G0 v2 scenario ID has a verification purpose, required observations, applicable criteria, responsibility and invalid-result handling.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-G0-ACCEPTANCE
+MODEL: B0-MODEL-SCENARIO, B0-MODEL-SYSTEM
+VERIFICATION: B0-VER-SCENARIO-CATALOGUE (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0023
+TITLE: Independent evaluation
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 evaluator shall compute acceptance metrics independently of estimator and controller implementations using the approved raw signals, windows, units, aggregation and invalid-data rules.
+<<<
+RATIONALE: >>>
+Independent oracles prevent the tested algorithm from grading itself.
+<<<
+ACCEPTANCE: >>>
+Design inspection identifies a distinct oracle and all required raw-signal dependencies for each verification provision; later executions use the G0 metric definitions and result classes.
+<<<
+SOURCE: B0-SRC-G0-V2, B0-SRC-G0-ACCEPTANCE, B0-SRC-VERIFICATION
+MODEL: B0-MODEL-EVALUATOR, B0-MODEL-TRUTH
+VERIFICATION: B0-VER-EVALUATOR-INDEPENDENCE (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0024
+TITLE: Evidence provenance
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 release evidence shall identify software revision, approved configuration hash, scenario, seed, environment, command, raw artifact, metric implementation and terminal result classification.
+<<<
+RATIONALE: >>>
+A pass/fail statement without provenance is not reproducible evidence.
+<<<
+ACCEPTANCE: >>>
+The planned evidence manifest schema and release demonstration require every listed provenance field and reject missing or mismatched versions; execution remains assigned to later stages.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-VERIFICATION, B0-SRC-G0-V2
+MODEL: B0-MODEL-EVALUATOR, B0-MODEL-EVIDENCE
+VERIFICATION: B0-VER-EVIDENCE-PROVENANCE (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0025
+TITLE: Defect-detection demonstration
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 release process shall demonstrate that selected independent checks detect isolated sign, unit, quaternion-ordering or anti-windup defects without modifying the approved production baseline.
+<<<
+RATIONALE: >>>
+A limited mutation demonstration provides evidence that critical checks are capable of failing.
+<<<
+ACCEPTANCE: >>>
+The G4 provision defines isolated variants, expected failing checks, restoration controls and retained outcomes; this baseline contains no fabricated mutation result.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-VERIFICATION
+MODEL: B0-MODEL-EVALUATOR
+VERIFICATION: B0-VER-DEFECT-DETECTION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0024
+
+[REQUIREMENT]
+UID: B0-REQ-0026
+TITLE: Implementation language boundary
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 implementation shall provide the control core in C++17 and may use Python for simulation, orchestration and independent analysis through the approved interface boundary.
+<<<
+RATIONALE: >>>
+Preserves the intended portable control core while retaining productive analysis tooling.
+<<<
+ACCEPTANCE: >>>
+Build and interface inspection confirm the control-core target uses C++17 and Python-facing integration does not bypass the declared messages or truth boundary.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-ARCHITECTURE
+MODEL: B0-MODEL-CONTROLLER, B0-MODEL-EXECUTION
+VERIFICATION: B0-VER-LANGUAGE-BOUNDARY (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0027
+TITLE: Clean-checkout reproduction
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 release shall be reproducible from a clean checkout using documented dependency versions and commands without relying on untracked developer state.
+<<<
+RATIONALE: >>>
+A local green workspace is insufficient release evidence.
+<<<
+ACCEPTANCE: >>>
+The G4 reproduction provision starts from a clean revision, installs pinned dependencies, runs documented commands and verifies retained artifact hashes; execution is not claimed in G1.5-B.
+<<<
+SOURCE: B0-SRC-BASELINE, B0-SRC-VERIFICATION
+MODEL: B0-MODEL-EXECUTION, B0-MODEL-EVIDENCE
+VERIFICATION: B0-VER-CLEAN-CHECKOUT (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0024
+
+[REQUIREMENT]
+UID: B0-REQ-0028
+TITLE: Legacy control disposition
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall retain CTL-REQ-001 and CTL-REQ-002 unchanged as historical references and shall record their approved not-applicable disposition for current B0 without a satisfaction claim.
+<<<
+RATIONALE: >>>
+Preserves historical identifiers while preventing incompatible legacy thresholds from silently becoming B0 criteria.
+<<<
+ACCEPTANCE: >>>
+Inspection confirms both historical records and thresholds are unchanged, the approval locator resolves, current B0 says not applicable, and no satisfied/pass state is attached.
+<<<
+SOURCE: B0-SRC-LEGACY, B0-SRC-G0-APPROVAL, B0-SRC-G0-V2
+MODEL: B0-MODEL-SYSTEM
+VERIFICATION: B0-VER-LEGACY-DISPOSITION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001
+
+[REQUIREMENT]
+UID: B0-REQ-0029
+TITLE: Invalid measurement handling
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 estimator and controller shall not consume an invalid or stale measurement as a valid update and shall expose the approved rejection or hold status.
+<<<
+RATIONALE: >>>
+Validity must affect consumption rather than serving as passive metadata.
+<<<
+ACCEPTANCE: >>>
+Planned component and integration tests inject invalid and stale samples and confirm no valid update occurs, state ownership is preserved and the required status is observable.
+<<<
+SOURCE: B0-SRC-G0-V2
+MODEL: B0-MODEL-ESTIMATOR, B0-MODEL-CONTROLLER, B0-MODEL-IMU-SAMPLE
+VERIFICATION: B0-VER-INVALID-MEASUREMENT (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0019
+
+[REQUIREMENT]
+UID: B0-REQ-0030
+TITLE: B0 exclusion boundary
+STATUS: candidate_pending_d2
+STATEMENT: >>>
+The B0 system shall exclude position and velocity loops, waypoint flight, full INS or GNSS estimation, advanced-control comparisons, learning algorithms, embedded targets, HIL and flight claims unless a separately approved extension activates them.
+<<<
+RATIONALE: >>>
+Makes the stopping rule reviewable and prevents legacy scaffolds from expanding B0.
+<<<
+ACCEPTANCE: >>>
+Inspection of requirements, model, verification specifications and reports finds no activated excluded capability or unsupported flight, HIL, hardware or research claim.
+<<<
+SOURCE: B0-SRC-CHARTER, B0-SRC-BASELINE
+MODEL: B0-MODEL-SYSTEM
+VERIFICATION: B0-VER-SCOPE-INSPECTION (planned/not_run)
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0001

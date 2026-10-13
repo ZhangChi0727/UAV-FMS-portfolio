@@ -4,7 +4,8 @@
 
 B0 v0.2 preserves all existing IDs and thresholds as legacy candidate requirements.
 They are not automatically B0 release criteria. NAV requirements belong to EXT-NAV;
-CTL-REQ-001/002 require B0 applicability review; CTL-REQ-003 belongs to EXT-FLIGHT
+CTL-REQ-001/002 are `not_applicable` to current B0 by the retained G0 approval;
+this is not satisfaction and their text remains unchanged. CTL-REQ-003 belongs to EXT-FLIGHT
 or EXT-FW; FDI requirements belong to EXT-HEALTH. No compliance is claimed.
 B0 process/component gates are defined in [development_baseline.md](../development_baseline.md) and are not
 new system requirement IDs. Performance applicability and operating conditions
@@ -60,6 +61,11 @@ unrecorded developer environment is informative only.
 
 Control operating conditions, plant parameters, command definition, and metric
 calculation shall be frozen before applicable control compliance evidence is generated.
+
+For current B0 only, [the G0 approval decision](../reports/b0/g0_approval_decision.md#决定)
+records `CTL-REQ-001` and `CTL-REQ-002` as `not_applicable`. Their identifiers,
+wording and thresholds above are retained for history and future applicability
+review. No B0 pass, satisfaction, or replacement threshold is inferred.
 
 ## Fault Detection Requirements
 
