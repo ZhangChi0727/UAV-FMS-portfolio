@@ -1,14 +1,14 @@
 # G1.5-B D2-candidate validation record
 
 Date: 2026-10-13 (Australia/Perth). Candidate asset commit:
-`533a0b48e2ad918ba378f63f651fe6ebfdc0dee9` (S). All commands exited zero unless
+`ddd281fd0a94ee59635accb5f41500fac05284b7` (S). All commands exited zero unless
 explicitly stated. Counts are checks executed, not B0 behaviour claims.
 
 | cwd / environment | Command scope | Actual result |
 |---|---|---|
 | `05_integration/b0`, Python 3.11.17 `.venv-b0` | Ruff; default/v1/v2 `validate_config.py`; track pytest | Ruff passed; three configurations valid; 165 passed |
 | `01_simulation/b0`, same environment | Ruff; `pytest -q tests`; `evidence.py --output /tmp/...` | Ruff passed; 25 passed; temporary JSON SHA-256 `4d289e74322367e571a225332bda7a8e66af3df24da381722c3dbbb3a9cd4abd` |
-| repository / isolated G1.5-B environment | formal checker; formal fixtures | 30 requirements, 26 model identities, 29 planned verifications; 23 passed |
+| repository / isolated G1.5-B environment | formal checker; formal fixtures | 30 requirements, 26 model identities, 29 planned verifications; 24 passed |
 | `tools/systems_engineering` / isolated environment | governance fixtures | 6 passed |
 | `tools/systems_engineering/g15b_pilot` / isolated environment | historical structured-pilot and native StrictDoc fixtures | 40 passed plus 6 passed; historical total 46 preserved |
 | repository / isolated environment | sysmlpy parse/analyse; StrictDoc export; projection check; Ruff | zero SysML semantic errors; export completed to `/tmp`; projections current; Ruff passed |
@@ -32,3 +32,8 @@ Repository checks found:
 Manual reading acceptance at 1280×720 and 1440×900 is deliberately not
 pre-filled. It must be recorded from the user's observation of the exact S
 StrictDoc export before PA handoff.
+
+The earlier S/M candidate was superseded after reading inspection found that
+the StrictDoc projection did not display `acceptance_condition`. The new S adds
+distinct labelled Acceptance and planned Verification fields and a regression
+test; authoritative requirement bodies and acceptance text are unchanged.
