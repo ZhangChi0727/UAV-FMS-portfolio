@@ -216,7 +216,68 @@ def render_markdown(req_doc: Mapping[str, Any], ver_doc: Mapping[str, Any]) -> s
 
 
 def render_strictdoc(req_doc: Mapping[str, Any]) -> str:
-    lines = ["[DOCUMENT]", "TITLE: B0 Joint Requirement Baseline", ""]
+    lines = [
+        "[DOCUMENT]",
+        "TITLE: B0 Joint Requirement Baseline",
+        "UID: B0-JOINT-REQUIREMENT-BASELINE",
+        "",
+        "[GRAMMAR]",
+        "ELEMENTS:",
+        "- TAG: REQUIREMENT",
+        "  PROPERTIES:",
+        "    IS_COMPOSITE: False",
+        "  FIELDS:",
+        "  - TITLE: UID",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: TITLE",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: STATUS",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: STATEMENT",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: RATIONALE",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: ACCEPTANCE",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: SOURCE",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: MODEL",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  - TITLE: VERIFICATION",
+        "    TYPE: String",
+        "    REQUIRED: True",
+        "  RELATIONS:",
+        "  - TYPE: Parent",
+        "",
+    ]
     for req in req_doc["requirements"]:
-        lines += ["[REQUIREMENT]", f"UID: {req['id']}", f"TITLE: {req['title']}", "STATEMENT: >>>", req["statement"], "<<<", "RATIONALE: >>>", req["rationale"], "<<<", ""]
+        lines += [
+            "[REQUIREMENT]",
+            f"UID: {req['id']}",
+            f"TITLE: {req['title']}",
+            f"STATUS: {req['status']}",
+            "STATEMENT: >>>",
+            req["statement"],
+            "<<<",
+            "RATIONALE: >>>",
+            req["rationale"],
+            "<<<",
+            "ACCEPTANCE: >>>",
+            req["acceptance_condition"],
+            "<<<",
+            "SOURCE: " + ", ".join(req["source_ids"]),
+            "MODEL: " + ", ".join(req["model_element_ids"]),
+            "VERIFICATION: " + ", ".join(req["verification_ids"]) + " (planned/not_run)",
+        ]
+        if req["parent_id"] is not None:
+            lines += ["RELATIONS:", "- TYPE: Parent", f"  VALUE: {req['parent_id']}"]
+        lines.append("")
     return "\n".join(lines)

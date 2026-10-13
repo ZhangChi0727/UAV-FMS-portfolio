@@ -10,7 +10,11 @@ import pytest
 TOOLS_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS_ROOT))
 
-from g15b_joint_baseline import BaselineValidationError, validate_baseline  # noqa: E402
+from g15b_joint_baseline import (  # noqa: E402
+    BaselineValidationError,
+    render_strictdoc,
+    validate_baseline,
+)
 
 
 REPO = Path(__file__).resolve().parents[3]
@@ -38,6 +42,15 @@ def validate(req=None, registry=None, verification=None, model_path=None):
 
 def test_candidate_is_complete_and_not_run():
     assert validate() == {"requirements": 30, "model_elements": 26, "verifications": 29}
+
+
+def test_reader_projection_keeps_fields_distinct():
+    rendered = render_strictdoc(load("requirements"))
+    assert "- TITLE: ACCEPTANCE" in rendered
+    assert "- TITLE: RATIONALE" in rendered
+    assert "ACCEPTANCE: >>>" in rendered
+    assert "VERIFICATION: B0-VER-SCOPE-INSPECTION (planned/not_run)" in rendered
+    assert "RELATIONS:\n- TYPE: Parent\n  VALUE: B0-REQ-0001" in rendered
 
 
 def test_duplicate_requirement_is_rejected():
