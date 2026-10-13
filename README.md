@@ -5,10 +5,9 @@ embedded implementation, and reproducible verification.
 
 **Current status:** planning baseline B0 v0.2 is active. G0 contracts and the
 G1.5-B joint requirements/model baseline are approved; G1 plant/actuator/IMU
-component acceptance is complete. G1.5-C verification traceability/reporting is
-the planned next governance increment; the combined work is still in K closeout
-rework and the original PA has not released C implementation. G2/G3/G4 and
-overall B0 completion remain open.
+component acceptance is complete. The original PA accepted closeout K3 and
+G1.5-C verification traceability/reporting is now the active governance
+increment. G2/G3/G4 and overall B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
@@ -42,8 +41,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-B frozen; K closeout rework; C not released |
-| docs/ | Roadmap, environment and work orders | Combined closeout/C work remains at the closeout gate |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-B frozen; G1.5-C active after accepted K3 |
+| docs/ | Roadmap, environment and work orders | Combined closeout/C work is in C execution |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
