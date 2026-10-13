@@ -215,6 +215,29 @@ def test_unknown_source_revision_is_rejected_when_applicability_is_checked():
         validate(doc, files=True)
 
 
+def test_unknown_implementation_revision_is_rejected():
+    doc = ledger()
+    doc["records"][0]["implementation"]["commit"] = "1" * 40
+    with pytest.raises(TraceabilityError, match="unknown implementation commit"):
+        validate(doc, files=True)
+
+
+def test_declared_dependency_closure_cannot_be_reduced():
+    doc = ledger()
+    doc["records"][0]["applicability"]["relevant_files"] = doc["records"][0]["applicability"]["relevant_files"][:-1]
+    with pytest.raises(TraceabilityError, match="incomplete G1 dependency closure"):
+        validate(doc, files=True)
+
+
+def test_remote_null_uri_is_a_structured_error():
+    doc = ledger()
+    record = doc["records"][0]
+    record["execution"].update(result="fail", exit_code=1)
+    record["evidence"]["uri"] = None
+    with pytest.raises(TraceabilityError, match="remote evidence lacks URI"):
+        validate(doc)
+
+
 def test_dependency_closure_includes_contract_and_quaternion():
     paths = {item["path"] for item in ledger()["records"][0]["applicability"]["relevant_files"]}
     assert {"01_simulation/b0/contract.py", "01_simulation/b0/quaternion.py"} <= paths

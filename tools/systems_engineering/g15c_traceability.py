@@ -101,6 +101,7 @@ def validate_ledger(
     requirements = _unique(req_doc["requirements"], "requirement ID")
     specifications = _unique(ver_doc["specifications"], "verification ID")
     records = _unique(ledger["records"], "execution record")
+    required_g1_closure = {"01_simulation/b0/plant.py", "01_simulation/b0/actuator.py", "01_simulation/b0/imu.py", "01_simulation/b0/evidence.py", "01_simulation/b0/tests/test_components.py", "01_simulation/b0/contract.py", "01_simulation/b0/quaternion.py", "05_integration/b0/configs/b0_g0_contract.v2.json"}
     _need(len(requirements) == 30, f"controlled view must contain 30 requirements, found {len(requirements)}")
     _need(len(specifications) == 29, f"controlled view must contain 29 verification specifications, found {len(specifications)}")
 
@@ -152,7 +153,10 @@ def validate_ledger(
             _need(execution["tests"]["skipped"] == 0 and execution["tests"]["xfailed"] == 0, f"pass relies on skip/xfail: {record_id}")
         if evidence["availability"].startswith("remote_"):
             _need(evidence["artifact_id"] and evidence["artifact_file"] and evidence["archive_sha256"] and evidence["source_run"] and evidence["source_commit"] and evidence["expires_at"], f"remote evidence lacks exact artifact identity: {record_id}")
+            _need(bool(evidence["uri"]), f"remote evidence lacks URI: {record_id}")
             _need(evidence["uri"].rstrip("/").endswith(f"/{evidence['artifact_id']}"), f"artifact URI/ID mismatch: {record_id}")
+        if evidence["availability"] == "local_only":
+            _need(bool(evidence["artifact_file"]), f"local evidence lacks artifact file: {record_id}")
         if review["status"] == "accepted":
             _need(review["reviewer"] and review["source"], f"accepted record lacks review provenance: {record_id}")
         if applicability["status"] in {"applicable_exact", "applicable_by_analysis"}:
@@ -174,8 +178,15 @@ def validate_ledger(
             locators = " ".join(execution["criterion_locators"])
             _need(all(spec_id in locators for spec_id in record["verification_spec_ids"]), f"complete record lacks a criterion locator for every specification: {record_id}")
         if check_files:
+            try:
+                subprocess.check_output(["git", "cat-file", "-e", f"{record['implementation']['commit']}^{{commit}}"], cwd=repo, stderr=subprocess.DEVNULL)
+            except (OSError, subprocess.CalledProcessError) as exc:
+                raise TraceabilityError(f"unknown implementation commit: {record_id}") from exc
             for value in record["implementation"]["paths"]:
                 _need(_inside(repo, value, "implementation path").is_file(), f"missing implementation path: {record_id} -> {value}")
+                _git_revision_sha256(repo, record["implementation"]["commit"], value)
+            if record_id == "B0-EXEC-G1-COMPONENT-20261013":
+                _need(required_g1_closure <= {item["path"] for item in applicability["relevant_files"]}, f"incomplete G1 dependency closure: {record_id}")
             for item in applicability["relevant_files"]:
                 path = _inside(repo, item["path"], "applicability path")
                 _need(path.is_file(), f"missing applicability file: {record_id} -> {item['path']}")
@@ -231,9 +242,9 @@ def _counts_as_accepted(record: Mapping[str, Any], auditable_records: set[str]) 
     return bool(record["id"] in auditable_records and record["execution"]["result"] == "pass" and record["applicability"]["status"] in {"applicable_exact", "applicable_by_analysis"} and record["review"]["status"] == "accepted" and record["coverage"] == "complete")
 
 
-def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None) -> str:
+def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *, evidence_cache: Path | None = None, now: datetime | None = None) -> str:
     ledger = ledger_data or _load(repo / "systems_engineering/verification/b0_execution_evidence.json")
-    summary = validate_ledger(repo, ledger)
+    summary = validate_ledger(repo, ledger, evidence_cache=evidence_cache, now=now)
     req_doc = _load(repo / ledger["baseline"]["requirements_path"])
     ver_doc = _load(repo / ledger["baseline"]["verification_path"])
     sources = _unique(req_doc["sources"], "source ID")
@@ -258,14 +269,14 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None) ->
     for level in ("stakeholder", "system", "component"):
         members = [req for req in requirements if req["level"] == level]
         lines.extend([f"### Group: {level}", f"<a id=\"group-{level}\"></a>", "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in members), ""])
-    with_execution = [req for req in requirements if any(req["id"] in record["requirement_ids"] for record in ledger["records"])]
+    with_execution = [req for req in requirements if any(req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run" for record in ledger["records"])]
     without_execution = [req for req in requirements if req not in with_execution]
     lines.extend(["### Group: with execution", '<a id="group-with-execution"></a>', "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in with_execution) or "None.", "", "### Group: without execution", '<a id="group-without-execution"></a>', "", ", ".join(f"[`{req['id']}`](#{req['id'].lower()})" for req in without_execution) or "None.", "", "## Requirement chains", ""])
     for req in requirements:
-        linked_records = [record for record in ledger["records"] if req["id"] in record["requirement_ids"]]
-        source_text = "; ".join(f"`{sid}` → `{sources[sid]['path']}` ({sources[sid]['locator']})" for sid in req["source_ids"])
+        linked_records = [record for record in ledger["records"] if req["id"] in record["requirement_ids"] and record["execution"]["result"] != "not_run"]
+        source_text = "; ".join(f"`{sid}` → [`{sources[sid]['path']}`](../../{sources[sid]['path']}) ({sources[sid]['locator']})" for sid in req["source_ids"])
         verification_text = "; ".join(f"`{sid}` ({specs[sid]['method']}; {specs[sid]['responsible']}; planned `{specs[sid]['execution_status']}`)" for sid in req["verification_ids"])
-        execution_text = "; ".join(f"`{record['id']}`: {record['execution']['result']}, {record['evidence']['availability']}, review {record['review']['status']}, coverage {record['coverage']}" for record in linked_records) or "Not executed; evidence and review are pending."
+        execution_text = "; ".join(f"`{record['id']}`: {record['execution']['result']}, [{record['evidence']['availability']}]({record['evidence']['uri']}), SHA-256 `{record['evidence']['sha256']}`, implementation {', '.join(record['implementation']['paths'])}, review {record['review']['status']} ({record['review']['source'] or 'no decision source'}), coverage {record['coverage']}" for record in linked_records) or "Not executed; evidence and review are pending."
         lines.extend([f"### {req['id']}", "", f"- Title: {req['title']}", f"- Source: {source_text}", f"- Requirement: {req['statement']}", f"- Rationale: {req['rationale']}", f"- Model/responsibility: {', '.join(f'`{value}`' for value in req['model_element_ids'])}; responsible {', '.join(f'`{value}`' for value in req['responsible_components'])}.", f"- Verification: {verification_text}", f"- Execution/evidence/review: {execution_text}", f"- Gap: {'No accepted complete evidence.' if not linked_records or summary['satisfied_requirements'] < summary['requirements'] else 'None.'}", ""])
     lines.extend([
         "## Reading and filtering", "", "Use the ledger fields `execution.level`, `execution.result`, `evidence.availability`, `applicability.status`, `review.status`, and `coverage`. Module and integration records are distinct; fixture records are prohibited from the production ledger.", "",
@@ -275,9 +286,9 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None) ->
     return "\n".join(lines)
 
 
-def render_html(repo: Path) -> str:
+def render_html(repo: Path, *, evidence_cache: Path | None = None, now: datetime | None = None) -> str:
     ledger = _load(repo / "systems_engineering/verification/b0_execution_evidence.json")
-    summary = validate_ledger(repo, ledger)
+    summary = validate_ledger(repo, ledger, evidence_cache=evidence_cache, now=now)
     req_doc = _load(repo / ledger["baseline"]["requirements_path"])
     ver_doc = _load(repo / ledger["baseline"]["verification_path"])
     sources = _unique(req_doc["sources"], "source ID")
@@ -316,7 +327,8 @@ def render_html(repo: Path) -> str:
     with_links = " ".join(f"<a href='#{value.lower()}'>{value}</a>" for value in with_ids) or "None"
     without_links = " ".join(f"<a href='#{value.lower()}'>{value}</a>" for value in without_ids) or "None"
     groups += f"<h3 id='group-with-execution'>Group: with execution</h3><p>{with_links}</p><h3 id='group-without-execution'>Group: without execution</h3><p>{without_links}</p>"
-    body = f"<h1 id='top'>B0 G1.5-C verification traceability status</h1><p class='boundary'>Controlled current view. Frozen verification specifications remain planned/not_run and are not rewritten.</p><h2 id='conclusion'>First-screen conclusion</h2>{metric_html}<h2 id='versions'>Version boundary</h2><p>Frozen base <code>{ledger['baseline']['frozen_asset_commit']}</code>; controlled target <code>{ledger['baseline']['closeout_commit']}</code>; committed HEAD is resolved at checker runtime.</p><h2 id='records'>Execution records</h2>{records}<h2 id='requirements'>Requirement index</h2><nav>{nav}</nav>{groups}<h2 id='chains'>Requirement chains</h2>{chains}<h2 id='filtering'>Reading and filtering</h2><p>Filter ledger fields execution.level, execution.result, evidence.availability, applicability.status, review.status and coverage. Fixtures are prohibited from the production ledger.</p><h2 id='chain'>Evidence chain</h2><p>The current record links frozen specification IDs to G1 implementation paths, an Actions artifact, SHA-256 identity, relevant-file applicability hashes and explicit pending review. Artifact expiry cannot silently preserve an auditable-pass claim.</p><h2 id='external'>External research-suite interface</h2><p>A future external suite must provide the same version, criterion, command, evidence hash/URI, applicability and review fields. G1.5-C does not run or write to external suites.</p>"
+    current_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+    body = f"<h1 id='top'>B0 G1.5-C verification traceability status</h1><p class='boundary'>Controlled current view. Frozen verification specifications remain planned/not_run and are not rewritten.</p><h2 id='conclusion'>First-screen conclusion</h2>{metric_html}<h2 id='versions'>Version boundary</h2><p>Frozen base <code>{ledger['baseline']['frozen_asset_commit']}</code>; controlled target <code>{ledger['baseline']['closeout_commit']}</code>; evaluated committed HEAD <code>{current_head}</code>.</p><h2 id='records'>Execution records</h2>{records}<h2 id='requirements'>Requirement index</h2><nav>{nav}</nav>{groups}<h2 id='chains'>Requirement chains</h2>{chains}<h2 id='filtering'>Reading and filtering</h2><p>Filter ledger fields execution.level, execution.result, evidence.availability, applicability.status, review.status and coverage. Fixtures are prohibited from the production ledger.</p><h2 id='chain'>Evidence chain</h2><p>The current record links frozen specification IDs to G1 implementation paths, an Actions artifact, SHA-256 identity, relevant-file applicability hashes and explicit pending review. Artifact expiry cannot silently preserve an auditable-pass claim.</p><h2 id='external'>External research-suite interface</h2><p>A future external suite must provide the same version, criterion, command, evidence hash/URI, applicability and review fields. G1.5-C does not run or write to external suites.</p>"
     return f"<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>B0 G1.5-C traceability</title><style>:root{{--bg:#0d1117;--panel:#161b22;--text:#c9d1d9;--muted:#8b949e;--accent:#7ee787}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 ui-monospace,SFMono-Regular,Consolas,Liberation Mono,monospace}}main{{max-width:1100px;margin:auto;padding:32px}}h1,h2{{color:var(--accent)}}h1{{font-size:clamp(1.5rem,4vw,2.4rem);line-height:1.2}}h2{{border-bottom:1px solid #30363d;padding-bottom:.4rem;margin-top:2rem}}h3{{font-size:1rem;margin:.1rem 0 .35rem;color:var(--accent)}}p{{overflow-wrap:anywhere;margin:.35rem 0}}.boundary{{color:var(--muted);margin-top:1rem}}.card,.record,.requirement{{background:var(--panel);border-left:3px solid var(--accent);padding:.7rem 1rem;margin:.6rem 0}}.record span,.requirement span{{color:var(--accent)}}.empty{{color:var(--muted)}}a{{color:#58a6ff}}nav{{display:flex;flex-wrap:wrap;gap:.8rem}}code{{font-family:inherit}}@media(max-width:700px){{main{{padding:18px}}}}</style><main>{body}</main></html>\n"
 
 
@@ -327,10 +339,11 @@ def main() -> None:
     parser.add_argument("--write-report", action="store_true")
     parser.add_argument("--json", action="store_true", dest="machine_json")
     parser.add_argument("--html-output", type=Path)
+    parser.add_argument("--evidence-cache", type=Path)
     args = parser.parse_args()
     try:
-        summary = validate_ledger(args.repo)
-        report = render_markdown(args.repo).rstrip() + "\n"
+        summary = validate_ledger(args.repo, evidence_cache=args.evidence_cache)
+        report = render_markdown(args.repo, evidence_cache=args.evidence_cache).rstrip() + "\n"
         report_path = args.repo / "systems_engineering/reports/b0/g15c_verification_status.md"
         if args.write_report:
             report_path.write_text(report, encoding="utf-8")
@@ -338,7 +351,7 @@ def main() -> None:
             _need(report_path.is_file() and report_path.read_text(encoding="utf-8") == report, "generated G1.5-C report is stale")
         if args.html_output:
             args.html_output.parent.mkdir(parents=True, exist_ok=True)
-            args.html_output.write_text(render_html(args.repo), encoding="utf-8")
+            args.html_output.write_text(render_html(args.repo, evidence_cache=args.evidence_cache), encoding="utf-8")
         print(json.dumps({"ok": True, **summary}, sort_keys=True) if args.machine_json else f"G1.5-C traceability check passed: {summary}")
     except TraceabilityError as exc:
         if args.machine_json:
