@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "component": "b0_g2_cascaded_controller",
+  "decision": "DESIGN_ACCEPT",
+  "approved_s0_commit": "7084584ef9e69995b88201164fa8659e4ef57c79",
+  "approved_config_path": "03_control/b0/configs/b0_g2_controller.v1.json",
+  "approved_config_git_blob": "9c3a3946f782f7faacd29e05fd3ef8184e4d646c",
+  "approved_config_canonical_lf_sha256": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6",
+  "decision_source": "original Project Administrator thread 019f9ef3-4a0c-79f1-99d4-c8415f62bd29",
+  "decision_date": "2026-10-14",
+  "scope": "S0 controller design and implementation choices only",
+  "exclusions": ["merge authorization", "G3 start", "closed-loop performance acceptance"]
+}
