@@ -319,6 +319,30 @@ def test_superseded_record_is_excluded():
     assert newer["id"] in rendered
 
 
+def test_superseded_record_source_hash_remains_checked():
+    doc = ledger()
+    old = next(record for record in doc["records"] if record["id"] == "B0-EXEC-G2A-ESTIMATOR-CORE-20261014")
+    old["applicability"]["relevant_files"][0]["source_sha256"] = "a" * 64
+    with pytest.raises(TraceabilityError, match="source applicability hash mismatch"):
+        validate_ledger(REPO, doc, check_files=True, check_frozen=False)
+
+
+def test_superseded_record_target_hash_remains_checked():
+    doc = ledger()
+    old = next(record for record in doc["records"] if record["id"] == "B0-EXEC-G2A-ESTIMATOR-CORE-20261014")
+    old["applicability"]["relevant_files"][0]["target_sha256"] = "a" * 64
+    with pytest.raises(TraceabilityError, match="target applicability hash mismatch"):
+        validate_ledger(REPO, doc, check_files=True, check_frozen=False)
+
+
+def test_superseded_record_unknown_revision_remains_checked():
+    doc = ledger()
+    old = next(record for record in doc["records"] if record["id"] == "B0-EXEC-G2A-ESTIMATOR-CORE-20261014")
+    old["implementation"]["commit"] = "a" * 40
+    with pytest.raises(TraceabilityError, match="unknown implementation commit"):
+        validate_ledger(REPO, doc, check_files=True, check_frozen=False)
+
+
 def test_supersession_cannot_replace_an_unrelated_scope():
     doc = ledger()
     newer = deepcopy(doc["records"][0])

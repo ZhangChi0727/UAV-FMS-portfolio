@@ -6,12 +6,39 @@ import hashlib
 import importlib
 import importlib.util
 import json
+import math
+import numbers
 import os
+import sys
 from pathlib import Path
 
 
 class ControllerConfigurationError(ValueError):
     pass
+
+
+def _strict_bool(value, name):
+    if type(value) is not bool:
+        raise ControllerConfigurationError(f"{name} must be bool")
+    return value
+
+
+def _strict_int64(value, name):
+    if isinstance(value, bool) or not isinstance(value, numbers.Integral):
+        raise ControllerConfigurationError(f"{name} must be an integer")
+    value = int(value)
+    if value < 0 or value > 2**63 - 1:
+        raise ControllerConfigurationError(f"{name} outside signed int64 range")
+    return value
+
+
+def _strict_float(value, name):
+    if isinstance(value, bool) or not isinstance(value, numbers.Real):
+        raise ControllerConfigurationError(f"{name} must be a real scalar")
+    value = float(value)
+    if not math.isfinite(value):
+        raise ControllerConfigurationError(f"{name} must be finite")
+    return value
 
 
 def _canonical(data: bytes) -> bytes:
@@ -88,37 +115,70 @@ def load_controller_parameters(module=None, track: Path | None = None):
 class ControllerAdapter:
     def __init__(self, module=None):
         self.module = module or importlib.import_module("b0_controller")
-        self.core = self.module.CascadedController(
-            load_controller_parameters(self.module)
-        )
+        self.parameters = load_controller_parameters(self.module)
+        self.core = self.module.CascadedController(self.parameters)
         self.epoch_id = None
+        repo = Path(__file__).resolve().parents[3]
+        if "contract" in sys.modules:
+            self.g1_contract = sys.modules["contract"]
+        else:
+            spec = importlib.util.spec_from_file_location(
+                "contract", repo / "01_simulation/b0/contract.py"
+            )
+            if spec is None or spec.loader is None:
+                raise ControllerConfigurationError("G1 contract module unavailable")
+            self.g1_contract = importlib.util.module_from_spec(spec)
+            sys.modules[spec.name] = self.g1_contract
+            spec.loader.exec_module(self.g1_contract)
+
+    def _to_g1(self, output):
+        return self.g1_contract.TorqueCommand(
+            output.requested_torque_body_Nm,
+            output.limited_torque_body_Nm,
+            output.timestamp_s,
+            output.saturated,
+            limits_Nm=self.parameters.torque_limit_Nm,
+        )
 
     def reset(self, reset_epoch):
         epoch = self.module.ResetEpoch()
-        epoch.id = int(reset_epoch.id)
-        epoch.timestamp_s = float(reset_epoch.timestamp_s)
+        epoch.id = _strict_int64(reset_epoch.id, "reset_epoch.id")
+        epoch.timestamp_s = _strict_float(
+            reset_epoch.timestamp_s, "reset_epoch.timestamp_s"
+        )
         output = self.core.reset(self.module.ControllerInitialState(), epoch)
         self.epoch_id = epoch.id
-        return output
+        return self._to_g1(output)
 
     def step(self, attitude_command, state_estimate, actuator_feedback, dt_s):
         if self.epoch_id is None:
             raise ControllerConfigurationError("adapter has no active reset epoch")
         q = self.module.AttitudeCommand()
-        q.q_nb = list(attitude_command.q_nb)
-        q.timestamp_s = float(attitude_command.timestamp_s)
+        q.q_nb = list(attitude_command.q_nb_command)
+        q.timestamp_s = _strict_float(
+            attitude_command.timestamp_s, "attitude_command.timestamp_s"
+        )
+        q.valid = _strict_bool(attitude_command.valid, "attitude_command.valid")
         q.epoch_id = self.epoch_id
         s = self.module.StateEstimate()
         s.q_nb = list(state_estimate.q_nb_estimate)
         s.omega_b_rad_s = list(state_estimate.omega_b_estimate_rad_s)
-        s.timestamp_s = float(state_estimate.timestamp_s)
-        s.valid = bool(state_estimate.valid)
+        s.timestamp_s = _strict_float(
+            state_estimate.timestamp_s, "state_estimate.timestamp_s"
+        )
+        s.valid = _strict_bool(state_estimate.valid, "state_estimate.valid")
         s.epoch_id = self.epoch_id
         f = self.module.ActuatorFeedback()
         f.actual_torque_body_Nm = list(actuator_feedback.actual_torque_body_Nm)
         f.limited_torque_body_Nm = list(actuator_feedback.limited_torque_body_Nm)
         f.saturated = list(actuator_feedback.saturated)
-        f.timestamp_s = float(actuator_feedback.timestamp_s)
-        f.command_timestamp_s = float(actuator_feedback.command_timestamp_s)
+        f.timestamp_s = _strict_float(
+            actuator_feedback.timestamp_s, "actuator_feedback.timestamp_s"
+        )
+        f.command_timestamp_s = _strict_float(
+            actuator_feedback.command_timestamp_s,
+            "actuator_feedback.command_timestamp_s",
+        )
         f.epoch_id = self.epoch_id
-        return self.core.step(q, s, f, float(dt_s))
+        output = self.core.step(q, s, f, _strict_float(dt_s, "dt_s"))
+        return self._to_g1(output)

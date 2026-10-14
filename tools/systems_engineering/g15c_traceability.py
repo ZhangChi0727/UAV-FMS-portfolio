@@ -190,13 +190,14 @@ def validate_ledger(
         if record["coverage"] == "complete":
             locators = " ".join(execution["criterion_locators"])
             _need(all(spec_id in locators for spec_id in record["verification_spec_ids"]), f"complete record lacks a criterion locator for every specification: {record_id}")
-        if check_files and execution["result"] != "not_run" and record_id not in superseded:
+        if check_files and execution["result"] != "not_run":
             try:
                 subprocess.check_output(["git", "cat-file", "-e", f"{record['implementation']['commit']}^{{commit}}"], cwd=repo, stderr=subprocess.DEVNULL)
             except (OSError, subprocess.CalledProcessError) as exc:
                 raise TraceabilityError(f"unknown implementation commit: {record_id}") from exc
             for value in record["implementation"]["paths"]:
-                _need(_inside(repo, value, "implementation path").is_file(), f"missing implementation path: {record_id} -> {value}")
+                if record_id not in superseded:
+                    _need(_inside(repo, value, "implementation path").is_file(), f"missing implementation path: {record_id} -> {value}")
                 _git_revision_sha256(repo, record["implementation"]["commit"], value)
             g1_specs = {"B0-VER-PLANT-DYNAMICS", "B0-VER-PLANT-QUATERNION", "B0-VER-ACTUATOR-DYNAMICS", "B0-VER-IMU-GYRO", "B0-VER-IMU-SPECIFIC-FORCE"}
             g2a_estimator_specs = {"B0-VER-ESTIMATOR-PROPAGATION", "B0-VER-ESTIMATOR-FUSION", "B0-VER-YAW-LIMITATION", "B0-VER-ACCEL-CONTAMINATION"}
@@ -212,14 +213,16 @@ def validate_ledger(
                 _need(implementation_digest == source_digest, f"implementation/evidence source mismatch: {record_id} -> {value}")
             for item in applicability["relevant_files"]:
                 path = _inside(repo, item["path"], "applicability path")
-                _need(path.is_file(), f"missing applicability file: {record_id} -> {item['path']}")
+                if record_id not in superseded:
+                    _need(path.is_file(), f"missing applicability file: {record_id} -> {item['path']}")
                 source_digest = _git_revision_sha256(repo, applicability["source_commit"], item["path"])
                 target_digest = _git_revision_sha256(repo, applicability["target_commit"], item["path"])
-                head_digest = _git_revision_sha256(repo, "HEAD", item["path"])
                 _need(source_digest == item["source_sha256"], f"source applicability hash mismatch: {record_id} -> {item['path']}")
                 _need(target_digest == item["target_sha256"], f"target applicability hash mismatch: {record_id} -> {item['path']}")
                 _need(source_digest == target_digest, f"applicability dependency changed: {record_id} -> {item['path']}")
-                _need(head_digest == target_digest, f"committed HEAD differs from applicability target: {record_id} -> {item['path']}")
+                if record_id not in superseded:
+                    head_digest = _git_revision_sha256(repo, "HEAD", item["path"])
+                    _need(head_digest == target_digest, f"committed HEAD differs from applicability target: {record_id} -> {item['path']}")
 
     for record_id in records:
         seen: set[str] = set()

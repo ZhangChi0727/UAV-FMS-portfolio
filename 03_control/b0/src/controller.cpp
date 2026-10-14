@@ -70,7 +70,10 @@ TorqueCommand CascadedController::reset(const ControllerInitialState&, const Res
     }
     ControllerSnapshot next{};
     next.reset = true; next.epoch_id = epoch.id; next.tick_index = 0;
+    next.epoch_origin_s = epoch.timestamp_s;
     next.expected_timestamp_s = epoch.timestamp_s + parameters_.controller_period_s;
+    require(finite(next.expected_timestamp_s) && next.expected_timestamp_s > epoch.timestamp_s,
+            "invalid_timestamp", "reset time cannot represent a strictly later first due tick");
     next.expected_held_command.timestamp_s = epoch.timestamp_s;
     next.expected_held_command.epoch_id = epoch.id;
     state_ = next;
@@ -91,6 +94,7 @@ TorqueCommand CascadedController::step(const AttitudeCommand& command, const Sta
             near(feedback.timestamp_s, state_.expected_timestamp_s, parameters_.timestamp_tolerance_s),
             "unexpected_tick", "inputs must belong to the expected due tick");
     require(estimate.valid, "invalid_estimate", "state estimate validity is false");
+    require(command.valid, "invalid_command", "attitude command validity is false");
     validate_quaternion(command.q_nb, parameters_.quaternion_norm_tolerance, "command quaternion");
     validate_quaternion(estimate.q_nb, parameters_.quaternion_norm_tolerance, "estimate quaternion");
     require(finite_array(estimate.omega_b_rad_s) && finite_array(feedback.actual_torque_body_Nm) &&
@@ -106,6 +110,7 @@ TorqueCommand CascadedController::step(const AttitudeCommand& command, const Sta
                 "invalid_feedback", "actual torque exceeds G0 limit");
     }
 
+    require(state_.tick_index < std::numeric_limits<std::int64_t>::max(), "tick_overflow", "controller tick index overflow");
     ControllerSnapshot next = state_;
     ControllerDiagnostics d{}; d.epoch_id=state_.epoch_id; d.tick_index=state_.tick_index+1;
     const Quat qerr = canonical_error(estimate.q_nb, command.q_nb);
@@ -138,7 +143,11 @@ TorqueCommand CascadedController::step(const AttitudeCommand& command, const Sta
         d.integral_after_Nm[i] = std::clamp(candidate, -parameters_.integral_limit_Nm[i], parameters_.integral_limit_Nm[i]);
     }
     TorqueCommand output{d.requested_Nm,d.limited_Nm,d.saturated,state_.expected_timestamp_s,state_.epoch_id};
-    next.tick_index += 1; next.expected_timestamp_s += parameters_.controller_period_s;
+    next.tick_index += 1;
+    require(next.tick_index < std::numeric_limits<std::int64_t>::max(), "tick_overflow", "next controller tick index overflow");
+    next.expected_timestamp_s = next.epoch_origin_s + static_cast<double>(next.tick_index + 1) * parameters_.controller_period_s;
+    require(finite(next.expected_timestamp_s) && next.expected_timestamp_s > output.timestamp_s,
+            "invalid_timestamp", "next due tick is not finite and strictly later");
     next.integral_Nm=d.integral_after_Nm; next.derivative_filtered_rad_s2=d.derivative_filtered_rad_s2;
     next.previous_rate_rad_s=estimate.omega_b_rad_s; next.has_previous_rate=true;
     next.expected_held_command=output; next.last_diagnostics=d;
