@@ -135,6 +135,45 @@ jobs:
           name: b0-g1-component-evidence
           path: 01_simulation/b0/g1_component_evidence.json
 
+  b0-g2a-estimator:
+    name: B0 G2-A attitude estimator (3.11)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: requirements/b0-dev.txt
+
+      - name: Install isolated B0 development tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements/b0-dev.txt
+
+      - name: Lint estimator track
+        run: python -m ruff check .
+        working-directory: 02_estimation/b0
+
+      - name: Run estimator module tests
+        run: python -m pytest -q tests
+        working-directory: 02_estimation/b0
+
+      - name: Emit deterministic estimator evidence
+        run: python evidence.py --output g2a_estimator_evidence.json
+        working-directory: 02_estimation/b0
+
+      - name: Upload deterministic estimator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: b0-g2a-estimator-evidence
+          path: 02_estimation/b0/g2a_estimator_evidence.json
+
   navigation-baseline:
     name: Python navigation baseline (3.11)
     runs-on: ubuntu-latest
