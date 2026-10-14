@@ -10,14 +10,16 @@ The platform-independent C++17 core receives only command, `StateEstimate`, pair
 
 ## Public types and calls
 
-Namespace: `b0::control`. Fixed-size `std::array<double, N>` value types: `AttitudeCommand`, `StateEstimate`, `ActuatorFeedback`, `TorqueCommand`, `ControllerInitialState`, `ResetEpoch`, `ControllerParameters`, `ControllerDiagnostics`, and `ControllerStepResult`. Every runtime message carries a finite timestamp; command and feedback additionally carry signed 64-bit nonnegative `epoch_id`. `TorqueCommand` contains requested torque, `limited_torque_body_Nm`, three saturation flags and publication timestamp as one value.
+Namespace: `b0::control`. Fixed-size `std::array<double, N>` value types: `AttitudeCommand`, `StateEstimate`, `ActuatorFeedback`, `TorqueCommand`, `ControllerInitialState`, `ResetEpoch`, `ControllerParameters`, and `ControllerDiagnostics`. Every runtime message carries a finite timestamp. `TorqueCommand` contains requested torque, `limited_torque_body_Nm`, three saturation flags and publication timestamp as one value.
 
 ```text
 reset(ControllerInitialState, ResetEpoch) -> TorqueCommand
-step(AttitudeCommand, StateEstimate, ActuatorFeedback, dt_s) -> ControllerStepResult
+step(AttitudeCommand, StateEstimate, ActuatorFeedback, dt_s) -> TorqueCommand
 ```
 
-`ControllerContractError` is the C++ error. Python exposes a `ValueError` subclass with the same stable reason code. A read-only copied snapshot exposes numeric state for testing; diagnostics report facts, never a verification verdict. Validation of all inputs and derived finite values precedes commit, so rejection cannot change epoch, accepted tick, integral, derivative/filter history, command history or recovery state. G0 has no separate timestamp-comparison tolerance; S0 proposes an implementation tolerance of `1e-12 s` for grid-derived float64 timestamps, while integer epoch/tick identities remain exact.
+`ControllerContractError` is the C++ error. Python exposes a `ValueError` subclass with the same stable reason code. `step` in both languages returns only the G0 `TorqueCommand`; `last_diagnostics()` and `snapshot()` are separate read-only copied inspection APIs. A successful step commits its diagnostics together with control state. A rejected call throws before commit, carries the reason code, and does not replace the last successful diagnostics. Diagnostics report facts, never a verification verdict. Validation of all inputs and derived finite values precedes commit, so rejection cannot change epoch, accepted tick, integral, derivative/filter history or expected held command. G0 has no separate timestamp-comparison tolerance; S0 proposes an implementation tolerance of `1e-12 s` for grid-derived float64 timestamps, while integer epoch/tick identities remain exact.
+
+The frozen G2-A `StateEstimate` and G1 `ActuatorFeedback`/`TorqueCommand` wire fields are not extended. The adapter owns an active controller-session context established by `reset_epoch`; it wraps copied payload fields with that session epoch for the core and rejects use without an active context. This epoch is implementation metadata, not a new frozen message field. G3 must route messages within the active reset session. Independently of caller metadata, the core requires feedback timestamp/value/status to match its own single expected held command, and scenario timestamps never rewind across epochs.
 
 ## Attitude and rate computation
 
@@ -47,13 +49,21 @@ I_next = clamp(I_current + dt * (
   -I_limit, +I_limit)
 ```
 
-The controller records every command it actually publishes in the current epoch. Feedback identity is `(epoch_id, command_timestamp_s)` and must identify a command strictly earlier than the current due tick. Its limited vector and saturation flags must match the recorded publication (timestamp within the S0 `1e-12 s` tolerance; values bit-identical to the published doubles). Unknown, future, prior-epoch or value/status-mismatched feedback is rejected. Thus the lag term can never substitute the current limited value for the held command value.
+The controller retains one expected held command: the most recent command it successfully published strictly before the current due tick. On the first step this is the reset command; thereafter it is the preceding successful step command. Feedback identity `(controller-session epoch, command_timestamp_s)` must identify exactly that command, not merely any known earlier publication. Its limited vector and saturation flags must match (timestamp within the S0 `1e-12 s` tolerance; values bit-identical to the published doubles). The feedback sample timestamp must equal the current due tick within that tolerance; actual torque must be a finite three-vector within the G0 component limits. Unknown, future, prior-epoch, superseded, out-of-range-actual or value/status-mismatched feedback is rejected. Thus the lag term can never substitute either the current limited value or an older superseded target for the actually held command value.
 
 ## Reset, time and recovery
 
-Reset accepts a finite timestamp and a nonnegative signed-64-bit epoch strictly greater than the instance's previous epoch. Time cannot move backward; a reset after steps must be strictly later than the last accepted step. It publishes the epoch-boundary zero command, clears I/D/previous-rate/history/fault, and seeds the new history with that reset command. The reset tick performs no step. The first step is exactly one configured controller period later (normally `2*0.0025=0.005 s`), uses that dt, and pairs feedback to the reset command.
+Reset accepts a finite timestamp and a nonnegative signed-64-bit epoch strictly greater than the instance's previous epoch. Time cannot move backward; a reset after steps must be strictly later than the last accepted step. It publishes the epoch-boundary zero command, clears I/D/previous-rate/expected-held-command state, and seeds the new expected held command with that reset command. The reset tick performs no step. The first step is exactly one configured controller period later (normally `2*0.0025=0.005 s`), uses that dt, and pairs feedback to the reset command.
 
-Command and estimate timestamps equal the current due tick within the S0 `1e-12 s` tolerance. Feedback is the current actuator sample but identifies a strictly earlier published command. Duplicate, stale, early, late, off-grid, invalid or nonfinite calls are rejected atomically. A corrected retry at the same due tick is allowed and must equal a trajectory without the rejected call. Once a due tick is missed, later calls require reset: the controller will not invent unobserved I/D or held-feedback evolution. This deliberately differs from the estimator gap policy.
+Command and estimate timestamps equal the current due tick within the S0 `1e-12 s` tolerance. Feedback is the current actuator sample and identifies the single expected held command. Every rejection is strictly atomic: even a late-call rejection does not set a hidden fault flag. A corrected retry at the still-expected due tick is allowed and must equal a trajectory without the rejected call. An early/off-grid call may likewise be retried when that expected tick arrives. A duplicate/stale call after a successful step does not disturb the already scheduled next tick. If the expected due tick is actually missed, a later tick is rejected and the caller must reset before progress can resume; this obligation is derived from the unchanged expected tick, not from state mutated during rejection. The controller will not invent unobserved I/D or held-feedback evolution. This deliberately differs from the estimator gap policy.
+
+| rejected call relative to expected `T` | accepted state after rejection | next acceptable action |
+|---|---|---|
+| command/estimate/feedback/dt invalid at `T` | byte-equivalent to pre-call snapshot; expected tick remains `T` | corrected call at `T` |
+| finite call before `T` or off-grid below `T` | unchanged; expected tick remains `T` | valid call at `T` |
+| stale/duplicate call below `T` after a prior success | unchanged; expected tick remains `T` | valid call at `T` |
+| call later than `T`, proving `T` was missed | unchanged; expected tick remains `T` | `reset` with a higher epoch and valid nonrewinding boundary; reset returns the new zero command, then first step is one period later |
+| off-grid call above `T` | unchanged; expected tick remains `T` | same reset sequence, because the due tick is already missed |
 
 ## Hand calculation: three due ticks and rejected retry
 
@@ -87,6 +97,8 @@ At tick 2, `d_raw=20`, `alpha=.2`, `d_filtered=4`; at tick 3 `d_raw=4` and the f
 ## Build and interface plan
 
 `03_control/b0/CMakeLists.txt` will define `b0_controller_core`, mandatory `b0_controller_cpp_tests`, and mandatory pybind11 module `b0_controller`; C++17 is required and extensions are off. Root options/presets will disable legacy navigation and configure Debug and Release B0 builds. Catch2 stays at the repository-pinned commit and pybind11 at 2.13.6. The core remains independently linkable.
+
+Defect detection keeps the correct independent oracle and owning numeric tests unchanged. A build-only script copies the audited core source into the temporary build tree and applies exactly one declared textual mutation per separate, noninstalled test target: attitude-feedback sign reversal, anti-windup back-calculation sign reversal, anti-windup removal, or using current limited torque for lag. Each variant must compile and then fail the predeclared numeric comparison (a compiler failure is not detection evidence). The unmodified production target is then clean-built and must pass. No mutation switch or fault branch enters the installed production target.
 
 Python tests live under `03_control/b0/python/tests`; their loader verifies the actual imported module path. Adapters copy G2-A `q_nb_estimate`, `omega_b_estimate_rad_s`, timestamp and validity, and construct G1 `TorqueCommand` from the C++ bundle using original field names. Interface fixtures prove consumption compatibility only, not closed-loop performance.
 

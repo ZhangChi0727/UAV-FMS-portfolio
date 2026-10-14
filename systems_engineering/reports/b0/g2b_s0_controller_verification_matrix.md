@@ -17,17 +17,17 @@ Status: candidate pending original-PA `DESIGN_ACCEPT`. These are component check
 | B-AW-02 | lag-only and limit-only fixtures, then both; hand each rate and I before/after | `cpp/antiwindup_backcalculation_terms` | same |
 | B-AW-03 | +/- each I bound and saturation removal over fixed 4-step sequence | `cpp/antiwindup_bounds_and_release` | component recovery only; G3 performance remains open |
 | B-PAIR-01 | reset feedback then three consecutive due ticks from design record | `cpp/paired_feedback_three_ticks` | complete component pairing; `B0-VER-PAIRED-FEEDBACK` |
-| B-PAIR-02 | same held values with known distinct timestamps; unknown/future/old epoch/fake limited/status | `cpp/paired_feedback_rejections` | same |
+| B-PAIR-02 | same held values with known distinct timestamps; superseded known command; unknown/future/old epoch/fake limited/status; nonfinite or out-of-limit actual torque | `cpp/paired_feedback_rejections` | same; every rejection preserves expected-held identity |
 | B-TIME-01 | nonzero reset; first tick exact/early/late; duplicate/stale/off-grid; dt 0/-/NaN/Inf | `cpp/time_grid_and_dt_rejections` | controller portion complete; `B0-VER-INVALID-INPUT` |
-| B-TIME-02 | reject at due tick, valid same-tick retry vs clean twin; miss tick then later call | `cpp/retry_and_missed_tick_recovery` | declared reset-required recovery; full scheduler recovery G3 |
+| B-TIME-02 | invalid at expected tick then valid retry vs clean twin; early/off-grid then expected tick; duplicate after success then next due tick; miss expected tick then later call | `cpp/retry_and_missed_tick_recovery` | all rejections snapshot-identical; only an actually missed expected tick requires reset; full scheduler recovery G3 |
 | B-INVALID-01 | valid=false, wrong shape/type in binding, zero/nonunit q, NaN/Inf, derived overflow | `cpp/invalid_numeric_inputs`, `py/test_invalid_inputs.py::test_invalid_inputs_are_atomic` | component portions; `B0-VER-INVALID-MEASUREMENT`, `B0-VER-LANGUAGE-BOUNDARY` |
 | B-INVALID-02 | Python integers at int64 edges and one beyond; caller arrays mutated after call | `py/test_binding.py::test_integer_bounds_and_input_copy` | binding portion; `B0-VER-LANGUAGE-BOUNDARY` |
 | B-RESET-01 | establish nonzero I/D/held, reset to next epoch, inspect zero output/state/history | `cpp/reset_clears_all_controller_state` | controller portion; `B0-VER-RESET` |
 | B-RESET-02 | duplicate/lower epoch, backward/equal-after-step timestamp, replay old feedback | `cpp/reset_epoch_and_replay_rejections` | same; integrated all-component reset remains G3 |
 | B-BIND-01 | fixed vectors through C++ and binding; exact fields/reasons; imported module path asserted | `py/test_binding.py::test_cpp_python_parity_and_module_identity` | component language boundary |
 | B-BIND-02 | real G2-A estimate and G1 feedback adapters; G1 `TorqueCommand` construction and actuator consume | `py/test_binding.py::test_g2a_g1_adapter_fixture` | interface compatibility only; no closed-loop claim |
-| B-DETECT-01 | isolated compile-time test oracle variants invert attitude-feedback sign and AW feedback sign | `cpp/detect_sign_mutations` | each specified mutation must fail its owning comparison |
-| B-DETECT-02 | oracle variant omits AW and substitutes current limited in lag term | `cpp/detect_antiwindup_bypass_and_mispair` | same; production restored before retained run |
+| B-DETECT-01 | correct oracle/test unchanged; temporary build-tree subject variants invert attitude-feedback sign and AW feedback sign | `cpp/detect_sign_mutations` | each variant must compile, then fail its named numeric test; compile failure is not credit |
+| B-DETECT-02 | correct oracle/test unchanged; subject variants omit AW and substitute current limited in lag term | `cpp/detect_antiwindup_bypass_and_mispair` | same; clean unmodified production rebuild must then pass |
 | B-CONFIG-01 | actual loader on LF/CRLF/CR byte-equivalent G0; verify digest then authority validator | `py/test_config.py::test_line_endings_and_authoritative_validation` | complete loader behavior |
 | B-CONFIG-02 | changed/missing/wrong-version G0 or implementation config; illegal gain/range/tolerance | `py/test_config.py::test_configuration_fail_closed` | complete loader behavior |
 
