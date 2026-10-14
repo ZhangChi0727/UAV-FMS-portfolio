@@ -56,6 +56,8 @@ struct ControllerInitialState {};
 struct ResetEpoch { std::int64_t id{}; double timestamp_s{}; };
 
 struct ControllerDiagnostics {
+    bool accepted{};
+    std::string reason{};
     Vec3 rate_error_rad_s{}, derivative_raw_rad_s2{}, derivative_filtered_rad_s2{};
     Vec3 proportional_Nm{}, integral_before_Nm{}, derivative_Nm{};
     Vec3 conditional_integral_rate_Nm_s{}, limit_backcalculation_rate_Nm_s{}, lag_backcalculation_rate_Nm_s{};

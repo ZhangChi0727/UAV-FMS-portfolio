@@ -112,7 +112,10 @@ TorqueCommand CascadedController::step(const AttitudeCommand& command, const Sta
 
     require(state_.tick_index < std::numeric_limits<std::int64_t>::max(), "tick_overflow", "controller tick index overflow");
     ControllerSnapshot next = state_;
-    ControllerDiagnostics d{}; d.epoch_id=state_.epoch_id; d.tick_index=state_.tick_index+1;
+    ControllerDiagnostics d{};
+    d.accepted = true;
+    d.reason = "accepted";
+    d.epoch_id=state_.epoch_id; d.tick_index=state_.tick_index+1;
     const Quat qerr = canonical_error(estimate.q_nb, command.q_nb);
     Vec3 rate_target{};
     for (std::size_t i=0;i<3;++i) {

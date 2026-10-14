@@ -18,7 +18,7 @@ class ControllerConfigurationError(ValueError):
 
 
 def _strict_bool(value, name):
-    if type(value) is not bool:
+    if not isinstance(value, bool):
         raise ControllerConfigurationError(f"{name} must be bool")
     return value
 
@@ -41,8 +41,58 @@ def _strict_float(value, name):
     return value
 
 
+def _strict_bool_vector(value, name):
+    if hasattr(value, "tolist"):
+        value = value.tolist()
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        raise ControllerConfigurationError(f"{name} must be a length-three bool vector")
+    if any(not isinstance(item, bool) for item in value):
+        raise ControllerConfigurationError(f"{name} must contain only bool values")
+    return list(value)
+
+
+def _required_attribute(value, name):
+    try:
+        return getattr(value, name)
+    except AttributeError as exc:
+        raise ControllerConfigurationError(f"missing frozen message field: {name}") from exc
+
+
+def _load_g1_contract(repo: Path):
+    package_dir = (repo / "01_simulation/b0").resolve()
+    package_file = package_dir / "__init__.py"
+    package_parent = str(package_dir.parent)
+    if package_parent not in sys.path:
+        sys.path.insert(0, package_parent)
+    try:
+        package = importlib.import_module("b0")
+        contract = importlib.import_module("b0.contract")
+    except (ImportError, OSError) as exc:
+        raise ControllerConfigurationError("G1 public package is unavailable") from exc
+    package_origin = getattr(package, "__file__", None)
+    contract_origin = getattr(contract, "__file__", None)
+    if (
+        package_origin is None
+        or Path(package_origin).resolve() != package_file
+        or contract_origin is None
+        or Path(contract_origin).resolve() != package_dir / "contract.py"
+        or getattr(package, "TorqueCommand", None) is not contract.TorqueCommand
+    ):
+        raise ControllerConfigurationError(
+            "G1 public package identity does not match 01_simulation/b0"
+        )
+    return contract
+
+
 def _canonical(data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _canonical_file(path: Path, label: str) -> bytes:
+    try:
+        return _canonical(path.read_bytes())
+    except OSError as exc:
+        raise ControllerConfigurationError(f"cannot read {label}: {path}") from exc
 
 
 def _json(path: Path):
@@ -59,7 +109,17 @@ def load_controller_parameters(module=None, track: Path | None = None):
     approval_path = track / "configs/b0_g2_controller_approval.v1.json"
     g0_path = repo / "05_integration/b0/configs/b0_g0_contract.v2.json"
     design, approval = _json(design_path), _json(approval_path)
-    design_digest = hashlib.sha256(_canonical(design_path.read_bytes())).hexdigest()
+    if design.get("schema_version") != "1.0" or design.get("component") != (
+        "b0_g2_cascaded_controller"
+    ):
+        raise ControllerConfigurationError("unsupported implementation configuration identity")
+    if approval.get("schema_version") != "1.0" or approval.get("component") != (
+        "b0_g2_cascaded_controller"
+    ):
+        raise ControllerConfigurationError("unsupported approval overlay identity")
+    design_digest = hashlib.sha256(
+        _canonical_file(design_path, "implementation configuration")
+    ).hexdigest()
     if approval.get("decision") != "DESIGN_ACCEPT" or design_digest != approval.get(
         "approved_config_canonical_lf_sha256"
     ):
@@ -67,7 +127,7 @@ def load_controller_parameters(module=None, track: Path | None = None):
             "implementation configuration is not the approved S0 byte identity"
         )
     authority = design.get("authority", {})
-    if hashlib.sha256(_canonical(g0_path.read_bytes())).hexdigest() != authority.get(
+    if hashlib.sha256(_canonical_file(g0_path, "G0 contract")).hexdigest() != authority.get(
         "g0_canonical_lf_sha256"
     ):
         raise ControllerConfigurationError("G0 canonical digest mismatch")
@@ -77,8 +137,11 @@ def load_controller_parameters(module=None, track: Path | None = None):
         raise ControllerConfigurationError("authoritative G0 validator unavailable")
     validator = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(validator)
-    g0 = validator.load_config(g0_path)
-    validator.validate_config(g0)
+    try:
+        g0 = validator.load_config(g0_path)
+        validator.validate_config(g0)
+    except Exception as exc:
+        raise ControllerConfigurationError("authoritative G0 validation failed") from exc
     if module is None:
         module_dir = os.environ.get("B0_CONTROLLER_MODULE_DIR")
         if module_dir:
@@ -109,6 +172,10 @@ def load_controller_parameters(module=None, track: Path | None = None):
     )
     p.timestamp_tolerance_s = design["numeric_policy"]["timestamp_absolute_tolerance_s"]
     p.quaternion_norm_tolerance = g0["conventions"]["quaternion"]["unit_norm_tolerance"]
+    try:
+        module.CascadedController(p)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise ControllerConfigurationError("loaded controller parameters are invalid") from exc
     return p
 
 
@@ -119,17 +186,7 @@ class ControllerAdapter:
         self.core = self.module.CascadedController(self.parameters)
         self.epoch_id = None
         repo = Path(__file__).resolve().parents[3]
-        if "contract" in sys.modules:
-            self.g1_contract = sys.modules["contract"]
-        else:
-            spec = importlib.util.spec_from_file_location(
-                "contract", repo / "01_simulation/b0/contract.py"
-            )
-            if spec is None or spec.loader is None:
-                raise ControllerConfigurationError("G1 contract module unavailable")
-            self.g1_contract = importlib.util.module_from_spec(spec)
-            sys.modules[spec.name] = self.g1_contract
-            spec.loader.exec_module(self.g1_contract)
+        self.g1_contract = _load_g1_contract(repo)
 
     def _to_g1(self, output):
         return self.g1_contract.TorqueCommand(
@@ -142,9 +199,12 @@ class ControllerAdapter:
 
     def reset(self, reset_epoch):
         epoch = self.module.ResetEpoch()
-        epoch.id = _strict_int64(reset_epoch.id, "reset_epoch.id")
+        epoch.id = _strict_int64(
+            _required_attribute(reset_epoch, "id"), "reset_epoch.id"
+        )
         epoch.timestamp_s = _strict_float(
-            reset_epoch.timestamp_s, "reset_epoch.timestamp_s"
+            _required_attribute(reset_epoch, "timestamp_s"),
+            "reset_epoch.timestamp_s",
         )
         output = self.core.reset(self.module.ControllerInitialState(), epoch)
         self.epoch_id = epoch.id
@@ -154,29 +214,45 @@ class ControllerAdapter:
         if self.epoch_id is None:
             raise ControllerConfigurationError("adapter has no active reset epoch")
         q = self.module.AttitudeCommand()
-        q.q_nb = list(attitude_command.q_nb_command)
+        q.q_nb = list(_required_attribute(attitude_command, "q_nb_command"))
         q.timestamp_s = _strict_float(
-            attitude_command.timestamp_s, "attitude_command.timestamp_s"
+            _required_attribute(attitude_command, "timestamp_s"),
+            "attitude_command.timestamp_s",
         )
-        q.valid = _strict_bool(attitude_command.valid, "attitude_command.valid")
+        q.valid = _strict_bool(
+            _required_attribute(attitude_command, "valid"), "attitude_command.valid"
+        )
         q.epoch_id = self.epoch_id
         s = self.module.StateEstimate()
-        s.q_nb = list(state_estimate.q_nb_estimate)
-        s.omega_b_rad_s = list(state_estimate.omega_b_estimate_rad_s)
-        s.timestamp_s = _strict_float(
-            state_estimate.timestamp_s, "state_estimate.timestamp_s"
+        s.q_nb = list(_required_attribute(state_estimate, "q_nb_estimate"))
+        s.omega_b_rad_s = list(
+            _required_attribute(state_estimate, "omega_b_estimate_rad_s")
         )
-        s.valid = _strict_bool(state_estimate.valid, "state_estimate.valid")
+        s.timestamp_s = _strict_float(
+            _required_attribute(state_estimate, "timestamp_s"),
+            "state_estimate.timestamp_s",
+        )
+        s.valid = _strict_bool(
+            _required_attribute(state_estimate, "valid"), "state_estimate.valid"
+        )
         s.epoch_id = self.epoch_id
         f = self.module.ActuatorFeedback()
-        f.actual_torque_body_Nm = list(actuator_feedback.actual_torque_body_Nm)
-        f.limited_torque_body_Nm = list(actuator_feedback.limited_torque_body_Nm)
-        f.saturated = list(actuator_feedback.saturated)
+        f.actual_torque_body_Nm = list(
+            _required_attribute(actuator_feedback, "actual_torque_body_Nm")
+        )
+        f.limited_torque_body_Nm = list(
+            _required_attribute(actuator_feedback, "limited_torque_body_Nm")
+        )
+        f.saturated = _strict_bool_vector(
+            _required_attribute(actuator_feedback, "saturated"),
+            "actuator_feedback.saturated",
+        )
         f.timestamp_s = _strict_float(
-            actuator_feedback.timestamp_s, "actuator_feedback.timestamp_s"
+            _required_attribute(actuator_feedback, "timestamp_s"),
+            "actuator_feedback.timestamp_s",
         )
         f.command_timestamp_s = _strict_float(
-            actuator_feedback.command_timestamp_s,
+            _required_attribute(actuator_feedback, "command_timestamp_s"),
             "actuator_feedback.command_timestamp_s",
         )
         f.epoch_id = self.epoch_id

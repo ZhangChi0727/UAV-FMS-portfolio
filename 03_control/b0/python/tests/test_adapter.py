@@ -8,11 +8,10 @@ import pytest
 
 repo = Path(os.environ["B0_CONTROLLER_REPO"]).resolve()
 sys.path.insert(0, os.environ["B0_CONTROLLER_MODULE_DIR"])
-sys.path.insert(0, str(repo / "01_simulation/b0"))
+sys.path.insert(0, str(repo / "01_simulation"))
 sys.path.insert(0, str(repo / "02_estimation/b0"))
 
-from actuator import Actuator  # noqa: E402
-from contract import ActuatorInitialState, TorqueCommand  # noqa: E402
+from b0 import Actuator, ActuatorInitialState, TorqueCommand  # noqa: E402
 from estimator import ResetEpoch, StateEstimate  # noqa: E402
 
 spec = importlib.util.spec_from_file_location(
@@ -42,9 +41,11 @@ def reset_fixture(epoch_id=0, timestamp=0.0):
 def test_real_g2a_g1_adapter_and_actuator_consumption():
     adapter, actuator, reset_command, feedback = reset_fixture()
     assert isinstance(reset_command, TorqueCommand)
+    assert type(reset_command).__module__ == "b0.contract"
     estimate = StateEstimate((1, 0, 0, 0), (0, 0, 0), 0.005, True)
     output = adapter.step(Command(), estimate, feedback, 0.005)
     assert isinstance(output, TorqueCommand)
+    assert type(output).__module__ == "b0.contract"
     consumed = actuator.step_base(output)
     assert consumed.command_timestamp_s == output.timestamp_s
 
@@ -68,6 +69,23 @@ def test_estimate_validity_wrong_type_is_rejected():
 
     with pytest.raises(ValueError):
         adapter.step(Command(), Estimate(), feedback, 0.005)
+
+
+def test_missing_frozen_field_is_atomic_and_valid_retry_succeeds():
+    adapter, _, _, feedback = reset_fixture()
+    estimate = StateEstimate((1, 0, 0, 0), (0, 0, 0), 0.005, True)
+
+    class MissingQuaternionCommand:
+        timestamp_s = 0.005
+        valid = True
+
+    before = adapter.core.snapshot()
+    with pytest.raises(adapter_module.ControllerConfigurationError):
+        adapter.step(MissingQuaternionCommand(), estimate, feedback, 0.005)
+    after = adapter.core.snapshot()
+    assert after.tick_index == before.tick_index
+    assert after.expected_timestamp_s == before.expected_timestamp_s
+    assert adapter.step(Command(), estimate, feedback, 0.005).timestamp_s == 0.005
 
 
 @pytest.mark.parametrize("value", [1.5, True, -1, 2**63])

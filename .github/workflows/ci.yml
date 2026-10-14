@@ -143,6 +143,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -183,12 +184,19 @@ jobs:
         include:
           - build_type: Debug
             preset: b0-controller-debug
+            build_dir: build/b0-controller/debug
+            module_dir: build/b0-controller/debug/03_control/b0
+            artifact_suffix: debug
           - build_type: Release
             preset: b0-controller-release
+            build_dir: build/b0-controller/release
+            module_dir: build/b0-controller/release/03_control/b0
+            artifact_suffix: release
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -198,18 +206,46 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements/b0-dev.txt
+      - name: Lint controller track and evidence tooling
+        run: >-
+          python -m ruff check
+          03_control/b0/python
+          03_control/b0/evidence.py
+          03_control/b0/tests/expect_mutation_detected.py
       - name: Configure
         run: cmake --preset ${{ matrix.preset }}
       - name: Build
         run: cmake --build --preset ${{ matrix.preset }}
       - name: Test core and binding
         run: ctest --preset ${{ matrix.preset }}
-      - name: Clean rebuild and retest
+      - name: Reconfigure from an empty Debug build tree, rebuild, and retest
         if: matrix.build_type == 'Debug'
         run: |
-          cmake --build --preset b0-controller-debug --target clean
+          cmake -E remove_directory "${{ github.workspace }}/build/b0-controller/debug"
+          cmake --preset b0-controller-debug
           cmake --build --preset b0-controller-debug
           ctest --preset b0-controller-debug
+
+      - name: Retain test log and deterministic controller evidence
+        shell: bash
+        run: |
+          evidence_dir="${RUNNER_TEMP}/b0-g2b-${{ matrix.artifact_suffix }}"
+          mkdir -p "${evidence_dir}"
+          ctest --preset "${{ matrix.preset }}" --output-on-failure \
+            --output-log "${evidence_dir}/ctest-${{ matrix.artifact_suffix }}.log" \
+            --output-junit "${evidence_dir}/ctest-${{ matrix.artifact_suffix }}.xml"
+          python 03_control/b0/evidence.py \
+            --module-dir "${{ matrix.module_dir }}" \
+            --build-dir "${{ matrix.build_dir }}" \
+            --build-type "${{ matrix.build_type }}" \
+            --output "${evidence_dir}/g2b_controller_evidence_${{ matrix.artifact_suffix }}.json"
+
+      - name: Upload controller component evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: b0-g2b-controller-evidence-${{ matrix.artifact_suffix }}
+          path: ${{ runner.temp }}/b0-g2b-${{ matrix.artifact_suffix }}
+          if-no-files-found: error
 
   navigation-baseline:
     name: Python navigation baseline (3.11)
