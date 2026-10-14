@@ -3,11 +3,10 @@
 A modular experimental platform for flight-control development, state estimation,
 embedded implementation, and reproducible verification.
 
-**Current status:** planning baseline B0 v0.2 is active. G0 contracts and the
-G1.5-B joint requirements/model baseline are approved; G1 plant/actuator/IMU
-component acceptance is complete. The original PA accepted closeout K3 and
-G1.5-C verification traceability/reporting is now the active governance
-increment. G2/G3/G4 and overall B0 completion remain open.
+**Current status:** planning baseline B0 v0.2 is active. G0, G1 and the complete
+G1.5-A/B/C governance sequence are accepted. G2-A estimator S0 is the active
+engineering increment; its numerical design remains candidate pending the
+original PA's DESIGN_ACCEPT. G2/G3/G4 and overall B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
@@ -41,8 +40,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-B frozen; G1.5-C active after accepted K3 |
-| docs/ | Roadmap, environment and work orders | Combined closeout/C work is in C execution |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C accepted; G2 evidence remains pending |
+| docs/ | Roadmap, environment and work orders | G2 work order active; G2-A S0 under review |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
