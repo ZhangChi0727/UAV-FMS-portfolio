@@ -1,7 +1,7 @@
 # B0 G2-A attitude-estimator validation record
 
 Date: 2026-10-14 (Australia/Perth). Implementation/evidence source commit:
-`f70c243aa304cd3f5f5e5c092e0fc41fe53a5518`. This record covers the estimator
+`ccc8523fd17cebd10d3fd67c6b6f9864950be8de`. This record covers the estimator
 module only; it is not G2 completion, closed-loop performance evidence, or
 authorization to start G2-B.
 
@@ -19,15 +19,15 @@ gyro across the elapsed accepted-state interval while exposing diagnostics.
 
 | Environment / source | Command scope | Actual result |
 |---|---|---|
-| Local estimator track, Python 3.11 virtual environment | `python -m ruff check .`; `python -m pytest -q tests`; `python evidence.py --output ...` | Ruff passed; 52 passed with 0 failed/skipped/xfailed; evidence generation passed |
-| GitHub Actions run `38500645681`, Ubuntu latest, Python 3.11, NumPy 1.26.4, pytest 8.3.5, ruff 0.8.6 | Required B0 G2-A estimator evidence-producing job | Estimator job succeeded; governance failed as expected before this ledger was advanced to the new source commit |
+| Local estimator track, Python 3.11 virtual environment | `python -m ruff check .`; `python -m pytest -q tests`; `python evidence.py --output ...` | Ruff passed; 53 passed with 0 failed/skipped/xfailed; evidence generation passed |
+| GitHub Actions run `38501959732`, Ubuntu latest, Python 3.11, NumPy 1.26.4, pytest 8.3.5, ruff 0.8.6 | Required B0 G2-A estimator evidence-producing job | Estimator job succeeded; governance failed as expected before this ledger was advanced to the new source commit |
 | System-engineering traceability checker | Schema, identities, source/applicability hashes, dependency closure and report projection | 30 requirements, 26 model identities, 29 specifications, 3 production records, 9 executed specifications, 0 accepted records and 0 satisfied requirements |
 
-The CI artifact is `b0-g2a-estimator-evidence`, artifact ID `11865801098`,
+The CI artifact is `b0-g2a-estimator-evidence`, artifact ID `11866700834`,
 containing `g2a_estimator_evidence.json`. The retained file SHA-256 is
-`cd25a5271e80792e9ed971f49daa2fb4fa9d691ab1cbb27bf26c7b47ca3e61b1`; the
+`1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6`; the
 download archive SHA-256 is
-`5a8dea96e68802d10cdbe5f5cce59d5434238c66efac39703649e35f6f2d6b35`.
+`a931cfab4eb47f2c1e7a351330b576396be8734bdc3fccd470ed9122eb42277d`.
 The artifact expires on 2027-01-12 and is recorded as `remote_unverified` until
 an independent reviewer verifies retained bytes and accepts the evidence.
 
