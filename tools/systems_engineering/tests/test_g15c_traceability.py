@@ -294,9 +294,66 @@ def test_g2b_controller_scope_requires_its_dependency_closure():
 
 def test_g2b_controller_closure_includes_ledger_contract_and_checker_regressions():
     assert {
+        "01_simulation/b0/__init__.py",
+        "01_simulation/b0/actuator.py",
+        "01_simulation/b0/contract.py",
+        "01_simulation/b0/imu.py",
+        "01_simulation/b0/plant.py",
+        "01_simulation/b0/quaternion.py",
         "systems_engineering/verification/b0_execution_evidence.schema.json",
         "tools/systems_engineering/tests/test_g15c_traceability.py",
     } <= trace.REQUIRED_G2B_CONTROLLER_CLOSURE
+
+
+def test_g2b_public_package_entry_is_mandatory_in_current_records():
+    doc = ledger()
+    record = next(
+        item
+        for item in doc["records"]
+        if item["id"] == "B0-EXEC-G2B-CONTROLLER-DEBUG-20261014"
+    )
+    record["applicability"]["relevant_files"] = [
+        item
+        for item in record["applicability"]["relevant_files"]
+        if item["path"] != "01_simulation/b0/__init__.py"
+    ]
+    with pytest.raises(
+        TraceabilityError, match="incomplete G2-B controller dependency closure"
+    ):
+        validate(doc, files=True)
+
+
+def test_g2b_public_package_entry_change_invalidates_exact_applicability(monkeypatch):
+    doc = ledger()
+    record = next(
+        item
+        for item in doc["records"]
+        if item["id"] == "B0-EXEC-G2B-CONTROLLER-DEBUG-20261014"
+    )
+    source_commit = record["applicability"]["source_commit"]
+    target_commit = "f" * 40
+    record["applicability"]["target_commit"] = target_commit
+    entry = next(
+        item
+        for item in record["applicability"]["relevant_files"]
+        if item["path"] == "01_simulation/b0/__init__.py"
+    )
+    changed_digest = "1" * 64
+    entry["target_sha256"] = changed_digest
+    original = trace._git_revision_sha256
+
+    def changed_public_entry(repo, revision, path):
+        if revision == target_commit:
+            if path == "01_simulation/b0/__init__.py":
+                return changed_digest
+            return original(repo, source_commit, path)
+        return original(repo, revision, path)
+
+    monkeypatch.setattr(trace, "_git_revision_sha256", changed_public_entry)
+    with pytest.raises(
+        TraceabilityError, match="applicability dependency changed"
+    ):
+        validate(doc, files=True)
 
 
 def test_implementation_and_evidence_source_bytes_must_match():

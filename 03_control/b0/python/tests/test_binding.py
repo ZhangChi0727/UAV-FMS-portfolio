@@ -2,6 +2,8 @@ import importlib
 import math
 import os
 import sys
+import warnings
+from fractions import Fraction
 from pathlib import Path
 
 import numpy as np
@@ -207,6 +209,114 @@ def test_binding_rejects_wrong_shape_type_and_nonfinite(factory, attribute, valu
     instance = factory()
     with pytest.raises((TypeError, ValueError, OverflowError)):
         setattr(instance, attribute, value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        True,
+        np.bool_(True),
+        0.005 + 123.0j,
+        np.complex64(0.005 + 123.0j),
+        np.complex128(0.005 + 123.0j),
+        Fraction(1, 3),
+        2**53 + 1,
+        np.int64(2**53 + 1),
+    ],
+)
+def test_scalar_binding_rejects_nonreal_bool_and_lossy_coercion_atomically(value):
+    epoch = c.ResetEpoch()
+    epoch.timestamp_s = 0.125
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        with pytest.raises((TypeError, ValueError, OverflowError)):
+            epoch.timestamp_s = value
+    assert caught == []
+    assert epoch.timestamp_s == 0.125
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        [np.bool_(True), 0.0, 0.0, 0.0],
+        [np.complex128(1.0 + 2.0j), 0.0, 0.0, 0.0],
+        [Fraction(1, 3), 0.0, 0.0, 0.0],
+        [np.int64(2**53 + 1), 0.0, 0.0, 0.0],
+    ],
+)
+def test_vector_binding_rejects_nonreal_bool_and_lossy_elements_atomically(value):
+    command = c.AttitudeCommand()
+    command.q_nb = [1.0, 0.0, 0.0, 0.0]
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        with pytest.raises((TypeError, ValueError, OverflowError)):
+            command.q_nb = value
+    assert caught == []
+    assert command.q_nb == [1.0, 0.0, 0.0, 0.0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        0,
+        1,
+        -1,
+        0.125,
+        np.int64(7),
+        np.float32(0.125),
+        np.float64(0.125),
+        Fraction(1, 2),
+    ],
+)
+def test_scalar_binding_accepts_losslessly_representable_real_scalars(value):
+    epoch = c.ResetEpoch()
+    epoch.timestamp_s = value
+    assert epoch.timestamp_s == float(value)
+
+
+@pytest.mark.parametrize(
+    "invalid_dt",
+    [
+        True,
+        np.bool_(True),
+        0.005 + 123.0j,
+        np.complex128(0.005 + 123.0j),
+        Fraction(1, 3),
+        2**53 + 1,
+        np.int64(2**53 + 1),
+    ],
+)
+def test_step_rejects_nonreal_bool_and_lossy_dt_atomically_then_retries(
+    invalid_dt,
+):
+    controller = c.CascadedController(parameters())
+    clean_twin = c.CascadedController(parameters())
+    held = reset(controller)
+    clean_held = reset(clean_twin)
+    command, estimate, feedback = inputs(0.005, held)
+    clean_command, clean_estimate, clean_feedback = inputs(0.005, clean_held)
+    before = snapshot_value(controller.snapshot())
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        with pytest.raises((TypeError, ValueError, OverflowError)) as rejected:
+            controller.step(command, estimate, feedback, invalid_dt)
+    assert not isinstance(rejected.value, c.ControllerContractError)
+    assert caught == []
+    assert snapshot_value(controller.snapshot()) == before
+
+    retried = controller.step(command, estimate, feedback, 0.005)
+    clean = clean_twin.step(
+        clean_command, clean_estimate, clean_feedback, 0.005
+    )
+    assert retried.requested_torque_body_Nm == clean.requested_torque_body_Nm
+    assert retried.limited_torque_body_Nm == clean.limited_torque_body_Nm
+    assert retried.saturated == clean.saturated
+    assert retried.timestamp_s == clean.timestamp_s
+    assert retried.epoch_id == clean.epoch_id
+    assert snapshot_value(controller.snapshot()) == snapshot_value(
+        clean_twin.snapshot()
+    )
 
 
 def test_integer_bounds_and_input_copy():

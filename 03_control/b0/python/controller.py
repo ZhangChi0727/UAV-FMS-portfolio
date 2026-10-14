@@ -35,9 +35,28 @@ def _strict_int64(value, name):
 def _strict_float(value, name):
     if isinstance(value, bool) or not isinstance(value, numbers.Real):
         raise ControllerConfigurationError(f"{name} must be a real scalar")
-    value = float(value)
+    original = value
+    try:
+        value = float(original)
+    except (OverflowError, TypeError, ValueError) as exc:
+        raise ControllerConfigurationError(
+            f"{name} must be representable as a finite double"
+        ) from exc
     if not math.isfinite(value):
         raise ControllerConfigurationError(f"{name} must be finite")
+    comparison_value = (
+        int(original) if isinstance(original, numbers.Integral) else original
+    )
+    try:
+        lossless = bool(comparison_value == value)
+    except (TypeError, ValueError) as exc:
+        raise ControllerConfigurationError(
+            f"{name} must be exactly representable as a double"
+        ) from exc
+    if not lossless:
+        raise ControllerConfigurationError(
+            f"{name} must be exactly representable as a double"
+        )
     return value
 
 
