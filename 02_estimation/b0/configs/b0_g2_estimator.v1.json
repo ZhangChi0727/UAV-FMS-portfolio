@@ -16,6 +16,11 @@
       "boundary": "inclusive"
     },
     "maximum_correction_step_rad": 0.01,
+    "gap_recovery": {
+      "gyro_approximation": "hold_current_measurement_over_elapsed_time_since_last_accepted_state",
+      "diagnostics": ["elapsed_periods", "missing_periods", "gap_approximated", "correction_capped"],
+      "validity_note": "a grid-aligned recovered estimate is valid but explicitly gap_approximated; no unobserved motion is reconstructed"
+    },
     "correction_axis": "cross(normalized_measured_specific_force_b, predicted_stationary_specific_force_b)",
     "correction_application": "right_multiply_q_nb_by_rotation_vector_after_gyro_propagation",
     "angular_rate_output": "copy_current_valid_gyro_sample_without_bias_estimation",

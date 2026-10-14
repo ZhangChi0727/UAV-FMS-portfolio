@@ -50,8 +50,14 @@ one configured IMU period after that boundary. Later samples must lie on a
 positive integer multiple of the 0.005 s reset-epoch grid and be strictly later
 than the last accepted sample. This permits recovery at the next due tick after
 an explicitly rejected invalid sample without requiring reset; gyro propagation
-uses the elapsed time since the last accepted state. Duplicate, stale or
-off-grid timestamps are rejected. The G2 test tolerance for grid comparison is
+uses the elapsed time since the last accepted state and treats the newly received
+gyro value as constant over that elapsed interval. This is an explicit missing-
+sample approximation, not reconstruction of unobserved motion. The immutable
+diagnostic reports elapsed periods, missing periods, `gap_approximated=true` and
+whether acceleration correction was capped. The returned state remains valid
+for a grid-aligned finite sample, but downstream G3 logging must preserve the
+gap diagnostic. Duplicate, stale or off-grid timestamps are rejected. The G2
+test tolerance for grid comparison is
 `1e-12 s`, an implementation-test tolerance pending PA approval rather than a
 new G0 timing value.
 
@@ -96,10 +102,12 @@ q_next = canonicalize(normalize(q_pred ⊗ ExpQuaternion(delta_theta)))
 The proposed gain is `1.0 s^-1`; at the G0 0.005 s IMU period the small-error
 correction fraction is approximately 0.005 per sample. Because the cross product
 of unit vectors has norm at most one, a legal one-period update is at most
-0.005 rad; the 0.01 rad cap is therefore a redundant defence for this version,
-not a normally reachable production branch. Its clamp helper is tested directly
-with an explicit non-production vector, while the public `step` test proves the
-legal-period bound without injecting an illegal `dt`. These
+0.005 rad. Gap recovery can legally use a longer elapsed interval: for example,
+after accepted `t=0.005`, rejected samples at 0.010 and 0.015, and a valid sample
+at 0.020, `dt=0.015 s`; a unit-norm innovation requests 0.015 rad and the
+production path clamps it to 0.01 rad. Tests therefore cover both the nominal
+one-period `<=0.005 rad` bound and the public gap-recovery clamp, including a
+nonzero reset boundary. The diagnostic reports both the gap and cap. These
 are conservative component-design choices intended to make sign, gating and
 atomicity independently testable before G3 tuning; they assert no closed-loop
 settling or flight envelope.
@@ -123,6 +131,10 @@ copy of the current accepted gyro measurement; G2-A does not estimate bias.
   to be gated, but G0 does not supply the gate width.
 - A gain scheduled from scenario labels was rejected because it would leak
   scenario/truth knowledge into the estimator.
+- Gap recovery cannot reconstruct missing angular-rate history. Holding the new
+  measurement over the elapsed interval is deterministic and bounded but may be
+  inaccurate; G3 must retain the diagnostic and may classify affected
+  performance evidence separately.
 
 Changing the G0 timing, message fields, operating envelope, acceptance criteria
 or frozen verification decision rules is outside this S0. If PA determines the
