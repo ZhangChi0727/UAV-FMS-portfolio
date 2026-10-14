@@ -353,11 +353,12 @@ def test_fixture_cannot_enter_the_production_ledger():
 
 def test_superseded_record_is_excluded():
     doc = ledger()
+    current_count = validate(doc)["production_records"]
     newer = deepcopy(doc["records"][0])
     newer["id"] = "B0-EXEC-G1-COMPONENT-REPEAT"
     newer["supersedes"] = doc["records"][0]["id"]
     doc["records"].append(newer)
-    assert validate(doc)["production_records"] == 3
+    assert validate(doc)["production_records"] == current_count
     rendered = render_html(REPO, doc)
     assert doc["records"][0]["id"] not in rendered
     assert newer["id"] in rendered
