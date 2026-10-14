@@ -102,6 +102,16 @@ def validate_ledger(
     specifications = _unique(ver_doc["specifications"], "verification ID")
     records = _unique(ledger["records"], "execution record")
     required_g1_closure = {"01_simulation/b0/plant.py", "01_simulation/b0/actuator.py", "01_simulation/b0/imu.py", "01_simulation/b0/evidence.py", "01_simulation/b0/tests/test_components.py", "01_simulation/b0/contract.py", "01_simulation/b0/quaternion.py", "05_integration/b0/configs/b0_g0_contract.v2.json"}
+    required_g2a_estimator_closure = {
+        ".github/workflows/ci.yml",
+        "02_estimation/b0/estimator.py",
+        "02_estimation/b0/evidence.py",
+        "02_estimation/b0/tests/test_estimator.py",
+        "02_estimation/b0/tests/test_evidence.py",
+        "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+        "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+        "05_integration/b0/configs/b0_g0_contract.v2.json",
+    }
     _need(len(requirements) == 30, f"controlled view must contain 30 requirements, found {len(requirements)}")
     _need(len(specifications) == 29, f"controlled view must contain 29 verification specifications, found {len(specifications)}")
 
@@ -186,9 +196,12 @@ def validate_ledger(
                 _need(_inside(repo, value, "implementation path").is_file(), f"missing implementation path: {record_id} -> {value}")
                 _git_revision_sha256(repo, record["implementation"]["commit"], value)
             g1_specs = {"B0-VER-PLANT-DYNAMICS", "B0-VER-PLANT-QUATERNION", "B0-VER-ACTUATOR-DYNAMICS", "B0-VER-IMU-GYRO", "B0-VER-IMU-SPECIFIC-FORCE"}
+            g2a_estimator_specs = {"B0-VER-ESTIMATOR-PROPAGATION", "B0-VER-ESTIMATOR-FUSION", "B0-VER-YAW-LIMITATION", "B0-VER-ACCEL-CONTAMINATION"}
             relevant_paths = {item["path"] for item in applicability["relevant_files"]}
             if set(record["verification_spec_ids"]) & g1_specs:
                 _need(required_g1_closure <= relevant_paths, f"incomplete G1 dependency closure: {record_id}")
+            if set(record["verification_spec_ids"]) & g2a_estimator_specs:
+                _need(required_g2a_estimator_closure <= relevant_paths, f"incomplete G2-A estimator dependency closure: {record_id}")
             _need(set(record["implementation"]["paths"]) <= relevant_paths, f"implementation paths missing from applicability closure: {record_id}")
             for value in record["implementation"]["paths"]:
                 implementation_digest = _git_revision_sha256(repo, record["implementation"]["commit"], value)
