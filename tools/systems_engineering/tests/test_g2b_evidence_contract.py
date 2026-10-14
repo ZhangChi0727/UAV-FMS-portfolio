@@ -37,10 +37,9 @@ def case_traces(digest: str) -> dict:
         for node in nodes:
             output = ""
             if node in mutation_oracles:
-                output = (
-                    "detected subject mutation with unchanged oracle node: "
-                    f"{mutation_oracles[node]}"
-                )
+                # CTest may truncate wrapper output; the exact mutation/oracle
+                # relationship is independently fixed by MUTATION_ORACLES.
+                output = "detected subject mutation"
             source_kind = "pytest" if node.startswith("python/") else "ctest"
             collected_name = (
                 node if source_kind == "ctest" else node.rsplit("::", 1)[-1]
