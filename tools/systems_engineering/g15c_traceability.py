@@ -111,6 +111,7 @@ def validate_ledger(
         "02_estimation/b0/configs/b0_g2_estimator.v1.json",
         "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
         "05_integration/b0/configs/b0_g0_contract.v2.json",
+        "05_integration/b0/validate_config.py",
     }
     _need(len(requirements) == 30, f"controlled view must contain 30 requirements, found {len(requirements)}")
     _need(len(specifications) == 29, f"controlled view must contain 29 verification specifications, found {len(specifications)}")
