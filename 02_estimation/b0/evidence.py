@@ -30,6 +30,27 @@ def _source_commit(repo: Path) -> str:
     return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
 
 
+def _axis_angle(vector) -> np.ndarray:
+    vector = np.asarray(vector, dtype=np.float64)
+    angle = float(np.linalg.norm(vector))
+    if angle == 0.0:
+        return np.array([1.0, 0.0, 0.0, 0.0])
+    return np.r_[math.cos(angle / 2.0), math.sin(angle / 2.0) * vector / angle]
+
+
+def _multiply(left, right) -> np.ndarray:
+    lw, lx, ly, lz = np.asarray(left, dtype=np.float64)
+    rw, rx, ry, rz = np.asarray(right, dtype=np.float64)
+    return np.array(
+        [
+            lw * rw - lx * rx - ly * ry - lz * rz,
+            lw * rx + lx * rw + ly * rz - lz * ry,
+            lw * ry - lx * rz + ly * rw + lz * rx,
+            lw * rz + lx * ry - ly * rx + lz * rw,
+        ]
+    )
+
+
 def build_evidence() -> dict:
     track = Path(__file__).resolve().parent
     repo = track.parents[1]
@@ -41,6 +62,19 @@ def build_evidence() -> dict:
     rotation_vector = np.array([0.3, -0.2, 0.1]) * 0.005
     angle = float(np.linalg.norm(rotation_vector))
     expected = np.r_[math.cos(angle / 2), math.sin(angle / 2) * rotation_vector / angle]
+
+    roll_initial = _axis_angle([0.1, 0.0, 0.0])
+    fusion = AttitudeEstimator(parameters)
+    fusion.reset(EstimatorInitialState(roll_initial, (0, 0, 0)), ResetEpoch(0, 0.0), 7)
+    fused = fusion.process(Sample(0.005))
+    innovation = np.array([-math.sin(0.1), 0.0, 0.0])
+    fusion_expected = _multiply(roll_initial, _axis_angle(0.005 * innovation))
+    fusion_expected /= np.linalg.norm(fusion_expected)
+
+    yaw_initial = _axis_angle([0.0, 0.0, 0.4])
+    yaw = AttitudeEstimator(parameters)
+    yaw.reset(EstimatorInitialState(yaw_initial, (0, 0, 0)), ResetEpoch(0, 0.0), 7)
+    yaw_output = yaw.step(Sample(0.005))
 
     gap = AttitudeEstimator(parameters)
     gap.reset(EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), ResetEpoch(4, 12.0), 7)
@@ -83,6 +117,19 @@ def build_evidence() -> dict:
                 "diagnostics": recovered.diagnostics.__dict__,
                 "q_nb": recovered.estimate.q_nb_estimate.tolist(),
             },
+            "tilt_fusion": {
+                "initial_roll_rad": 0.1,
+                "actual_q_nb": fused.estimate.q_nb_estimate.tolist(),
+                "independent_expected_q_nb": fusion_expected.tolist(),
+                "max_component_abs_error": float(np.max(np.abs(fused.estimate.q_nb_estimate - fusion_expected))),
+                "correction_applied": fused.diagnostics.correction_applied,
+            },
+            "yaw_limitation": {
+                "initial_yaw_rad": 0.4,
+                "actual_q_nb": yaw_output.q_nb_estimate.tolist(),
+                "initial_q_nb": yaw_initial.tolist(),
+                "max_component_abs_change": float(np.max(np.abs(yaw_output.q_nb_estimate - yaw_initial))),
+            },
             "atomic_rejection": {
                 "reason": rejection.reason,
                 "q_unchanged": bool(np.array_equal(before.q_nb_estimate, after.q_nb_estimate)),
@@ -95,6 +142,8 @@ def build_evidence() -> dict:
             "gap_elapsed_periods_is_3": recovered.diagnostics.elapsed_periods == 3,
             "gap_missing_periods_is_2": recovered.diagnostics.missing_periods == 2,
             "gap_correction_is_capped": recovered.diagnostics.correction_capped,
+            "tilt_fusion_component_abs_le_2e_12": float(np.max(np.abs(fused.estimate.q_nb_estimate - fusion_expected))) <= 2e-12,
+            "gravity_does_not_supply_absolute_yaw": float(np.max(np.abs(yaw_output.q_nb_estimate - yaw_initial))) <= 1e-12,
             "invalid_input_is_atomic": bool(np.array_equal(before.q_nb_estimate, after.q_nb_estimate)) and before.timestamp_s == after.timestamp_s,
         },
         "limitations": [
