@@ -4,9 +4,10 @@ A modular experimental platform for flight-control development, state estimation
 embedded implementation, and reproducible verification.
 
 **Current status:** planning baseline B0 v0.2 is active. G0, G1 and the complete
-G1.5-A/B/C governance sequence are accepted. G2-A estimator S0 is the active
-engineering increment; its numerical design remains candidate pending the
-original PA's DESIGN_ACCEPT. G2/G3/G4 and overall B0 completion remain open.
+G1.5-A/B/C governance sequence are accepted. G2-A estimator is merged and has
+original-PA post-merge acceptance. G2-B controller S0 is the active engineering
+increment and remains candidate pending original-PA `DESIGN_ACCEPT`. G2/G3/G4
+and overall B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
@@ -40,8 +41,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C accepted; G2 evidence remains pending |
-| docs/ | Roadmap, environment and work orders | G2 work order active; G2-A S0 under review |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2-A accepted; G2-B evidence pending |
+| docs/ | Roadmap, environment and work orders | G2-B work order active; S0 under review |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
