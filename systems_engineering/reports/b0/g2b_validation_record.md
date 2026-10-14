@@ -15,9 +15,9 @@ request may be sent before that run is green.
 - First implementation review head:
   `9d79caba593ac9383c5f3db7bf884f76ea6d595c`; decision `REWORK` in
   [g2b_review_9d79cab.md](g2b_review_9d79cab.md).
-- Final evidence-source commit:
-  `59e360a0f50bd1bd5060be2756f9a3bd6cad54f4`; Actions run
-  [38532918735](https://github.com/ZhangChi0727/UAV-FMS-portfolio/actions/runs/38532918735).
+- Re-review evidence-source commit:
+  `5b81b9749ce048a358c60b5f799494361b907ded`; Actions run
+  [38555772322](https://github.com/ZhangChi0727/UAV-FMS-portfolio/actions/runs/38555772322).
   The G2-A, G2-B Debug and G2-B Release evidence jobs succeeded. The source
   run's only failed job was the expected pre-closeout governance check against
   the then-committed older ledger; the later candidate-head run is the complete
@@ -42,6 +42,9 @@ unexecuted prerequisites.
 | R4 supersession integrity | traceability checker separates historical source/target integrity from current-HEAD applicability; corrupt historical hash/revision fixtures | systems-engineering positive and negative test log |
 | R5 complete S0 matrix and defect detection | row-to-node map remains in [g2b_s0_controller_verification_matrix.md](g2b_s0_controller_verification_matrix.md); C++/Python checks and isolated subject mutations must all execute | exact node list, mutation build/run log, clean restored production pass |
 | R6 reproducible build and evidence | exact pybind11/Catch2 resolution, Python CTest working directory, clean Debug rebuild, Debug/Release logs, deterministic JSON artifacts, controller dependency closure and ledger records | actual run/commit/module/config identities, artifact files/IDs/hashes/expiry and pending PA review source |
+| F1 strict Python scalar boundary | binding and adapter reject NumPy complex values, booleans and lossy integer-to-double coercions atomically while accepting losslessly representable real scalars | collected CTest/Python nodes and retained rejection traces in both build types |
+| F2 complete raw S0 evidence | evidence generation imports mandatory CTest and pytest JUnit plus the controlled matrix, retains every mapped node execution and fails closed on missing, stale or malformed inputs | 26/26 matrix rows and 139/139 sampled cases, including all four unchanged-oracle mutation detections |
+| F3 transitive dependency closure | applicability profile now includes the imported simulation package and transitive `__init__`, actuator, contract, IMU, plant and quaternion files | exact 34-file Git-blob SHA-256 closure for both controller records |
 
 ## Required commands and results
 
@@ -68,21 +71,24 @@ python -m pytest -q tests
 Local corrective checks on 2026-10-14 establish the candidate behavior but do
 not replace the retained CI package. The Debug and Release CTest presets each
 reported **25/25 passed**: 20 production Catch2 nodes, one Python track, and
-four isolated mutation-detection nodes. After the missing-frozen-field atomic
-retry regression was added, the Python CTest node was rerun in both build trees
-and reported **1/1 passed** in each. The final systems-engineering suite,
-including nested evidence-contract and matrix-closure checks, reported **108
-passed in 203.11 s**. Ruff, `py_compile` and `git diff --check` passed for the corrective
-sources. No skip or xfail is counted as evidence.
+four isolated mutation-detection nodes; their separately retained pytest JUnit
+files each report **79/79 passed**. The repository systems-engineering suite
+reported **185 passed in 541.57 s** from its track on Windows, excluding the
+native StrictDoc cases, and those **6 native StrictDoc cases passed in 12.84 s**
+under WSL. Ruff and `git diff --check` passed for the corrective sources. No
+skip or xfail is counted as evidence.
 
 The checked-in CI generator ran against the exact Debug and Release modules at
-`59e360a0f50bd1bd5060be2756f9a3bd6cad54f4`. Both JSON files retain that source
-commit and checked-out identity, the selected criteria are all true, and their
-adjacent JUnit files each report 25 tests, zero failures and zero skips.
+`5b81b9749ce048a358c60b5f799494361b907ded`. Both JSON files retain that source
+commit and checked-out identity, all selected criteria are true, all **26 S0
+rows / 139 sampled cases** pass, and the adjacent JUnit files report 25 CTest
+nodes plus 79 pytest cases with zero failures and zero skips in each build.
 
 The CI evidence step reruns the matching CTest preset with XML/log retention and
-then invokes `03_control/b0/evidence.py` against that preset's exact module and
-CMake cache. The generator fails closed if the imported module is outside the
+retains a separate pytest JUnit, then invokes `03_control/b0/evidence.py`
+against that preset's exact module, CMake cache and controlled S0 matrix. The
+generator fails closed if either JUnit or the matrix is absent or byte-mismatched,
+if the imported module is outside the
 declared build, if actual pybind11 is not 2.13.6, if Catch2 is not the pinned
 revision/exact 3.5.4 package, if a review-critical artifact field is absent, or
 if a selected independent numerical criterion fails.
@@ -91,24 +97,27 @@ if a selected independent numerical criterion fails.
 
 | Build | Actions artifact | Required files | ID / content SHA-256 / archive SHA-256 / expiry |
 |---|---|---|---|
-| Debug | `b0-g2b-controller-evidence-debug` | `ctest-debug.log`, `ctest-debug.xml`, `g2b_controller_evidence_debug.json` | ID `11878875529`; JSON `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`; archive `c5b01125095e703449e4f25594abf46791e76b185600ca351aa46b0c1cf11679`; expires `2027-01-12T08:07:28Z` |
-| Release | `b0-g2b-controller-evidence-release` | `ctest-release.log`, `ctest-release.xml`, `g2b_controller_evidence_release.json` | ID `11877869642`; JSON `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`; archive `6e49809ab40615bc8d0f98592e01c55fe396337b53a58e25b108d54f563de162`; expires `2027-01-12T08:07:28Z` |
-| G2-A refresh | `b0-g2a-estimator-evidence` | `g2a_estimator_evidence.json` | ID `11878309621`; JSON `5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070`; archive `6890e70a14b91e5d44753da3f3707ad9a956c00ee6f9dc881628dd3cb5566220`; expires `2027-01-12T08:07:28Z` |
+| Debug | `b0-g2b-controller-evidence-debug` | `ctest-debug.log`, `ctest-debug.xml`, `pytest-debug.xml`, `g2b_controller_evidence_debug.json` | ID `11890396601`; job `115824406590`; JSON `da38fea5213fc47b17cb98a03afc0ded6474c5662fe6909a777e963066e41b52`; archive `596c6cc908cacad091ebe0a8ff774740eff35f171896aabb6a95f21f8151887c`; expires `2027-01-12T11:19:37Z` |
+| Release | `b0-g2b-controller-evidence-release` | `ctest-release.log`, `ctest-release.xml`, `pytest-release.xml`, `g2b_controller_evidence_release.json` | ID `11890331486`; job `115824406773`; JSON `119e0980f8a1380e3e197b3a3d84ee518a788783c5d1742be8fbfc7430c5dfea`; archive `5ddd200cfac14be93071ad00606e1b57876fcfd3b9f9fbcddc93afcd6b8db169`; expires `2027-01-12T11:19:37Z` |
+| G2-A refresh | `b0-g2a-estimator-evidence` | `g2a_estimator_evidence.json` | ID `11888862827`; job `115824406625`; JSON `8a93f61948f8368330f6d5dcf46631acb8e3193c6445b7472fa2176428bb1082`; archive `2e4d78fbcd323f9fdc942f4072dc77cdb5f932388c3f34e887ecff01def77ffa`; expires `2027-01-12T11:19:37Z` |
 
-The Debug log/XML SHA-256 values are respectively
-`150d62abd7d8df40c83e2c04a4a9d5b532d47cca3f37100308b26c2bd8f82b37`
-and `b1834e876050dcf0706e35dffc170a7624b1e0540535a898f1050050b058902b`.
+The Debug log/CTest XML/pytest XML SHA-256 values are respectively
+`d7ba95377d796f9ea52698c4570f16e5e5347e183c5d01779829ac70240ab95e`,
+`960f1c2f64d22638942ffd95387afa27d2619b13a8ae7d7108f65e49aa8b2b64`
+and `061934ece9f5cec461a728a42c858cb362be381f4d15f2dbc703b369dd9d351c`.
 The Release values are
-`f7c037906c730c94f9f547a4590ae8a222284f29b25f6ba9195c7aeb465e94bb`
-and `d1df926cce6e710c38935be14da95150fd78c183fd25a30c1ff3a0f20fd5fb42`.
+`c0720260480ce17b2a8bc6a4260f280ba800def8c69bbad92f41b0612f743fd3`,
+`fb701fbeecfadab72d54e76b0a796773de95c854adcc3110f86cbbbc18bba143`
+and `69a9cdd04a78db38a87cc292b3a2052f81350ec2f133d87f56f0564c7b2bbee6`.
 
 The G2-B JSON retains the exact source commit; build type and directories;
 compiler, CMake, Python/ABI and imported-module identity; actual pybind11 and
 Catch2 resolution; implementation/approval/G0/validator digests; independent
 attitude and anti-windup oracles; I/P/D/back-calculation diagnostics; a three
 tick command/feedback/epoch trace; invalid-input snapshots; criteria and claim
-limitations. CTest XML/log supplies the complete adjacent matrix execution; the
-JSON representative probes do not replace that suite.
+limitations. The JSON retains the complete 26-row raw S0 mapping, all 139
+sampled comparisons and both JUnit source identities; it does not replace the
+raw XML/log files bundled beside it.
 
 The G2-A and G2-B evidence jobs explicitly check out
 `${{ github.event.pull_request.head.sha || github.sha }}`. On a pull request the
@@ -127,7 +136,8 @@ exact paths and committed source/target SHA-256 values:
 - core/build: root `CMakeLists.txt`, `CMakePresets.json`, B0 controller CMake,
   public header and C++ implementation;
 - boundary: pybind source, Python loader/adapter, actual G2-A estimate and G1
-  contract/actuator dependencies;
+  simulation package dependencies (`__init__`, contract, actuator, IMU, plant
+  and quaternion);
 - checks/oracles: all C++ and Python controller tests, mutation runner and the
   evidence-contract negative fixtures, including
   `03_control/b0/tests/expect_mutation_detected.py`,
