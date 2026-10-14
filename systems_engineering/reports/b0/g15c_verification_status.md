@@ -5,15 +5,15 @@
 ## First-screen conclusion
 
 - Design traceability: **30/30 requirements** have source, model and verification relations; the controlled catalog contains **26 model identities** and **29/29 planned specifications**.
-- Execution: **9/29 specifications** have at least one current production execution record.
-- Accepted evidence: **0/3 production records**.
+- Execution: **20/29 specifications** have at least one current production execution record.
+- Accepted evidence: **0/5 production records**.
 - Requirement satisfaction: **0/30**. A requirement counts only when every required specification has complete, applicable, available and accepted pass evidence.
 - Current gap: 0/30 requirements currently have accepted complete evidence; all remaining gaps are listed per requirement.
 
 ## Version boundary
 
 - Frozen requirements/model base: `ddd281fd0a94ee59635accb5f41500fac05284b7`.
-- Controlled current applicability target: `62aad74babd41d31c472038db2cdd10999ea426e`.
+- Controlled current applicability target: `59e360a0f50bd1bd5060be2756f9a3bd6cad54f4`.
 - Evaluated repository revision: committed `HEAD`, resolved by the checker at runtime; uncommitted worktree bytes are excluded.
 
 ## Execution records
@@ -21,8 +21,10 @@
 | Record | Level | Result | Evidence | Applicability | Review | Coverage |
 |---|---|---|---|---|---|---|
 | `B0-EXEC-G1-COMPONENT-20261013` | module | pass | remote_unverified | applicable_by_analysis | pending | partial |
-| `B0-EXEC-G2A-ESTIMATOR-CORE-REFRESH-20261014` | module | pass | remote_unverified | applicable_exact | pending | complete |
-| `B0-EXEC-G2A-ESTIMATOR-LIMITS-REFRESH-20261014` | module | pass | remote_unverified | applicable_exact | pending | partial |
+| `B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REFRESH-20261014` | module | pass | remote_unverified | applicable_exact | pending | complete |
+| `B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REFRESH-20261014` | module | pass | remote_unverified | applicable_exact | pending | partial |
+| `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014` | module | pass | remote_unverified | applicable_exact | pending | partial |
+| `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014` | module | pass | remote_unverified | applicable_exact | pending | partial |
 
 ## Requirement index
 
@@ -46,12 +48,12 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 ### Group: with execution
 <a id="group-with-execution"></a>
 
-[`B0-REQ-0005`](#b0-req-0005), [`B0-REQ-0006`](#b0-req-0006), [`B0-REQ-0008`](#b0-req-0008), [`B0-REQ-0010`](#b0-req-0010), [`B0-REQ-0011`](#b0-req-0011), [`B0-REQ-0012`](#b0-req-0012), [`B0-REQ-0013`](#b0-req-0013), [`B0-REQ-0014`](#b0-req-0014), [`B0-REQ-0015`](#b0-req-0015)
+[`B0-REQ-0003`](#b0-req-0003), [`B0-REQ-0004`](#b0-req-0004), [`B0-REQ-0005`](#b0-req-0005), [`B0-REQ-0006`](#b0-req-0006), [`B0-REQ-0007`](#b0-req-0007), [`B0-REQ-0008`](#b0-req-0008), [`B0-REQ-0009`](#b0-req-0009), [`B0-REQ-0010`](#b0-req-0010), [`B0-REQ-0011`](#b0-req-0011), [`B0-REQ-0012`](#b0-req-0012), [`B0-REQ-0013`](#b0-req-0013), [`B0-REQ-0014`](#b0-req-0014), [`B0-REQ-0015`](#b0-req-0015), [`B0-REQ-0016`](#b0-req-0016), [`B0-REQ-0017`](#b0-req-0017), [`B0-REQ-0018`](#b0-req-0018), [`B0-REQ-0019`](#b0-req-0019), [`B0-REQ-0020`](#b0-req-0020), [`B0-REQ-0026`](#b0-req-0026), [`B0-REQ-0029`](#b0-req-0029)
 
 ### Group: without execution
 <a id="group-without-execution"></a>
 
-[`B0-REQ-0001`](#b0-req-0001), [`B0-REQ-0002`](#b0-req-0002), [`B0-REQ-0003`](#b0-req-0003), [`B0-REQ-0004`](#b0-req-0004), [`B0-REQ-0007`](#b0-req-0007), [`B0-REQ-0009`](#b0-req-0009), [`B0-REQ-0016`](#b0-req-0016), [`B0-REQ-0017`](#b0-req-0017), [`B0-REQ-0018`](#b0-req-0018), [`B0-REQ-0019`](#b0-req-0019), [`B0-REQ-0020`](#b0-req-0020), [`B0-REQ-0021`](#b0-req-0021), [`B0-REQ-0022`](#b0-req-0022), [`B0-REQ-0023`](#b0-req-0023), [`B0-REQ-0024`](#b0-req-0024), [`B0-REQ-0025`](#b0-req-0025), [`B0-REQ-0026`](#b0-req-0026), [`B0-REQ-0027`](#b0-req-0027), [`B0-REQ-0028`](#b0-req-0028), [`B0-REQ-0029`](#b0-req-0029), [`B0-REQ-0030`](#b0-req-0030)
+[`B0-REQ-0001`](#b0-req-0001), [`B0-REQ-0002`](#b0-req-0002), [`B0-REQ-0021`](#b0-req-0021), [`B0-REQ-0022`](#b0-req-0022), [`B0-REQ-0023`](#b0-req-0023), [`B0-REQ-0024`](#b0-req-0024), [`B0-REQ-0025`](#b0-req-0025), [`B0-REQ-0027`](#b0-req-0027), [`B0-REQ-0028`](#b0-req-0028), [`B0-REQ-0030`](#b0-req-0030)
 
 ## Requirement chains
 
@@ -85,7 +87,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Prevents circular validation and unrealistically privileged control or estimation.
 - Model/responsibility: `B0-MODEL-TRUTH`, `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-TRUTH-BOUNDARY` (inspection; integration verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-TRUTH-BOUNDARY.
 
 ### B0-REQ-0004
@@ -96,7 +98,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: A single convention prevents silent sign, frame and ordering defects across components.
 - Model/responsibility: `B0-MODEL-SYSTEM`; responsible `B0-MODEL-SYSTEM`.
 - Verification: `B0-VER-CONVENTIONS` (inspection; systems engineering reviewer; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-CONVENTIONS.
 
 ### B0-REQ-0005
@@ -129,7 +131,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: The pairing closes ambiguity between request, clamp result and anti-windup feedback.
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-TORQUE-COMMAND`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-PAIRED-COMMAND` (test; controller verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-PAIRED-COMMAND.
 
 ### B0-REQ-0008
@@ -151,7 +153,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Controller anti-windup must associate actual response with the correct limited target.
 - Model/responsibility: `B0-MODEL-ACTUATOR`, `B0-MODEL-ACTUATOR-FEEDBACK`; responsible `B0-MODEL-ACTUATOR`.
 - Verification: `B0-VER-PAIRED-FEEDBACK` (test; integration verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-PAIRED-FEEDBACK.
 
 ### B0-REQ-0010
@@ -184,7 +186,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Defines the minimum planned G2 attitude propagation responsibility.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-PROPAGATION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748), SHA-256 `251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621), SHA-256 `5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-PROPAGATION.
 
 ### B0-REQ-0013
@@ -195,7 +197,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity-based tilt correction is conditional and must not silently treat all acceleration as gravity.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-FUSION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748), SHA-256 `251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621), SHA-256 `5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-FUSION.
 
 ### B0-REQ-0014
@@ -206,7 +208,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity provides no absolute heading reference.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-YAW-LIMITATION` (analysis; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748), SHA-256 `251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621), SHA-256 `5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-YAW-LIMITATION.
 
 ### B0-REQ-0015
@@ -217,7 +219,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: The bounded attitude model lacks complete translational dynamics and must characterize rather than hide this limitation.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ACCEL-CONTAMINATION` (test; integration verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748), SHA-256 `251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REFRESH-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621), SHA-256 `5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-ACCEL-CONTAMINATION.
 
 ### B0-REQ-0016
@@ -228,7 +230,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Defines the planned G2 controller responsibility without importing legacy geometric or LQR scaffolds.
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-COMMAND`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-CONTROLLER-SIGN` (test; controller verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-CONTROLLER-SIGN.
 
 ### B0-REQ-0017
@@ -239,7 +241,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: A single clamp authority prevents inconsistent targets and ambiguous feedback.
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-TORQUE-COMMAND`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-CONTROLLER-SATURATION` (test; controller verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-CONTROLLER-SATURATION.
 
 ### B0-REQ-0018
@@ -250,7 +252,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: The complete discrete rule must respond to both clamp saturation and actuator lag without silently accumulating beyond bounds.
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-ACTUATOR-FEEDBACK`; responsible `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-ANTI-WINDUP` (test; controller verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-ANTI-WINDUP.
 
 ### B0-REQ-0019
@@ -261,7 +263,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Explicit rejection preserves state ownership and makes invalid trials auditable.
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-IMU-SAMPLE`, `B0-MODEL-COMMAND`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-INVALID-INPUT` (test; component owners; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-INVALID-INPUT.
 
 ### B0-REQ-0020
@@ -272,7 +274,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: A single reset boundary is necessary for deterministic replay without stale state leakage.
 - Model/responsibility: `B0-MODEL-EXECUTION`, `B0-MODEL-RESET`; responsible `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-RESET` (test; integration verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-RESET.
 
 ### B0-REQ-0021
@@ -338,7 +340,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Preserves the intended portable control core while retaining productive analysis tooling.
 - Model/responsibility: `B0-MODEL-CONTROLLER`, `B0-MODEL-EXECUTION`; responsible `B0-MODEL-CONTROLLER`, `B0-MODEL-EXECUTION`.
 - Verification: `B0-VER-LANGUAGE-BOUNDARY` (inspection; architecture reviewer; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-LANGUAGE-BOUNDARY.
 
 ### B0-REQ-0027
@@ -371,7 +373,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Validity must affect consumption rather than serving as passive metadata.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-CONTROLLER`.
 - Verification: `B0-VER-INVALID-MEASUREMENT` (test; component and integration verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2B-CONTROLLER-DEBUG-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529), SHA-256 `b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial; `B0-EXEC-G2B-CONTROLLER-RELEASE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642), SHA-256 `a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4`, implementation 03_control/b0/CMakeLists.txt, 03_control/b0/include/b0_controller/controller.hpp, 03_control/b0/src/controller.cpp, 03_control/b0/python/controller_bindings.cpp, 03_control/b0/python/controller.py, 03_control/b0/tests/test_controller.cpp, 03_control/b0/tests/expect_mutation_detected.py, 03_control/b0/python/tests/test_binding.py, 03_control/b0/python/tests/test_adapter.py, 03_control/b0/python/tests/test_config.py, 03_control/b0/evidence.py, 03_control/b0/configs/b0_g2_controller.v1.json, 03_control/b0/configs/b0_g2_controller_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-INVALID-MEASUREMENT.
 
 ### B0-REQ-0030
@@ -391,7 +393,7 @@ Use the ledger fields `execution.level`, `execution.result`, `evidence.availabil
 
 ## Evidence chain
 
-The current record links the frozen specification IDs to G1 implementation paths, an Actions run artifact, SHA-256 content identity, relevant-file applicability hashes, and an explicit pending review. Artifact expiry changes evidence availability and must not silently preserve an auditable-pass claim.
+Current records link frozen specification IDs to component implementation paths, Actions run artifacts, SHA-256 content identities, relevant-file applicability hashes, and explicit review states. Artifact expiry changes evidence availability and must not silently preserve an auditable-pass claim.
 
 ## External research-suite interface
 

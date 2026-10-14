@@ -5,8 +5,10 @@ system relationships and their sources from executable module code, daily
 operation notes, and retained evidence. G0 and the G1.5-B joint baseline are
 approved, and G1 plant/actuator/IMU component acceptance is merged. The original
 PA accepted closeout K3; G1.5-C is now the active verification-traceability and
-reporting increment. This does not claim G2, G3, G4, overall B0 completion,
-hardware, flight, or research results.
+reporting layer. G2-A is merged and post-merge accepted; G2-B PR #22 is closing
+implementation-review findings with a retained candidate package for re-review
+and is not yet accepted. This does not claim G2 overall, G3, G4, overall B0
+completion, hardware, flight, or research results.
 
 ## Reading route
 
@@ -30,8 +32,8 @@ hardware, flight, or research results.
    [current closeout record](reports/b0/g15b_closeout_current.md) describe the
    effective lifecycle without rewriting those historical snapshots.
 4. **Development state** — [current status snapshot](reports/current_status.md)
-   and the module-local implementations under `01_simulation/` and
-   `05_integration/`.
+   and the module-local implementations under `01_simulation/`,
+   `02_estimation/b0/`, `03_control/b0/` and `05_integration/`.
 5. **Verification evidence** — [execution/evidence contract](verification/README.md)
    and the [current G1.5-C traceability status](reports/b0/g15c_verification_status.md).
    The report keeps design links, execution results, evidence availability,
@@ -39,8 +41,10 @@ hardware, flight, or research results.
 6. **Verification** — [verification plan](verification/verification_plan.md),
    [G0 acceptance](verification/g0_acceptance.md), and the
    [V&V report](reports/v_and_v_report.md).
-7. **Evidence** — [RESULTS.md](../RESULTS.md), the G1 evidence generator and
-   its CI artifact, and the versioned reports under `reports/`.
+7. **Evidence** — [RESULTS.md](../RESULTS.md), the G1/G2-A retained component
+   artifacts, the [G2-B candidate validation record](reports/b0/g2b_validation_record.md),
+   and versioned reports under `reports/`. Candidate generators or green tests
+   do not imply PA acceptance.
 
 ## Source-of-truth boundaries
 

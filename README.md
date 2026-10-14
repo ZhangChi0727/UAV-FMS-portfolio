@@ -5,9 +5,11 @@ embedded implementation, and reproducible verification.
 
 **Current status:** planning baseline B0 v0.2 is active. G0, G1 and the complete
 G1.5-A/B/C governance sequence are accepted. G2-A estimator is merged and has
-original-PA post-merge acceptance. G2-B controller S0 is the active engineering
-increment and remains candidate pending original-PA `DESIGN_ACCEPT`. G2/G3/G4
-and overall B0 completion remain open.
+original-PA post-merge acceptance. G2-B controller S0 was accepted at
+`7084584ef9e69995b88201164fa8659e4ef57c79`; PR #22 is the active engineering
+increment. Its corrective implementation/evidence package is assembled for
+original-PA re-review but is not accepted. G2-B, G2 overall, G3/G4 and overall
+B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
@@ -41,8 +43,8 @@ or a publication. Each is independently scoped in the extension registry.
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
 | 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2-A accepted; G2-B evidence pending |
-| docs/ | Roadmap, environment and work orders | G2-B work order active; S0 under review |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2-A accepted; G2-B candidate evidence retained, PA review pending |
+| docs/ | Roadmap, environment and work orders | G2-B work order active; corrective candidate in PR #22 |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
@@ -61,8 +63,11 @@ python -m pytest -v
 
 Run pytest inside each track; root collection is not supported. Expected failures
 in navigation contracts describe pending extension behavior, not B0 completion.
-The existing root CMake build targets the optional navigation EKF scaffold; it
-does not yet build a B0 controller. Its prerequisites include Eigen3 and Catch2.
+The default root CMake build still targets the optional navigation EKF scaffold.
+The explicit `b0-controller-debug` and `b0-controller-release` presets build the
+B0 C++17 controller core, mandatory Python binding and their component tests;
+see [the track README](03_control/b0/README.md). The legacy target prerequisites
+include Eigen3 and Catch2.
 MATLAB, PyTorch, PX4, and hardware tools are extension-specific dependencies.
 
 No B0 run command exists yet. Add it with the implementation and retain a
