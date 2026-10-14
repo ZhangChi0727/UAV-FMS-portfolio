@@ -8,6 +8,8 @@ No calendar duration or numerical result is implied.
 
 Execution detail: [B0 work order](work_orders/B0_work_order.md).
 Environment handoff: [development readiness work order](work_orders/development_readiness.md).
+Active component increment: [G2 estimator/controller work order](work_orders/B0_G2_work_order.md),
+starting with G2-A estimator S0 pending original-PA design acceptance.
 Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md),
 [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md), the retained
 [G1.5-B structured phase-one pilot](work_orders/B0_G1_5_B_structured_sysml_pilot_work_order.md),

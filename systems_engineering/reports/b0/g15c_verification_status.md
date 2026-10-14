@@ -5,8 +5,8 @@
 ## First-screen conclusion
 
 - Design traceability: **30/30 requirements** have source, model and verification relations; the controlled catalog contains **26 model identities** and **29/29 planned specifications**.
-- Execution: **5/29 specifications** have at least one current production execution record.
-- Accepted evidence: **0/1 production records**.
+- Execution: **9/29 specifications** have at least one current production execution record.
+- Accepted evidence: **0/3 production records**.
 - Requirement satisfaction: **0/30**. A requirement counts only when every required specification has complete, applicable, available and accepted pass evidence.
 - Current gap: 0/30 requirements currently have accepted complete evidence; all remaining gaps are listed per requirement.
 
@@ -21,6 +21,8 @@
 | Record | Level | Result | Evidence | Applicability | Review | Coverage |
 |---|---|---|---|---|---|---|
 | `B0-EXEC-G1-COMPONENT-20261013` | module | pass | remote_unverified | applicable_by_analysis | pending | partial |
+| `B0-EXEC-G2A-ESTIMATOR-CORE-20261014` | module | pass | remote_unverified | applicable_exact | pending | complete |
+| `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014` | module | pass | remote_unverified | applicable_exact | pending | partial |
 
 ## Requirement index
 
@@ -44,12 +46,12 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 ### Group: with execution
 <a id="group-with-execution"></a>
 
-[`B0-REQ-0005`](#b0-req-0005), [`B0-REQ-0006`](#b0-req-0006), [`B0-REQ-0008`](#b0-req-0008), [`B0-REQ-0010`](#b0-req-0010), [`B0-REQ-0011`](#b0-req-0011)
+[`B0-REQ-0005`](#b0-req-0005), [`B0-REQ-0006`](#b0-req-0006), [`B0-REQ-0008`](#b0-req-0008), [`B0-REQ-0010`](#b0-req-0010), [`B0-REQ-0011`](#b0-req-0011), [`B0-REQ-0012`](#b0-req-0012), [`B0-REQ-0013`](#b0-req-0013), [`B0-REQ-0014`](#b0-req-0014), [`B0-REQ-0015`](#b0-req-0015)
 
 ### Group: without execution
 <a id="group-without-execution"></a>
 
-[`B0-REQ-0001`](#b0-req-0001), [`B0-REQ-0002`](#b0-req-0002), [`B0-REQ-0003`](#b0-req-0003), [`B0-REQ-0004`](#b0-req-0004), [`B0-REQ-0007`](#b0-req-0007), [`B0-REQ-0009`](#b0-req-0009), [`B0-REQ-0012`](#b0-req-0012), [`B0-REQ-0013`](#b0-req-0013), [`B0-REQ-0014`](#b0-req-0014), [`B0-REQ-0015`](#b0-req-0015), [`B0-REQ-0016`](#b0-req-0016), [`B0-REQ-0017`](#b0-req-0017), [`B0-REQ-0018`](#b0-req-0018), [`B0-REQ-0019`](#b0-req-0019), [`B0-REQ-0020`](#b0-req-0020), [`B0-REQ-0021`](#b0-req-0021), [`B0-REQ-0022`](#b0-req-0022), [`B0-REQ-0023`](#b0-req-0023), [`B0-REQ-0024`](#b0-req-0024), [`B0-REQ-0025`](#b0-req-0025), [`B0-REQ-0026`](#b0-req-0026), [`B0-REQ-0027`](#b0-req-0027), [`B0-REQ-0028`](#b0-req-0028), [`B0-REQ-0029`](#b0-req-0029), [`B0-REQ-0030`](#b0-req-0030)
+[`B0-REQ-0001`](#b0-req-0001), [`B0-REQ-0002`](#b0-req-0002), [`B0-REQ-0003`](#b0-req-0003), [`B0-REQ-0004`](#b0-req-0004), [`B0-REQ-0007`](#b0-req-0007), [`B0-REQ-0009`](#b0-req-0009), [`B0-REQ-0016`](#b0-req-0016), [`B0-REQ-0017`](#b0-req-0017), [`B0-REQ-0018`](#b0-req-0018), [`B0-REQ-0019`](#b0-req-0019), [`B0-REQ-0020`](#b0-req-0020), [`B0-REQ-0021`](#b0-req-0021), [`B0-REQ-0022`](#b0-req-0022), [`B0-REQ-0023`](#b0-req-0023), [`B0-REQ-0024`](#b0-req-0024), [`B0-REQ-0025`](#b0-req-0025), [`B0-REQ-0026`](#b0-req-0026), [`B0-REQ-0027`](#b0-req-0027), [`B0-REQ-0028`](#b0-req-0028), [`B0-REQ-0029`](#b0-req-0029), [`B0-REQ-0030`](#b0-req-0030)
 
 ## Requirement chains
 
@@ -182,7 +184,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Defines the minimum planned G2 attitude propagation responsibility.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-PROPAGATION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834), SHA-256 `1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-PROPAGATION.
 
 ### B0-REQ-0013
@@ -193,7 +195,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity-based tilt correction is conditional and must not silently treat all acceleration as gravity.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-FUSION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834), SHA-256 `1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-FUSION.
 
 ### B0-REQ-0014
@@ -204,7 +206,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity provides no absolute heading reference.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-YAW-LIMITATION` (analysis; estimator verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834), SHA-256 `1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-YAW-LIMITATION.
 
 ### B0-REQ-0015
@@ -215,7 +217,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: The bounded attitude model lacks complete translational dynamics and must characterize rather than hide this limitation.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ACCEL-CONTAMINATION` (test; integration verification; planned `not_run`)
-- Execution/evidence/review: Not executed; evidence and review are pending.
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834), SHA-256 `1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-ACCEL-CONTAMINATION.
 
 ### B0-REQ-0016
