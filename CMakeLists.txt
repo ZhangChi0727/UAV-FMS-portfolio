@@ -11,6 +11,8 @@ option(BUILD_LEGACY_NAVIGATION
        "Build the legacy EXT-NAV EKF targets" ON)
 option(BUILD_DEVELOPMENT_READINESS_SMOKE
        "Build only the development-readiness toolchain probe" OFF)
+option(BUILD_B0_CONTROLLER
+       "Build the B0 G2-B cascaded controller and required Python binding" OFF)
 
 if(BUILD_LEGACY_NAVIGATION)
     # The navigation targets are legacy scaffolding. They stay available for
@@ -72,4 +74,8 @@ endif()
 
 if(BUILD_DEVELOPMENT_READINESS_SMOKE)
     add_subdirectory(tools/development_readiness)
+endif()
+
+if(BUILD_B0_CONTROLLER)
+    add_subdirectory(03_control/b0)
 endif()

@@ -4,7 +4,7 @@
     "requirements_path": "systems_engineering/requirements/b0_requirements.json",
     "verification_path": "systems_engineering/verification/b0_verification_specifications.json",
     "frozen_asset_commit": "ddd281fd0a94ee59635accb5f41500fac05284b7",
-    "closeout_commit": "62aad74babd41d31c472038db2cdd10999ea426e"
+    "closeout_commit": "5b81b9749ce048a358c60b5f799494361b907ded"
   },
   "records": [
     {
@@ -102,8 +102,8 @@
         "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
       },
       "applicability": {
-        "status": "applicable_exact",
-        "basis": "The implementation revision, evidence-producing revision and applicability target are identical. The checker also requires committed HEAD to retain every byte in the estimator dependency closure.",
+        "status": "stale",
+        "basis": "Superseded after the CI workflow changed for G2-B; retained as historical evidence only.",
         "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
         "target_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
         "relevant_files": [
@@ -160,8 +160,8 @@
         "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
       },
       "applicability": {
-        "status": "applicable_exact",
-        "basis": "The implementation revision, evidence-producing revision and applicability target are identical. The checker also requires committed HEAD to retain every byte in the estimator dependency closure.",
+        "status": "stale",
+        "basis": "Superseded after the CI workflow changed for G2-B; retained as historical evidence only.",
         "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
         "target_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
         "relevant_files": [
@@ -179,6 +179,902 @@
       "review": {"status": "pending", "reviewer": null, "source": null},
       "coverage": "partial",
       "supersedes": null
+    },
+{"id":"B0-EXEC-G2A-ESTIMATOR-CORE-REFRESH-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-ESTIMATOR-PROPAGATION","B0-VER-ESTIMATOR-FUSION"],"requirement_ids":["B0-REQ-0012","B0-REQ-0013"],"model_ids":["B0-MODEL-ESTIMATOR","B0-MODEL-STATE-ESTIMATE","B0-MODEL-IMU-SAMPLE"],"implementation":{"commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","paths":["02_estimation/b0/estimator.py","02_estimation/b0/evidence.py","02_estimation/b0/tests/test_estimator.py","02_estimation/b0/tests/test_evidence.py","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"symbols":["AttitudeEstimator","EstimatorInitialState","StateEstimate","build_evidence"]},"execution":{"result":"pass","method":"test","level":"module","command":"python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json","working_directory":"02_estimation/b0","environment":"GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"seed":7,"initial_conditions":"Each deterministic probe uses an explicit scalar-first Hamilton attitude estimate and declared reset epoch; exact cases are retained in the raw artifact.","started_at":"2026-10-14T04:37:00Z","completed_at":"2026-10-14T04:38:06Z","exit_code":0,"tests":{"passed":53,"failed":0,"skipped":0,"xfailed":0},"raw_result":"All 53 estimator-track tests passed and the retained evidence artifact reports passing propagation, tilt-fusion, contamination-gate, gap-recovery and atomic-rejection probes.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-PROPAGATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-FUSION"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748","artifact_id":11870351748,"artifact_file":"g2a_estimator_evidence.json","sha256":"251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6","archive_sha256":"c0a4c5ad876d2c18b37fa27d9724efe9b3a43de8c39fe514d3571213d5343d79","source_run":"38512402202","source_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","verified_at":null,"expires_at":"2027-01-12T04:38:06Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"Estimator bytes unchanged; G2-A rerun on the G2-B workflow; supersedes earlier evidence.","source_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","target_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"8b5dc30e70c526a57c9998ed68b6dbc9abd33bec1b167d831d8ad63dbe93a65d","target_sha256":"8b5dc30e70c526a57c9998ed68b6dbc9abd33bec1b167d831d8ad63dbe93a65d"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"02_estimation/b0/evidence.py","source_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b","target_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},{"path":"02_estimation/b0/tests/test_estimator.py","source_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a","target_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},{"path":"02_estimation/b0/tests/test_evidence.py","source_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af","target_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},{"path":"02_estimation/b0/configs/b0_g2_estimator.v1.json","source_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4","target_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},{"path":"02_estimation/b0/configs/b0_g2_estimator_approval.v1.json","source_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae","target_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"complete","supersedes":"B0-EXEC-G2A-ESTIMATOR-CORE-20261014"},
+    {"id":"B0-EXEC-G2A-ESTIMATOR-LIMITS-REFRESH-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-YAW-LIMITATION","B0-VER-ACCEL-CONTAMINATION"],"requirement_ids":["B0-REQ-0014","B0-REQ-0015"],"model_ids":["B0-MODEL-ESTIMATOR","B0-MODEL-EVALUATOR","B0-MODEL-IMU-SAMPLE"],"implementation":{"commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","paths":["02_estimation/b0/estimator.py","02_estimation/b0/evidence.py","02_estimation/b0/tests/test_estimator.py","02_estimation/b0/tests/test_evidence.py","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"symbols":["AttitudeEstimator","EstimatorDiagnostics","build_evidence"]},"execution":{"result":"pass","method":"analysis","level":"module","command":"python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json","working_directory":"02_estimation/b0","environment":"GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"seed":7,"initial_conditions":"Yaw is defined only relative to the explicit initialization attitude; contamination probes begin from a stationary bounded attitude with declared force inputs.","started_at":"2026-10-14T04:37:00Z","completed_at":"2026-10-14T04:38:06Z","exit_code":0,"tests":{"passed":53,"failed":0,"skipped":0,"xfailed":0},"raw_result":"The retained artifact demonstrates no absolute-yaw claim and records correction gating for the selected contamination cases; broader integrated scenario characterization remains pending.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-YAW-LIMITATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ACCEL-CONTAMINATION"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11870351748","artifact_id":11870351748,"artifact_file":"g2a_estimator_evidence.json","sha256":"251cd867802eef73c53f3e914f7bde4a57a31bc88a030b5a0c1e324a809435d6","archive_sha256":"c0a4c5ad876d2c18b37fa27d9724efe9b3a43de8c39fe514d3571213d5343d79","source_run":"38512402202","source_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","verified_at":null,"expires_at":"2027-01-12T04:38:06Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"Estimator bytes unchanged; G2-A rerun on the G2-B workflow; supersedes earlier evidence.","source_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","target_commit":"4eb3b7331b4c1873c653a8e90008fdb8cadb6f0f","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"8b5dc30e70c526a57c9998ed68b6dbc9abd33bec1b167d831d8ad63dbe93a65d","target_sha256":"8b5dc30e70c526a57c9998ed68b6dbc9abd33bec1b167d831d8ad63dbe93a65d"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"02_estimation/b0/evidence.py","source_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b","target_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},{"path":"02_estimation/b0/tests/test_estimator.py","source_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a","target_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},{"path":"02_estimation/b0/tests/test_evidence.py","source_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af","target_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},{"path":"02_estimation/b0/configs/b0_g2_estimator.v1.json","source_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4","target_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},{"path":"02_estimation/b0/configs/b0_g2_estimator_approval.v1.json","source_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae","target_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"partial","supersedes":"B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014"}
+    ,
+    {
+      "id": "B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REFRESH-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": [
+        "B0-VER-ESTIMATOR-PROPAGATION",
+        "B0-VER-ESTIMATOR-FUSION"
+      ],
+      "requirement_ids": [
+        "B0-REQ-0012",
+        "B0-REQ-0013"
+      ],
+      "model_ids": [
+        "B0-MODEL-ESTIMATOR",
+        "B0-MODEL-STATE-ESTIMATE",
+        "B0-MODEL-IMU-SAMPLE"
+      ],
+      "implementation": {
+        "commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "paths": [
+          "02_estimation/b0/estimator.py",
+          "02_estimation/b0/evidence.py",
+          "02_estimation/b0/tests/test_estimator.py",
+          "02_estimation/b0/tests/test_evidence.py",
+          "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+          "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"
+        ],
+        "symbols": [
+          "AttitudeEstimator",
+          "EstimatorInitialState",
+          "StateEstimate",
+          "build_evidence"
+        ]
+      },
+      "execution": {
+        "result": "pass",
+        "method": "test",
+        "level": "module",
+        "command": "python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json",
+        "working_directory": "02_estimation/b0",
+        "environment": "GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6",
+        "inputs": [
+          "05_integration/b0/configs/b0_g0_contract.v2.json",
+          "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+          "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"
+        ],
+        "seed": 7,
+        "initial_conditions": "Each deterministic probe uses an explicit scalar-first Hamilton attitude estimate and declared reset epoch; exact cases are retained in the raw artifact.",
+        "started_at": "2026-10-14T08:07:30Z",
+        "completed_at": "2026-10-14T08:07:48Z",
+        "exit_code": 0,
+        "tests": {
+          "passed": 53,
+          "failed": 0,
+          "skipped": 0,
+          "xfailed": 0
+        },
+        "raw_result": "All 53 estimator-track tests passed at the G2-B evidence-source commit; the retained artifact reports passing propagation, tilt-fusion, contamination-gate, gap-recovery and atomic-rejection probes.",
+        "criterion_locators": [
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-PROPAGATION",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-FUSION"
+        ]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621",
+        "artifact_id": 11878309621,
+        "artifact_file": "g2a_estimator_evidence.json",
+        "sha256": "5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070",
+        "archive_sha256": "6890e70a14b91e5d44753da3f3707ad9a956c00ee6f9dc881628dd3cb5566220",
+        "source_run": "38532918735",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "verified_at": null,
+        "expires_at": "2027-01-12T08:07:28Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "Exact G2-A rerun at the G2-B evidence-source commit; the workflow and complete estimator dependency closure are identical at source and target.",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "target_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "relevant_files": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "source_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113",
+            "target_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113"
+          },
+          {
+            "path": "02_estimation/b0/estimator.py",
+            "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9",
+            "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"
+          },
+          {
+            "path": "02_estimation/b0/evidence.py",
+            "source_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b",
+            "target_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"
+          },
+          {
+            "path": "02_estimation/b0/tests/test_estimator.py",
+            "source_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a",
+            "target_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"
+          },
+          {
+            "path": "02_estimation/b0/tests/test_evidence.py",
+            "source_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af",
+            "target_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"
+          },
+          {
+            "path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+            "source_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4",
+            "target_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"
+          },
+          {
+            "path": "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+            "source_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae",
+            "target_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"
+          },
+          {
+            "path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+            "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+            "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"
+          },
+          {
+            "path": "05_integration/b0/validate_config.py",
+            "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5",
+            "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"
+          }
+        ]
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null,
+        "source": null
+      },
+      "coverage": "complete",
+      "supersedes": "B0-EXEC-G2A-ESTIMATOR-CORE-REFRESH-20261014"
+    },
+    {
+      "id": "B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REFRESH-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": [
+        "B0-VER-YAW-LIMITATION",
+        "B0-VER-ACCEL-CONTAMINATION"
+      ],
+      "requirement_ids": [
+        "B0-REQ-0014",
+        "B0-REQ-0015"
+      ],
+      "model_ids": [
+        "B0-MODEL-ESTIMATOR",
+        "B0-MODEL-EVALUATOR",
+        "B0-MODEL-IMU-SAMPLE"
+      ],
+      "implementation": {
+        "commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "paths": [
+          "02_estimation/b0/estimator.py",
+          "02_estimation/b0/evidence.py",
+          "02_estimation/b0/tests/test_estimator.py",
+          "02_estimation/b0/tests/test_evidence.py",
+          "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+          "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"
+        ],
+        "symbols": [
+          "AttitudeEstimator",
+          "EstimatorDiagnostics",
+          "build_evidence"
+        ]
+      },
+      "execution": {
+        "result": "pass",
+        "method": "analysis",
+        "level": "module",
+        "command": "python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json",
+        "working_directory": "02_estimation/b0",
+        "environment": "GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6",
+        "inputs": [
+          "05_integration/b0/configs/b0_g0_contract.v2.json",
+          "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+          "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"
+        ],
+        "seed": 7,
+        "initial_conditions": "Yaw is defined only relative to the explicit initialization attitude; contamination probes begin from a stationary bounded attitude with declared force inputs.",
+        "started_at": "2026-10-14T08:07:30Z",
+        "completed_at": "2026-10-14T08:07:48Z",
+        "exit_code": 0,
+        "tests": {
+          "passed": 53,
+          "failed": 0,
+          "skipped": 0,
+          "xfailed": 0
+        },
+        "raw_result": "All 53 estimator-track tests passed at the G2-B evidence-source commit; the retained artifact preserves the no-absolute-yaw limitation and selected contamination-gate evidence, while broader integrated characterization remains pending.",
+        "criterion_locators": [
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-YAW-LIMITATION",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ACCEL-CONTAMINATION"
+        ]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878309621",
+        "artifact_id": 11878309621,
+        "artifact_file": "g2a_estimator_evidence.json",
+        "sha256": "5fa3659e587bd1d957be2cdb0db11046936697a18503f7cd520b939d45396070",
+        "archive_sha256": "6890e70a14b91e5d44753da3f3707ad9a956c00ee6f9dc881628dd3cb5566220",
+        "source_run": "38532918735",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "verified_at": null,
+        "expires_at": "2027-01-12T08:07:28Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "Exact G2-A rerun at the G2-B evidence-source commit; the workflow and complete estimator dependency closure are identical at source and target.",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "target_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "relevant_files": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "source_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113",
+            "target_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113"
+          },
+          {
+            "path": "02_estimation/b0/estimator.py",
+            "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9",
+            "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"
+          },
+          {
+            "path": "02_estimation/b0/evidence.py",
+            "source_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b",
+            "target_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"
+          },
+          {
+            "path": "02_estimation/b0/tests/test_estimator.py",
+            "source_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a",
+            "target_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"
+          },
+          {
+            "path": "02_estimation/b0/tests/test_evidence.py",
+            "source_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af",
+            "target_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"
+          },
+          {
+            "path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+            "source_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4",
+            "target_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"
+          },
+          {
+            "path": "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+            "source_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae",
+            "target_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"
+          },
+          {
+            "path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+            "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+            "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"
+          },
+          {
+            "path": "05_integration/b0/validate_config.py",
+            "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5",
+            "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"
+          }
+        ]
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null,
+        "source": null
+      },
+      "coverage": "partial",
+      "supersedes": "B0-EXEC-G2A-ESTIMATOR-LIMITS-REFRESH-20261014"
+    },
+    {
+      "id": "B0-EXEC-G2B-CONTROLLER-DEBUG-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": [
+        "B0-VER-TRUTH-BOUNDARY",
+        "B0-VER-CONVENTIONS",
+        "B0-VER-PAIRED-COMMAND",
+        "B0-VER-PAIRED-FEEDBACK",
+        "B0-VER-CONTROLLER-SIGN",
+        "B0-VER-CONTROLLER-SATURATION",
+        "B0-VER-ANTI-WINDUP",
+        "B0-VER-INVALID-INPUT",
+        "B0-VER-RESET",
+        "B0-VER-LANGUAGE-BOUNDARY",
+        "B0-VER-INVALID-MEASUREMENT"
+      ],
+      "requirement_ids": [
+        "B0-REQ-0003",
+        "B0-REQ-0004",
+        "B0-REQ-0007",
+        "B0-REQ-0009",
+        "B0-REQ-0016",
+        "B0-REQ-0017",
+        "B0-REQ-0018",
+        "B0-REQ-0019",
+        "B0-REQ-0020",
+        "B0-REQ-0026",
+        "B0-REQ-0029"
+      ],
+      "model_ids": [
+        "B0-MODEL-SYSTEM",
+        "B0-MODEL-TRUTH",
+        "B0-MODEL-ESTIMATOR",
+        "B0-MODEL-CONTROLLER",
+        "B0-MODEL-EVALUATOR",
+        "B0-MODEL-TORQUE-COMMAND",
+        "B0-MODEL-ACTUATOR",
+        "B0-MODEL-ACTUATOR-FEEDBACK",
+        "B0-MODEL-COMMAND",
+        "B0-MODEL-STATE-ESTIMATE",
+        "B0-MODEL-EXECUTION",
+        "B0-MODEL-IMU-SAMPLE",
+        "B0-MODEL-RESET"
+      ],
+      "implementation": {
+        "commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "paths": [
+          "03_control/b0/CMakeLists.txt",
+          "03_control/b0/include/b0_controller/controller.hpp",
+          "03_control/b0/src/controller.cpp",
+          "03_control/b0/python/controller_bindings.cpp",
+          "03_control/b0/python/controller.py",
+          "03_control/b0/tests/test_controller.cpp",
+          "03_control/b0/tests/expect_mutation_detected.py",
+          "03_control/b0/python/tests/test_binding.py",
+          "03_control/b0/python/tests/test_adapter.py",
+          "03_control/b0/python/tests/test_config.py",
+          "03_control/b0/evidence.py",
+          "03_control/b0/configs/b0_g2_controller.v1.json",
+          "03_control/b0/configs/b0_g2_controller_approval.v1.json"
+        ],
+        "symbols": [
+          "CascadedAttitudeController",
+          "ControllerConfig",
+          "ControllerDiagnostics",
+          "ControllerSnapshot",
+          "command_from_state_estimate",
+          "build_evidence"
+        ]
+      },
+      "execution": {
+        "result": "pass",
+        "method": "test",
+        "level": "module",
+        "command": "python -m ruff check 03_control/b0/python 03_control/b0/evidence.py 03_control/b0/tests/expect_mutation_detected.py && cmake --preset b0-controller-debug && cmake --build --preset b0-controller-debug && ctest --preset b0-controller-debug && cmake -E remove_directory build/b0-controller/debug && cmake --preset b0-controller-debug && cmake --build --preset b0-controller-debug && ctest --preset b0-controller-debug && ctest --preset b0-controller-debug --output-on-failure --output-log ctest-debug.log --output-junit ctest-debug.xml && python 03_control/b0/evidence.py --module-dir build/b0-controller/debug/03_control/b0 --build-dir build/b0-controller/debug --build-type Debug --output g2b_controller_evidence_debug.json",
+        "working_directory": "repository root",
+        "environment": "GitHub Actions ubuntu-latest (Linux glibc 2.39); Python 3.11.17; GCC 13.3.0; CMake 3.30.5; pybind11 2.13.6; Catch2 3.5.4 pinned; Debug",
+        "inputs": [
+          "05_integration/b0/configs/b0_g0_contract.v2.json",
+          "03_control/b0/configs/b0_g2_controller.v1.json",
+          "03_control/b0/configs/b0_g2_controller_approval.v1.json"
+        ],
+        "seed": null,
+        "initial_conditions": "Deterministic module probes use explicit scalar-first Hamilton attitudes, body rates, epoch/tick state, held paired commands and actuator feedback; exact selected traces are retained in the JSON artifact.",
+        "started_at": "2026-10-14T08:07:30Z",
+        "completed_at": "2026-10-14T08:08:44Z",
+        "exit_code": 0,
+        "tests": {
+          "passed": 25,
+          "failed": 0,
+          "skipped": 0,
+          "xfailed": 0
+        },
+        "raw_result": "All 25 Debug CTest nodes passed: 20 production Catch2 nodes, one Python boundary track and four isolated mutation-detection nodes. The retained JSON reports every selected component criterion true. No G3 closed-loop performance result is claimed.",
+        "criterion_locators": [
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-TRUTH-BOUNDARY",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONVENTIONS",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-COMMAND",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-FEEDBACK",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SIGN",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SATURATION",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ANTI-WINDUP",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-INPUT",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-RESET",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-LANGUAGE-BOUNDARY",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-MEASUREMENT"
+        ]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11878875529",
+        "artifact_id": 11878875529,
+        "artifact_file": "g2b_controller_evidence_debug.json",
+        "sha256": "b0a46fa341df3e7eef0c1f6acd823e4be17d3dabd424b6f316619b9326d97640",
+        "archive_sha256": "c5b01125095e703449e4f25594abf46791e76b185600ca351aa46b0c1cf11679",
+        "source_run": "38532918735",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "verified_at": null,
+        "expires_at": "2027-01-12T08:07:28Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "The Debug artifact was generated from the exact evidence-source commit; every file in the mandatory G2-B dependency closure has identical source and target bytes.",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "target_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "relevant_files": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "source_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113",
+            "target_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113"
+          },
+          {
+            "path": "01_simulation/b0/__init__.py",
+            "source_sha256": "deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d",
+            "target_sha256": "deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d"
+          },
+          {
+            "path": "01_simulation/b0/actuator.py",
+            "source_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f",
+            "target_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"
+          },
+          {
+            "path": "01_simulation/b0/contract.py",
+            "source_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013",
+            "target_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013"
+          },
+          {
+            "path": "01_simulation/b0/imu.py",
+            "source_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a",
+            "target_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"
+          },
+          {
+            "path": "01_simulation/b0/plant.py",
+            "source_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90",
+            "target_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"
+          },
+          {
+            "path": "01_simulation/b0/quaternion.py",
+            "source_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa",
+            "target_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa"
+          },
+          {
+            "path": "02_estimation/b0/estimator.py",
+            "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9",
+            "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"
+          },
+          {
+            "path": "03_control/b0/CMakeLists.txt",
+            "source_sha256": "0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84",
+            "target_sha256": "0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84"
+          },
+          {
+            "path": "03_control/b0/README.md",
+            "source_sha256": "5e424dc6e320a4cbae9f8ba0b86980e9046ce8c53dcbd4f7d982a7705b72a472",
+            "target_sha256": "5e424dc6e320a4cbae9f8ba0b86980e9046ce8c53dcbd4f7d982a7705b72a472"
+          },
+          {
+            "path": "03_control/b0/configs/b0_g2_controller.v1.json",
+            "source_sha256": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6",
+            "target_sha256": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6"
+          },
+          {
+            "path": "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+            "source_sha256": "2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4",
+            "target_sha256": "2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4"
+          },
+          {
+            "path": "03_control/b0/evidence.py",
+            "source_sha256": "184e1b488a82e9f87b92913dbd3fc301fc6f7862c785dde6f07e61c3a3e014c2",
+            "target_sha256": "184e1b488a82e9f87b92913dbd3fc301fc6f7862c785dde6f07e61c3a3e014c2"
+          },
+          {
+            "path": "03_control/b0/include/b0_controller/controller.hpp",
+            "source_sha256": "d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625",
+            "target_sha256": "d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625"
+          },
+          {
+            "path": "03_control/b0/python/controller.py",
+            "source_sha256": "736fe7885f68ddae5d0bf1c5b1f8653b78bab3accd36a9b935a5cadd28fc123d",
+            "target_sha256": "736fe7885f68ddae5d0bf1c5b1f8653b78bab3accd36a9b935a5cadd28fc123d"
+          },
+          {
+            "path": "03_control/b0/python/controller_bindings.cpp",
+            "source_sha256": "8791a26d2d9bd6dce5db4f4536d6a6a63be26e84c8b174a0a0a377a93fff3860",
+            "target_sha256": "8791a26d2d9bd6dce5db4f4536d6a6a63be26e84c8b174a0a0a377a93fff3860"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_adapter.py",
+            "source_sha256": "fa2846efeb5b28959a2479b44f850ad550ca6e40772a9a10b42849c8d9b0a039",
+            "target_sha256": "fa2846efeb5b28959a2479b44f850ad550ca6e40772a9a10b42849c8d9b0a039"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_binding.py",
+            "source_sha256": "f25140eae76c58371c5f0d13d427991e1d72b127cca0dd8b41308d45a4afc6ee",
+            "target_sha256": "f25140eae76c58371c5f0d13d427991e1d72b127cca0dd8b41308d45a4afc6ee"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_config.py",
+            "source_sha256": "b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100",
+            "target_sha256": "b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100"
+          },
+          {
+            "path": "03_control/b0/src/controller.cpp",
+            "source_sha256": "6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d",
+            "target_sha256": "6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d"
+          },
+          {
+            "path": "03_control/b0/tests/expect_mutation_detected.py",
+            "source_sha256": "f4260bb34b5d231d83159fbde0837703fce8bccbd4ebce1556f29ec528d5ecba",
+            "target_sha256": "f4260bb34b5d231d83159fbde0837703fce8bccbd4ebce1556f29ec528d5ecba"
+          },
+          {
+            "path": "03_control/b0/tests/test_controller.cpp",
+            "source_sha256": "74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0",
+            "target_sha256": "74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0"
+          },
+          {
+            "path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+            "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+            "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"
+          },
+          {
+            "path": "05_integration/b0/validate_config.py",
+            "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5",
+            "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"
+          },
+          {
+            "path": "CMakeLists.txt",
+            "source_sha256": "a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1",
+            "target_sha256": "a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1"
+          },
+          {
+            "path": "CMakePresets.json",
+            "source_sha256": "1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6",
+            "target_sha256": "1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6"
+          },
+          {
+            "path": "requirements/b0-dev.txt",
+            "source_sha256": "4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52",
+            "target_sha256": "4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52"
+          },
+          {
+            "path": "systems_engineering/reports/b0/g2b_s0_controller_design.md",
+            "source_sha256": "7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17",
+            "target_sha256": "7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17"
+          },
+          {
+            "path": "systems_engineering/reports/b0/g2b_s0_controller_verification_matrix.md",
+            "source_sha256": "2126dfc7f28eea85dcca2ba1cdce6a026c7e03b9d28d3d378adc59d3e90889f2",
+            "target_sha256": "2126dfc7f28eea85dcca2ba1cdce6a026c7e03b9d28d3d378adc59d3e90889f2"
+          },
+          {
+            "path": "systems_engineering/verification/b0_execution_evidence.schema.json",
+            "source_sha256": "5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd",
+            "target_sha256": "5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd"
+          },
+          {
+            "path": "tools/systems_engineering/g15c_traceability.py",
+            "source_sha256": "c71e1269009c4d8ca1bed8f7682efcc534aa4254bc6f9dc0cacde3d105d783e6",
+            "target_sha256": "c71e1269009c4d8ca1bed8f7682efcc534aa4254bc6f9dc0cacde3d105d783e6"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g15c_traceability.py",
+            "source_sha256": "e7a94252e0d8f5463c55fe65cc15210d44bd4350791c5a3b7e8535f095a31634",
+            "target_sha256": "e7a94252e0d8f5463c55fe65cc15210d44bd4350791c5a3b7e8535f095a31634"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g2b_evidence_contract.py",
+            "source_sha256": "d4e722baa6ed7c8c6a42bfe4e3a8e6f30fc0910dc2d037ea73cd6d88dbea0896",
+            "target_sha256": "d4e722baa6ed7c8c6a42bfe4e3a8e6f30fc0910dc2d037ea73cd6d88dbea0896"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g2b_matrix_closure.py",
+            "source_sha256": "fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213",
+            "target_sha256": "fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213"
+          }
+        ]
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null,
+        "source": null
+      },
+      "coverage": "partial",
+      "supersedes": null
+    },
+    {
+      "id": "B0-EXEC-G2B-CONTROLLER-RELEASE-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": [
+        "B0-VER-TRUTH-BOUNDARY",
+        "B0-VER-CONVENTIONS",
+        "B0-VER-PAIRED-COMMAND",
+        "B0-VER-PAIRED-FEEDBACK",
+        "B0-VER-CONTROLLER-SIGN",
+        "B0-VER-CONTROLLER-SATURATION",
+        "B0-VER-ANTI-WINDUP",
+        "B0-VER-INVALID-INPUT",
+        "B0-VER-RESET",
+        "B0-VER-LANGUAGE-BOUNDARY",
+        "B0-VER-INVALID-MEASUREMENT"
+      ],
+      "requirement_ids": [
+        "B0-REQ-0003",
+        "B0-REQ-0004",
+        "B0-REQ-0007",
+        "B0-REQ-0009",
+        "B0-REQ-0016",
+        "B0-REQ-0017",
+        "B0-REQ-0018",
+        "B0-REQ-0019",
+        "B0-REQ-0020",
+        "B0-REQ-0026",
+        "B0-REQ-0029"
+      ],
+      "model_ids": [
+        "B0-MODEL-SYSTEM",
+        "B0-MODEL-TRUTH",
+        "B0-MODEL-ESTIMATOR",
+        "B0-MODEL-CONTROLLER",
+        "B0-MODEL-EVALUATOR",
+        "B0-MODEL-TORQUE-COMMAND",
+        "B0-MODEL-ACTUATOR",
+        "B0-MODEL-ACTUATOR-FEEDBACK",
+        "B0-MODEL-COMMAND",
+        "B0-MODEL-STATE-ESTIMATE",
+        "B0-MODEL-EXECUTION",
+        "B0-MODEL-IMU-SAMPLE",
+        "B0-MODEL-RESET"
+      ],
+      "implementation": {
+        "commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "paths": [
+          "03_control/b0/CMakeLists.txt",
+          "03_control/b0/include/b0_controller/controller.hpp",
+          "03_control/b0/src/controller.cpp",
+          "03_control/b0/python/controller_bindings.cpp",
+          "03_control/b0/python/controller.py",
+          "03_control/b0/tests/test_controller.cpp",
+          "03_control/b0/tests/expect_mutation_detected.py",
+          "03_control/b0/python/tests/test_binding.py",
+          "03_control/b0/python/tests/test_adapter.py",
+          "03_control/b0/python/tests/test_config.py",
+          "03_control/b0/evidence.py",
+          "03_control/b0/configs/b0_g2_controller.v1.json",
+          "03_control/b0/configs/b0_g2_controller_approval.v1.json"
+        ],
+        "symbols": [
+          "CascadedAttitudeController",
+          "ControllerConfig",
+          "ControllerDiagnostics",
+          "ControllerSnapshot",
+          "command_from_state_estimate",
+          "build_evidence"
+        ]
+      },
+      "execution": {
+        "result": "pass",
+        "method": "test",
+        "level": "module",
+        "command": "python -m ruff check 03_control/b0/python 03_control/b0/evidence.py 03_control/b0/tests/expect_mutation_detected.py && cmake --preset b0-controller-release && cmake --build --preset b0-controller-release && ctest --preset b0-controller-release && ctest --preset b0-controller-release --output-on-failure --output-log ctest-release.log --output-junit ctest-release.xml && python 03_control/b0/evidence.py --module-dir build/b0-controller/release/03_control/b0 --build-dir build/b0-controller/release --build-type Release --output g2b_controller_evidence_release.json",
+        "working_directory": "repository root",
+        "environment": "GitHub Actions ubuntu-latest (Linux glibc 2.39); Python 3.11.17; GCC 13.3.0; CMake 3.30.5; pybind11 2.13.6; Catch2 3.5.4 pinned; Release",
+        "inputs": [
+          "05_integration/b0/configs/b0_g0_contract.v2.json",
+          "03_control/b0/configs/b0_g2_controller.v1.json",
+          "03_control/b0/configs/b0_g2_controller_approval.v1.json"
+        ],
+        "seed": null,
+        "initial_conditions": "Deterministic module probes use explicit scalar-first Hamilton attitudes, body rates, epoch/tick state, held paired commands and actuator feedback; exact selected traces are retained in the JSON artifact.",
+        "started_at": "2026-10-14T08:07:30Z",
+        "completed_at": "2026-10-14T08:08:28Z",
+        "exit_code": 0,
+        "tests": {
+          "passed": 25,
+          "failed": 0,
+          "skipped": 0,
+          "xfailed": 0
+        },
+        "raw_result": "All 25 Release CTest nodes passed: 20 production Catch2 nodes, one Python boundary track and four isolated mutation-detection nodes. The retained JSON reports every selected component criterion true. No G3 closed-loop performance result is claimed.",
+        "criterion_locators": [
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-TRUTH-BOUNDARY",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONVENTIONS",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-COMMAND",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-FEEDBACK",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SIGN",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SATURATION",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ANTI-WINDUP",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-INPUT",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-RESET",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-LANGUAGE-BOUNDARY",
+          "systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-MEASUREMENT"
+        ]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11877869642",
+        "artifact_id": 11877869642,
+        "artifact_file": "g2b_controller_evidence_release.json",
+        "sha256": "a10f4590d77226e8d62e398014b33e588c75ab966c1794405f01762273271da4",
+        "archive_sha256": "6e49809ab40615bc8d0f98592e01c55fe396337b53a58e25b108d54f563de162",
+        "source_run": "38532918735",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "verified_at": null,
+        "expires_at": "2027-01-12T08:07:28Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "The Release artifact was generated from the exact evidence-source commit; every file in the mandatory G2-B dependency closure has identical source and target bytes.",
+        "source_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "target_commit": "59e360a0f50bd1bd5060be2756f9a3bd6cad54f4",
+        "relevant_files": [
+          {
+            "path": ".github/workflows/ci.yml",
+            "source_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113",
+            "target_sha256": "ecfa479d696c650d71616c181f98ad8c2ad89a820da84208904f6d476c5b7113"
+          },
+          {
+            "path": "01_simulation/b0/__init__.py",
+            "source_sha256": "deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d",
+            "target_sha256": "deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d"
+          },
+          {
+            "path": "01_simulation/b0/actuator.py",
+            "source_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f",
+            "target_sha256": "e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"
+          },
+          {
+            "path": "01_simulation/b0/contract.py",
+            "source_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013",
+            "target_sha256": "a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013"
+          },
+          {
+            "path": "01_simulation/b0/imu.py",
+            "source_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a",
+            "target_sha256": "9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"
+          },
+          {
+            "path": "01_simulation/b0/plant.py",
+            "source_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90",
+            "target_sha256": "146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"
+          },
+          {
+            "path": "01_simulation/b0/quaternion.py",
+            "source_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa",
+            "target_sha256": "6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa"
+          },
+          {
+            "path": "02_estimation/b0/estimator.py",
+            "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9",
+            "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"
+          },
+          {
+            "path": "03_control/b0/CMakeLists.txt",
+            "source_sha256": "0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84",
+            "target_sha256": "0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84"
+          },
+          {
+            "path": "03_control/b0/README.md",
+            "source_sha256": "5e424dc6e320a4cbae9f8ba0b86980e9046ce8c53dcbd4f7d982a7705b72a472",
+            "target_sha256": "5e424dc6e320a4cbae9f8ba0b86980e9046ce8c53dcbd4f7d982a7705b72a472"
+          },
+          {
+            "path": "03_control/b0/configs/b0_g2_controller.v1.json",
+            "source_sha256": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6",
+            "target_sha256": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6"
+          },
+          {
+            "path": "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+            "source_sha256": "2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4",
+            "target_sha256": "2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4"
+          },
+          {
+            "path": "03_control/b0/evidence.py",
+            "source_sha256": "184e1b488a82e9f87b92913dbd3fc301fc6f7862c785dde6f07e61c3a3e014c2",
+            "target_sha256": "184e1b488a82e9f87b92913dbd3fc301fc6f7862c785dde6f07e61c3a3e014c2"
+          },
+          {
+            "path": "03_control/b0/include/b0_controller/controller.hpp",
+            "source_sha256": "d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625",
+            "target_sha256": "d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625"
+          },
+          {
+            "path": "03_control/b0/python/controller.py",
+            "source_sha256": "736fe7885f68ddae5d0bf1c5b1f8653b78bab3accd36a9b935a5cadd28fc123d",
+            "target_sha256": "736fe7885f68ddae5d0bf1c5b1f8653b78bab3accd36a9b935a5cadd28fc123d"
+          },
+          {
+            "path": "03_control/b0/python/controller_bindings.cpp",
+            "source_sha256": "8791a26d2d9bd6dce5db4f4536d6a6a63be26e84c8b174a0a0a377a93fff3860",
+            "target_sha256": "8791a26d2d9bd6dce5db4f4536d6a6a63be26e84c8b174a0a0a377a93fff3860"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_adapter.py",
+            "source_sha256": "fa2846efeb5b28959a2479b44f850ad550ca6e40772a9a10b42849c8d9b0a039",
+            "target_sha256": "fa2846efeb5b28959a2479b44f850ad550ca6e40772a9a10b42849c8d9b0a039"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_binding.py",
+            "source_sha256": "f25140eae76c58371c5f0d13d427991e1d72b127cca0dd8b41308d45a4afc6ee",
+            "target_sha256": "f25140eae76c58371c5f0d13d427991e1d72b127cca0dd8b41308d45a4afc6ee"
+          },
+          {
+            "path": "03_control/b0/python/tests/test_config.py",
+            "source_sha256": "b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100",
+            "target_sha256": "b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100"
+          },
+          {
+            "path": "03_control/b0/src/controller.cpp",
+            "source_sha256": "6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d",
+            "target_sha256": "6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d"
+          },
+          {
+            "path": "03_control/b0/tests/expect_mutation_detected.py",
+            "source_sha256": "f4260bb34b5d231d83159fbde0837703fce8bccbd4ebce1556f29ec528d5ecba",
+            "target_sha256": "f4260bb34b5d231d83159fbde0837703fce8bccbd4ebce1556f29ec528d5ecba"
+          },
+          {
+            "path": "03_control/b0/tests/test_controller.cpp",
+            "source_sha256": "74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0",
+            "target_sha256": "74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0"
+          },
+          {
+            "path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+            "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+            "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"
+          },
+          {
+            "path": "05_integration/b0/validate_config.py",
+            "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5",
+            "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"
+          },
+          {
+            "path": "CMakeLists.txt",
+            "source_sha256": "a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1",
+            "target_sha256": "a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1"
+          },
+          {
+            "path": "CMakePresets.json",
+            "source_sha256": "1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6",
+            "target_sha256": "1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6"
+          },
+          {
+            "path": "requirements/b0-dev.txt",
+            "source_sha256": "4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52",
+            "target_sha256": "4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52"
+          },
+          {
+            "path": "systems_engineering/reports/b0/g2b_s0_controller_design.md",
+            "source_sha256": "7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17",
+            "target_sha256": "7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17"
+          },
+          {
+            "path": "systems_engineering/reports/b0/g2b_s0_controller_verification_matrix.md",
+            "source_sha256": "2126dfc7f28eea85dcca2ba1cdce6a026c7e03b9d28d3d378adc59d3e90889f2",
+            "target_sha256": "2126dfc7f28eea85dcca2ba1cdce6a026c7e03b9d28d3d378adc59d3e90889f2"
+          },
+          {
+            "path": "systems_engineering/verification/b0_execution_evidence.schema.json",
+            "source_sha256": "5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd",
+            "target_sha256": "5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd"
+          },
+          {
+            "path": "tools/systems_engineering/g15c_traceability.py",
+            "source_sha256": "c71e1269009c4d8ca1bed8f7682efcc534aa4254bc6f9dc0cacde3d105d783e6",
+            "target_sha256": "c71e1269009c4d8ca1bed8f7682efcc534aa4254bc6f9dc0cacde3d105d783e6"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g15c_traceability.py",
+            "source_sha256": "e7a94252e0d8f5463c55fe65cc15210d44bd4350791c5a3b7e8535f095a31634",
+            "target_sha256": "e7a94252e0d8f5463c55fe65cc15210d44bd4350791c5a3b7e8535f095a31634"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g2b_evidence_contract.py",
+            "source_sha256": "d4e722baa6ed7c8c6a42bfe4e3a8e6f30fc0910dc2d037ea73cd6d88dbea0896",
+            "target_sha256": "d4e722baa6ed7c8c6a42bfe4e3a8e6f30fc0910dc2d037ea73cd6d88dbea0896"
+          },
+          {
+            "path": "tools/systems_engineering/tests/test_g2b_matrix_closure.py",
+            "source_sha256": "fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213",
+            "target_sha256": "fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213"
+          }
+        ]
+      },
+      "review": {
+        "status": "pending",
+        "reviewer": null,
+        "source": null
+      },
+      "coverage": "partial",
+      "supersedes": null
     }
+    ,
+    {"id":"B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REVIEW2-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-ESTIMATOR-PROPAGATION","B0-VER-ESTIMATOR-FUSION"],"requirement_ids":["B0-REQ-0012","B0-REQ-0013"],"model_ids":["B0-MODEL-ESTIMATOR","B0-MODEL-STATE-ESTIMATE","B0-MODEL-IMU-SAMPLE"],"implementation":{"commit":"5b81b9749ce048a358c60b5f799494361b907ded","paths":["02_estimation/b0/estimator.py","02_estimation/b0/evidence.py","02_estimation/b0/tests/test_estimator.py","02_estimation/b0/tests/test_evidence.py","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"symbols":["AttitudeEstimator","EstimatorInitialState","StateEstimate","build_evidence"]},"execution":{"result":"pass","method":"test","level":"module","command":"python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json","working_directory":"02_estimation/b0","environment":"GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"seed":7,"initial_conditions":"Each deterministic probe uses an explicit scalar-first Hamilton attitude estimate and declared reset epoch; exact cases are retained in the raw artifact.","started_at":"2026-10-14T11:19:39Z","completed_at":"2026-10-14T11:20:02Z","exit_code":0,"tests":{"passed":53,"failed":0,"skipped":0,"xfailed":0},"raw_result":"All 53 estimator-track tests passed at the G2-B re-review evidence-source commit; the retained artifact reports passing propagation, tilt-fusion, contamination-gate, gap-recovery and atomic-rejection probes. Actions job 115824406625.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-PROPAGATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-FUSION"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11888862827","artifact_id":11888862827,"artifact_file":"g2a_estimator_evidence.json","sha256":"8a93f61948f8368330f6d5dcf46631acb8e3193c6445b7472fa2176428bb1082","archive_sha256":"2e4d78fbcd323f9fdc942f4072dc77cdb5f932388c3f34e887ecff01def77ffa","source_run":"38555772322","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","verified_at":null,"expires_at":"2027-01-12T11:19:37Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"Exact G2-A rerun at the G2-B re-review evidence-source commit; the workflow and complete nine-file estimator dependency closure are identical at source and target.","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","target_commit":"5b81b9749ce048a358c60b5f799494361b907ded","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72","target_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"02_estimation/b0/evidence.py","source_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b","target_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},{"path":"02_estimation/b0/tests/test_estimator.py","source_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a","target_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},{"path":"02_estimation/b0/tests/test_evidence.py","source_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af","target_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},{"path":"02_estimation/b0/configs/b0_g2_estimator.v1.json","source_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4","target_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},{"path":"02_estimation/b0/configs/b0_g2_estimator_approval.v1.json","source_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae","target_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"complete","supersedes":"B0-EXEC-G2A-ESTIMATOR-CORE-G2B-REFRESH-20261014"}
+    ,
+    {"id":"B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REVIEW2-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-YAW-LIMITATION","B0-VER-ACCEL-CONTAMINATION"],"requirement_ids":["B0-REQ-0014","B0-REQ-0015"],"model_ids":["B0-MODEL-ESTIMATOR","B0-MODEL-EVALUATOR","B0-MODEL-IMU-SAMPLE"],"implementation":{"commit":"5b81b9749ce048a358c60b5f799494361b907ded","paths":["02_estimation/b0/estimator.py","02_estimation/b0/evidence.py","02_estimation/b0/tests/test_estimator.py","02_estimation/b0/tests/test_evidence.py","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"symbols":["AttitudeEstimator","EstimatorDiagnostics","build_evidence"]},"execution":{"result":"pass","method":"analysis","level":"module","command":"python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json","working_directory":"02_estimation/b0","environment":"GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","02_estimation/b0/configs/b0_g2_estimator.v1.json","02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],"seed":7,"initial_conditions":"Yaw is defined only relative to the explicit initialization attitude; contamination probes begin from a stationary bounded attitude with declared force inputs.","started_at":"2026-10-14T11:19:39Z","completed_at":"2026-10-14T11:20:02Z","exit_code":0,"tests":{"passed":53,"failed":0,"skipped":0,"xfailed":0},"raw_result":"All 53 estimator-track tests passed at the G2-B re-review evidence-source commit; the retained artifact preserves the no-absolute-yaw limitation and selected contamination-gate evidence, while broader integrated characterization remains pending. Actions job 115824406625.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-YAW-LIMITATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ACCEL-CONTAMINATION"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11888862827","artifact_id":11888862827,"artifact_file":"g2a_estimator_evidence.json","sha256":"8a93f61948f8368330f6d5dcf46631acb8e3193c6445b7472fa2176428bb1082","archive_sha256":"2e4d78fbcd323f9fdc942f4072dc77cdb5f932388c3f34e887ecff01def77ffa","source_run":"38555772322","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","verified_at":null,"expires_at":"2027-01-12T11:19:37Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"Exact G2-A rerun at the G2-B re-review evidence-source commit; the workflow and complete nine-file estimator dependency closure are identical at source and target.","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","target_commit":"5b81b9749ce048a358c60b5f799494361b907ded","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72","target_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"02_estimation/b0/evidence.py","source_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b","target_sha256":"06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},{"path":"02_estimation/b0/tests/test_estimator.py","source_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a","target_sha256":"81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},{"path":"02_estimation/b0/tests/test_evidence.py","source_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af","target_sha256":"355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},{"path":"02_estimation/b0/configs/b0_g2_estimator.v1.json","source_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4","target_sha256":"a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},{"path":"02_estimation/b0/configs/b0_g2_estimator_approval.v1.json","source_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae","target_sha256":"86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"partial","supersedes":"B0-EXEC-G2A-ESTIMATOR-LIMITS-G2B-REFRESH-20261014"}
+    ,
+    {"id":"B0-EXEC-G2B-CONTROLLER-DEBUG-REVIEW2-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-TRUTH-BOUNDARY","B0-VER-CONVENTIONS","B0-VER-PAIRED-COMMAND","B0-VER-PAIRED-FEEDBACK","B0-VER-CONTROLLER-SIGN","B0-VER-CONTROLLER-SATURATION","B0-VER-ANTI-WINDUP","B0-VER-INVALID-INPUT","B0-VER-RESET","B0-VER-LANGUAGE-BOUNDARY","B0-VER-INVALID-MEASUREMENT"],"requirement_ids":["B0-REQ-0003","B0-REQ-0004","B0-REQ-0007","B0-REQ-0009","B0-REQ-0016","B0-REQ-0017","B0-REQ-0018","B0-REQ-0019","B0-REQ-0020","B0-REQ-0026","B0-REQ-0029"],"model_ids":["B0-MODEL-SYSTEM","B0-MODEL-TRUTH","B0-MODEL-ESTIMATOR","B0-MODEL-CONTROLLER","B0-MODEL-EVALUATOR","B0-MODEL-TORQUE-COMMAND","B0-MODEL-ACTUATOR","B0-MODEL-ACTUATOR-FEEDBACK","B0-MODEL-COMMAND","B0-MODEL-STATE-ESTIMATE","B0-MODEL-EXECUTION","B0-MODEL-IMU-SAMPLE","B0-MODEL-RESET"],"implementation":{"commit":"5b81b9749ce048a358c60b5f799494361b907ded","paths":["03_control/b0/CMakeLists.txt","03_control/b0/include/b0_controller/controller.hpp","03_control/b0/src/controller.cpp","03_control/b0/python/controller_bindings.cpp","03_control/b0/python/controller.py","03_control/b0/tests/test_controller.cpp","03_control/b0/tests/expect_mutation_detected.py","03_control/b0/python/tests/test_binding.py","03_control/b0/python/tests/test_adapter.py","03_control/b0/python/tests/test_config.py","03_control/b0/evidence.py","03_control/b0/configs/b0_g2_controller.v1.json","03_control/b0/configs/b0_g2_controller_approval.v1.json"],"symbols":["CascadedAttitudeController","ControllerConfig","ControllerDiagnostics","ControllerSnapshot","command_from_state_estimate","build_evidence"]},"execution":{"result":"pass","method":"test","level":"module","command":"python -m ruff check 03_control/b0/python 03_control/b0/evidence.py 03_control/b0/tests/expect_mutation_detected.py && cmake --preset b0-controller-debug && cmake --build --preset b0-controller-debug && ctest --preset b0-controller-debug && cmake -E remove_directory build/b0-controller/debug && cmake --preset b0-controller-debug && cmake --build --preset b0-controller-debug && ctest --preset b0-controller-debug && ctest --preset b0-controller-debug --output-on-failure --output-log ctest-debug.log --output-junit ctest-debug.xml && (cd 03_control/b0 && python -m pytest -q python/tests --junitxml=pytest-debug.xml) && python 03_control/b0/evidence.py --module-dir build/b0-controller/debug/03_control/b0 --build-dir build/b0-controller/debug --build-type Debug --ctest-junit ctest-debug.xml --pytest-junit pytest-debug.xml --output g2b_controller_evidence_debug.json","working_directory":"repository root","environment":"GitHub Actions ubuntu-latest (Linux glibc 2.39); Python 3.11.17; GCC 13.3.0; CMake 3.30.5; pybind11 2.13.6; Catch2 3.5.4 pinned; Debug","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","03_control/b0/configs/b0_g2_controller.v1.json","03_control/b0/configs/b0_g2_controller_approval.v1.json"],"seed":null,"initial_conditions":"Deterministic module probes use explicit scalar-first Hamilton attitudes, body rates, epoch/tick state, held paired commands and actuator feedback; exact selected traces are retained in the JSON artifact.","started_at":"2026-10-14T11:19:39Z","completed_at":"2026-10-14T11:20:53Z","exit_code":0,"tests":{"passed":25,"failed":0,"skipped":0,"xfailed":0},"raw_result":"All 25 Debug CTest nodes passed: 20 production Catch2 nodes, one Python boundary track and four isolated mutation-detection nodes. The adjacent pytest JUnit reports 79 passed with zero failures/skips; the retained JSON reports all 26 S0 rows and 139 sampled cases passing and every selected component criterion true. No G3 closed-loop performance result is claimed. Actions job 115824406590.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-TRUTH-BOUNDARY","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONVENTIONS","systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-COMMAND","systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-FEEDBACK","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SIGN","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SATURATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ANTI-WINDUP","systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-INPUT","systems_engineering/verification/b0_verification_specifications.json#B0-VER-RESET","systems_engineering/verification/b0_verification_specifications.json#B0-VER-LANGUAGE-BOUNDARY","systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-MEASUREMENT"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11890396601","artifact_id":11890396601,"artifact_file":"g2b_controller_evidence_debug.json","sha256":"da38fea5213fc47b17cb98a03afc0ded6474c5662fe6909a777e963066e41b52","archive_sha256":"596c6cc908cacad091ebe0a8ff774740eff35f171896aabb6a95f21f8151887c","source_run":"38555772322","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","verified_at":null,"expires_at":"2027-01-12T11:19:37Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"The Debug artifact was generated from the exact G2-B re-review evidence-source commit; every file in the mandatory 34-file controller dependency closure has identical source and target bytes.","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","target_commit":"5b81b9749ce048a358c60b5f799494361b907ded","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72","target_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72"},{"path":"01_simulation/b0/__init__.py","source_sha256":"deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d","target_sha256":"deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d"},{"path":"01_simulation/b0/actuator.py","source_sha256":"e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f","target_sha256":"e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"},{"path":"01_simulation/b0/contract.py","source_sha256":"a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013","target_sha256":"a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013"},{"path":"01_simulation/b0/imu.py","source_sha256":"9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a","target_sha256":"9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"},{"path":"01_simulation/b0/plant.py","source_sha256":"146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90","target_sha256":"146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"},{"path":"01_simulation/b0/quaternion.py","source_sha256":"6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa","target_sha256":"6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"03_control/b0/CMakeLists.txt","source_sha256":"0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84","target_sha256":"0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84"},{"path":"03_control/b0/README.md","source_sha256":"16b4911bb77a63f70ca7ccce61113732cdf5a849b051eabc642146430c4de1f3","target_sha256":"16b4911bb77a63f70ca7ccce61113732cdf5a849b051eabc642146430c4de1f3"},{"path":"03_control/b0/configs/b0_g2_controller.v1.json","source_sha256":"2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6","target_sha256":"2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6"},{"path":"03_control/b0/configs/b0_g2_controller_approval.v1.json","source_sha256":"2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4","target_sha256":"2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4"},{"path":"03_control/b0/evidence.py","source_sha256":"fbae8919ac36dc47029272b9b731f72ac12c64d84d53112e8ea3e40fa76ebc52","target_sha256":"fbae8919ac36dc47029272b9b731f72ac12c64d84d53112e8ea3e40fa76ebc52"},{"path":"03_control/b0/include/b0_controller/controller.hpp","source_sha256":"d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625","target_sha256":"d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625"},{"path":"03_control/b0/python/controller.py","source_sha256":"7e941347dbb98707541d19bdc29498dcc8c03b9b3f4a765b2e74e45cccf848d6","target_sha256":"7e941347dbb98707541d19bdc29498dcc8c03b9b3f4a765b2e74e45cccf848d6"},{"path":"03_control/b0/python/controller_bindings.cpp","source_sha256":"b4224fbbd2b3dd108c4fbb1129fd3c85493f80c40919bd9b31c09c7f445a4fbd","target_sha256":"b4224fbbd2b3dd108c4fbb1129fd3c85493f80c40919bd9b31c09c7f445a4fbd"},{"path":"03_control/b0/python/tests/test_adapter.py","source_sha256":"8771a6eaacdf61d80d692fe73900da63ad186f15dd47128d5bfd3be75dc9e652","target_sha256":"8771a6eaacdf61d80d692fe73900da63ad186f15dd47128d5bfd3be75dc9e652"},{"path":"03_control/b0/python/tests/test_binding.py","source_sha256":"9c61185c5818aec5c42fb530172e00075a8fde45995ea501d715829ff171d258","target_sha256":"9c61185c5818aec5c42fb530172e00075a8fde45995ea501d715829ff171d258"},{"path":"03_control/b0/python/tests/test_config.py","source_sha256":"b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100","target_sha256":"b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100"},{"path":"03_control/b0/src/controller.cpp","source_sha256":"6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d","target_sha256":"6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d"},{"path":"03_control/b0/tests/expect_mutation_detected.py","source_sha256":"6562a77a6365cf1d44ee210bda1a25225eab6d02ce3a536bb3205b9013ef3b8e","target_sha256":"6562a77a6365cf1d44ee210bda1a25225eab6d02ce3a536bb3205b9013ef3b8e"},{"path":"03_control/b0/tests/test_controller.cpp","source_sha256":"74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0","target_sha256":"74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"},{"path":"CMakeLists.txt","source_sha256":"a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1","target_sha256":"a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1"},{"path":"CMakePresets.json","source_sha256":"1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6","target_sha256":"1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6"},{"path":"requirements/b0-dev.txt","source_sha256":"4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52","target_sha256":"4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52"},{"path":"systems_engineering/reports/b0/g2b_s0_controller_design.md","source_sha256":"7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17","target_sha256":"7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17"},{"path":"systems_engineering/reports/b0/g2b_s0_controller_verification_matrix.md","source_sha256":"f51e54d0f1d557ea654124da19bfecf4f2816c26e1eb20112c269e480e256ece","target_sha256":"f51e54d0f1d557ea654124da19bfecf4f2816c26e1eb20112c269e480e256ece"},{"path":"systems_engineering/verification/b0_execution_evidence.schema.json","source_sha256":"5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd","target_sha256":"5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd"},{"path":"tools/systems_engineering/g15c_traceability.py","source_sha256":"9ec601152b3df03298d9832fe75fbe651aa55f82bdfbac910aacf4883815347e","target_sha256":"9ec601152b3df03298d9832fe75fbe651aa55f82bdfbac910aacf4883815347e"},{"path":"tools/systems_engineering/tests/test_g15c_traceability.py","source_sha256":"a99684fa6ae43967eb9d3de99cad6d9005270bf70293127e2ae131f775d4ceaa","target_sha256":"a99684fa6ae43967eb9d3de99cad6d9005270bf70293127e2ae131f775d4ceaa"},{"path":"tools/systems_engineering/tests/test_g2b_evidence_contract.py","source_sha256":"b9534e4593a42e21e6d8a2459413dedbfd5e2ebcc1556aa396e7fbd4687890cf","target_sha256":"b9534e4593a42e21e6d8a2459413dedbfd5e2ebcc1556aa396e7fbd4687890cf"},{"path":"tools/systems_engineering/tests/test_g2b_matrix_closure.py","source_sha256":"fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213","target_sha256":"fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"partial","supersedes":"B0-EXEC-G2B-CONTROLLER-DEBUG-20261014"}
+    ,
+    {"id":"B0-EXEC-G2B-CONTROLLER-RELEASE-REVIEW2-20261014","record_kind":"production_evidence","verification_spec_ids":["B0-VER-TRUTH-BOUNDARY","B0-VER-CONVENTIONS","B0-VER-PAIRED-COMMAND","B0-VER-PAIRED-FEEDBACK","B0-VER-CONTROLLER-SIGN","B0-VER-CONTROLLER-SATURATION","B0-VER-ANTI-WINDUP","B0-VER-INVALID-INPUT","B0-VER-RESET","B0-VER-LANGUAGE-BOUNDARY","B0-VER-INVALID-MEASUREMENT"],"requirement_ids":["B0-REQ-0003","B0-REQ-0004","B0-REQ-0007","B0-REQ-0009","B0-REQ-0016","B0-REQ-0017","B0-REQ-0018","B0-REQ-0019","B0-REQ-0020","B0-REQ-0026","B0-REQ-0029"],"model_ids":["B0-MODEL-SYSTEM","B0-MODEL-TRUTH","B0-MODEL-ESTIMATOR","B0-MODEL-CONTROLLER","B0-MODEL-EVALUATOR","B0-MODEL-TORQUE-COMMAND","B0-MODEL-ACTUATOR","B0-MODEL-ACTUATOR-FEEDBACK","B0-MODEL-COMMAND","B0-MODEL-STATE-ESTIMATE","B0-MODEL-EXECUTION","B0-MODEL-IMU-SAMPLE","B0-MODEL-RESET"],"implementation":{"commit":"5b81b9749ce048a358c60b5f799494361b907ded","paths":["03_control/b0/CMakeLists.txt","03_control/b0/include/b0_controller/controller.hpp","03_control/b0/src/controller.cpp","03_control/b0/python/controller_bindings.cpp","03_control/b0/python/controller.py","03_control/b0/tests/test_controller.cpp","03_control/b0/tests/expect_mutation_detected.py","03_control/b0/python/tests/test_binding.py","03_control/b0/python/tests/test_adapter.py","03_control/b0/python/tests/test_config.py","03_control/b0/evidence.py","03_control/b0/configs/b0_g2_controller.v1.json","03_control/b0/configs/b0_g2_controller_approval.v1.json"],"symbols":["CascadedAttitudeController","ControllerConfig","ControllerDiagnostics","ControllerSnapshot","command_from_state_estimate","build_evidence"]},"execution":{"result":"pass","method":"test","level":"module","command":"python -m ruff check 03_control/b0/python 03_control/b0/evidence.py 03_control/b0/tests/expect_mutation_detected.py && cmake --preset b0-controller-release && cmake --build --preset b0-controller-release && ctest --preset b0-controller-release && ctest --preset b0-controller-release --output-on-failure --output-log ctest-release.log --output-junit ctest-release.xml && (cd 03_control/b0 && python -m pytest -q python/tests --junitxml=pytest-release.xml) && python 03_control/b0/evidence.py --module-dir build/b0-controller/release/03_control/b0 --build-dir build/b0-controller/release --build-type Release --ctest-junit ctest-release.xml --pytest-junit pytest-release.xml --output g2b_controller_evidence_release.json","working_directory":"repository root","environment":"GitHub Actions ubuntu-latest (Linux glibc 2.39); Python 3.11.17; GCC 13.3.0; CMake 3.30.5; pybind11 2.13.6; Catch2 3.5.4 pinned; Release","inputs":["05_integration/b0/configs/b0_g0_contract.v2.json","03_control/b0/configs/b0_g2_controller.v1.json","03_control/b0/configs/b0_g2_controller_approval.v1.json"],"seed":null,"initial_conditions":"Deterministic module probes use explicit scalar-first Hamilton attitudes, body rates, epoch/tick state, held paired commands and actuator feedback; exact selected traces are retained in the JSON artifact.","started_at":"2026-10-14T11:19:39Z","completed_at":"2026-10-14T11:20:53Z","exit_code":0,"tests":{"passed":25,"failed":0,"skipped":0,"xfailed":0},"raw_result":"All 25 Release CTest nodes passed: 20 production Catch2 nodes, one Python boundary track and four isolated mutation-detection nodes. The adjacent pytest JUnit reports 79 passed with zero failures/skips; the retained JSON reports all 26 S0 rows and 139 sampled cases passing and every selected component criterion true. No G3 closed-loop performance result is claimed. Actions job 115824406773.","criterion_locators":["systems_engineering/verification/b0_verification_specifications.json#B0-VER-TRUTH-BOUNDARY","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONVENTIONS","systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-COMMAND","systems_engineering/verification/b0_verification_specifications.json#B0-VER-PAIRED-FEEDBACK","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SIGN","systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SATURATION","systems_engineering/verification/b0_verification_specifications.json#B0-VER-ANTI-WINDUP","systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-INPUT","systems_engineering/verification/b0_verification_specifications.json#B0-VER-RESET","systems_engineering/verification/b0_verification_specifications.json#B0-VER-LANGUAGE-BOUNDARY","systems_engineering/verification/b0_verification_specifications.json#B0-VER-INVALID-MEASUREMENT"]},"evidence":{"availability":"remote_unverified","uri":"https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11890331486","artifact_id":11890331486,"artifact_file":"g2b_controller_evidence_release.json","sha256":"119e0980f8a1380e3e197b3a3d84ee518a788783c5d1742be8fbfc7430c5dfea","archive_sha256":"5ddd200cfac14be93071ad00606e1b57876fcfd3b9f9fbcddc93afcd6b8db169","source_run":"38555772322","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","verified_at":null,"expires_at":"2027-01-12T11:19:37Z","retention":"GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."},"applicability":{"status":"applicable_exact","basis":"The Release artifact was generated from the exact G2-B re-review evidence-source commit; every file in the mandatory 34-file controller dependency closure has identical source and target bytes.","source_commit":"5b81b9749ce048a358c60b5f799494361b907ded","target_commit":"5b81b9749ce048a358c60b5f799494361b907ded","relevant_files":[{"path":".github/workflows/ci.yml","source_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72","target_sha256":"1f3c02793d9cff9fcc3fbbd5fba969e733997da5a0208f34cc8575a76827ed72"},{"path":"01_simulation/b0/__init__.py","source_sha256":"deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d","target_sha256":"deb72df6ac92c94b5909208a364e8a241614bee33ecc6055a6b02c09ddb4091d"},{"path":"01_simulation/b0/actuator.py","source_sha256":"e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f","target_sha256":"e9105a99ecdebc63b46decea3804231c4f73d2387fbdc17b07e55829869f998f"},{"path":"01_simulation/b0/contract.py","source_sha256":"a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013","target_sha256":"a551971cc1a39f4e2c71f37bc6d586137079e23e6a08cc42a3920b1477104013"},{"path":"01_simulation/b0/imu.py","source_sha256":"9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a","target_sha256":"9edad818de0170d55ac0b63de451449404770951eaac5180909d0d344f23b49a"},{"path":"01_simulation/b0/plant.py","source_sha256":"146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90","target_sha256":"146d74dd7aff4a11bd51764b7558be9ce0be358b8efcb62fa31b7bd92227ed90"},{"path":"01_simulation/b0/quaternion.py","source_sha256":"6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa","target_sha256":"6c9b4142fab02a7a2debca6875f12328e6a02827c966d81c8fdd27548a7dd1fa"},{"path":"02_estimation/b0/estimator.py","source_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9","target_sha256":"7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},{"path":"03_control/b0/CMakeLists.txt","source_sha256":"0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84","target_sha256":"0eef4f0643db569174ccddde7e045e05acc4f2193508cf007e57c77a57e32f84"},{"path":"03_control/b0/README.md","source_sha256":"16b4911bb77a63f70ca7ccce61113732cdf5a849b051eabc642146430c4de1f3","target_sha256":"16b4911bb77a63f70ca7ccce61113732cdf5a849b051eabc642146430c4de1f3"},{"path":"03_control/b0/configs/b0_g2_controller.v1.json","source_sha256":"2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6","target_sha256":"2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6"},{"path":"03_control/b0/configs/b0_g2_controller_approval.v1.json","source_sha256":"2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4","target_sha256":"2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4"},{"path":"03_control/b0/evidence.py","source_sha256":"fbae8919ac36dc47029272b9b731f72ac12c64d84d53112e8ea3e40fa76ebc52","target_sha256":"fbae8919ac36dc47029272b9b731f72ac12c64d84d53112e8ea3e40fa76ebc52"},{"path":"03_control/b0/include/b0_controller/controller.hpp","source_sha256":"d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625","target_sha256":"d1caef207feddde1b5bc88ed34dac16bf2d7b14eb15ad869fe83044034dce625"},{"path":"03_control/b0/python/controller.py","source_sha256":"7e941347dbb98707541d19bdc29498dcc8c03b9b3f4a765b2e74e45cccf848d6","target_sha256":"7e941347dbb98707541d19bdc29498dcc8c03b9b3f4a765b2e74e45cccf848d6"},{"path":"03_control/b0/python/controller_bindings.cpp","source_sha256":"b4224fbbd2b3dd108c4fbb1129fd3c85493f80c40919bd9b31c09c7f445a4fbd","target_sha256":"b4224fbbd2b3dd108c4fbb1129fd3c85493f80c40919bd9b31c09c7f445a4fbd"},{"path":"03_control/b0/python/tests/test_adapter.py","source_sha256":"8771a6eaacdf61d80d692fe73900da63ad186f15dd47128d5bfd3be75dc9e652","target_sha256":"8771a6eaacdf61d80d692fe73900da63ad186f15dd47128d5bfd3be75dc9e652"},{"path":"03_control/b0/python/tests/test_binding.py","source_sha256":"9c61185c5818aec5c42fb530172e00075a8fde45995ea501d715829ff171d258","target_sha256":"9c61185c5818aec5c42fb530172e00075a8fde45995ea501d715829ff171d258"},{"path":"03_control/b0/python/tests/test_config.py","source_sha256":"b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100","target_sha256":"b4b60f8d52c02355d0dd558537e0376b357998190fa0adc5efe748bf582e3100"},{"path":"03_control/b0/src/controller.cpp","source_sha256":"6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d","target_sha256":"6b632b0bd82807697a880e20208710e101a3e682a22dbff0e5fcae67cd083f7d"},{"path":"03_control/b0/tests/expect_mutation_detected.py","source_sha256":"6562a77a6365cf1d44ee210bda1a25225eab6d02ce3a536bb3205b9013ef3b8e","target_sha256":"6562a77a6365cf1d44ee210bda1a25225eab6d02ce3a536bb3205b9013ef3b8e"},{"path":"03_control/b0/tests/test_controller.cpp","source_sha256":"74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0","target_sha256":"74ba6437a1cbd3c5a0a7af8574eed24b15dc513757fb6ab6991a65a47caa68e0"},{"path":"05_integration/b0/configs/b0_g0_contract.v2.json","source_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c","target_sha256":"5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},{"path":"05_integration/b0/validate_config.py","source_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5","target_sha256":"21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"},{"path":"CMakeLists.txt","source_sha256":"a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1","target_sha256":"a8506f2dce9d97f72355d505fd577a118319ab6aff857d14cc1f51358c1b7dc1"},{"path":"CMakePresets.json","source_sha256":"1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6","target_sha256":"1a9e874ffbd9e388a378f90753a3a12097753e4fe42025ee77f6b352a72c0da6"},{"path":"requirements/b0-dev.txt","source_sha256":"4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52","target_sha256":"4bb86a7fbfcb7dae237b3ac00ea439e4699e1de97d13d308c69b2827f10c8d52"},{"path":"systems_engineering/reports/b0/g2b_s0_controller_design.md","source_sha256":"7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17","target_sha256":"7dd482c5f75da600c4f881d72ab76cc4cac37474b9cf1ad016357db2cc263e17"},{"path":"systems_engineering/reports/b0/g2b_s0_controller_verification_matrix.md","source_sha256":"f51e54d0f1d557ea654124da19bfecf4f2816c26e1eb20112c269e480e256ece","target_sha256":"f51e54d0f1d557ea654124da19bfecf4f2816c26e1eb20112c269e480e256ece"},{"path":"systems_engineering/verification/b0_execution_evidence.schema.json","source_sha256":"5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd","target_sha256":"5ba71b75ec4dcf73ab96a0980d9c5f6a682fc0c027ba56c2b34cd82559f195bd"},{"path":"tools/systems_engineering/g15c_traceability.py","source_sha256":"9ec601152b3df03298d9832fe75fbe651aa55f82bdfbac910aacf4883815347e","target_sha256":"9ec601152b3df03298d9832fe75fbe651aa55f82bdfbac910aacf4883815347e"},{"path":"tools/systems_engineering/tests/test_g15c_traceability.py","source_sha256":"a99684fa6ae43967eb9d3de99cad6d9005270bf70293127e2ae131f775d4ceaa","target_sha256":"a99684fa6ae43967eb9d3de99cad6d9005270bf70293127e2ae131f775d4ceaa"},{"path":"tools/systems_engineering/tests/test_g2b_evidence_contract.py","source_sha256":"b9534e4593a42e21e6d8a2459413dedbfd5e2ebcc1556aa396e7fbd4687890cf","target_sha256":"b9534e4593a42e21e6d8a2459413dedbfd5e2ebcc1556aa396e7fbd4687890cf"},{"path":"tools/systems_engineering/tests/test_g2b_matrix_closure.py","source_sha256":"fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213","target_sha256":"fe2d8408850a1284ee8337ea0839d1f930fc8cf89ce2403af4e8da585ed1d213"}]},"review":{"status":"pending","reviewer":null,"source":null},"coverage":"partial","supersedes":"B0-EXEC-G2B-CONTROLLER-RELEASE-20261014"}
   ]
 }
