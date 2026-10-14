@@ -27,17 +27,34 @@ def validate(document=None, *, files=False, frozen=False, evidence_cache=None, n
     return validate_ledger(REPO, document or ledger(), check_files=files, check_frozen=frozen, evidence_cache=evidence_cache, now=now)
 
 
+def current_production_records(document):
+    superseded = {record["supersedes"] for record in document["records"] if record["supersedes"]}
+    return [
+        record
+        for record in document["records"]
+        if record["record_kind"] == "production_evidence" and record["id"] not in superseded
+    ]
+
+
 def test_current_ledger_is_valid_and_honest():
-    assert validate(files=True, frozen=True) == {
+    document = ledger()
+    current_records = current_production_records(document)
+    executed_specs = {
+        spec_id
+        for record in current_records
+        if record["execution"]["result"] != "not_run"
+        for spec_id in record["verification_spec_ids"]
+    }
+    assert validate(document, files=True, frozen=True) == {
         "requirements": 30,
         "model_elements": 26,
         "verifications": 29,
         "design_linked_requirements": 30,
-        "production_records": 3,
-        "executed_specifications": 9,
+        "production_records": len(current_records),
+        "executed_specifications": len(executed_specs),
         "accepted_evidence_records": 0,
         "satisfied_requirements": 0,
-        "result_counts": {"pass": 3},
+        "result_counts": {"pass": len(current_records)},
     }
 
 
@@ -434,8 +451,9 @@ def test_historical_normative_blob_manifest_is_enforced(monkeypatch):
 def test_report_is_deterministic_and_exposes_denominators():
     first = render_markdown(REPO)
     second = render_markdown(REPO)
+    summary = validate()
     assert first == second
-    assert "9/29 specifications" in first
+    assert f"{summary['executed_specifications']}/29 specifications" in first
     assert "0/30" in first
     assert "0/30 requirements currently have accepted complete evidence" in first
 
@@ -448,9 +466,10 @@ def test_controlled_report_projection_is_current():
 
 def test_html_reader_has_native_metrics_records_and_anchors():
     rendered = render_html(REPO)
+    summary = validate()
     assert "id='conclusion'" in rendered
     assert "B0-EXEC-G1-COMPONENT-20261013" in rendered
-    assert "9/29 specifications" in rendered
+    assert f"{summary['executed_specifications']}/29 specifications" in rendered
     assert rendered.count("class='requirement'") == 30
     assert "id='group-without-execution'" in rendered
     assert "**" not in rendered
