@@ -184,7 +184,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Defines the minimum planned G2 attitude propagation responsibility.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-PROPAGATION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11864753892), SHA-256 `9d0accc7d79fe3740d7c1a61327b192a40e5fccd4bab5c60cacac9ae9a82b978`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11865801098), SHA-256 `cd25a5271e80792e9ed971f49daa2fb4fa9d691ab1cbb27bf26c7b47ca3e61b1`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-PROPAGATION.
 
 ### B0-REQ-0013
@@ -195,7 +195,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity-based tilt correction is conditional and must not silently treat all acceleration as gravity.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-IMU-SAMPLE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ESTIMATOR-FUSION` (test; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11864753892), SHA-256 `9d0accc7d79fe3740d7c1a61327b192a40e5fccd4bab5c60cacac9ae9a82b978`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-CORE-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11865801098), SHA-256 `cd25a5271e80792e9ed971f49daa2fb4fa9d691ab1cbb27bf26c7b47ca3e61b1`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage complete
 - Gap: Missing accepted evidence for: B0-VER-ESTIMATOR-FUSION.
 
 ### B0-REQ-0014
@@ -206,7 +206,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: Gravity provides no absolute heading reference.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`; responsible `B0-MODEL-ESTIMATOR`, `B0-MODEL-EVALUATOR`.
 - Verification: `B0-VER-YAW-LIMITATION` (analysis; estimator verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11864753892), SHA-256 `9d0accc7d79fe3740d7c1a61327b192a40e5fccd4bab5c60cacac9ae9a82b978`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11865801098), SHA-256 `cd25a5271e80792e9ed971f49daa2fb4fa9d691ab1cbb27bf26c7b47ca3e61b1`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-YAW-LIMITATION.
 
 ### B0-REQ-0015
@@ -217,7 +217,7 @@ Static groups: [stakeholder](#group-stakeholder), [system](#group-system), [comp
 - Rationale: The bounded attitude model lacks complete translational dynamics and must characterize rather than hide this limitation.
 - Model/responsibility: `B0-MODEL-ESTIMATOR`, `B0-MODEL-STATE-ESTIMATE`; responsible `B0-MODEL-ESTIMATOR`.
 - Verification: `B0-VER-ACCEL-CONTAMINATION` (test; integration verification; planned `not_run`)
-- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11864753892), SHA-256 `9d0accc7d79fe3740d7c1a61327b192a40e5fccd4bab5c60cacac9ae9a82b978`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
+- Execution/evidence/review: `B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014`: pass, [remote_unverified](https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11865801098), SHA-256 `cd25a5271e80792e9ed971f49daa2fb4fa9d691ab1cbb27bf26c7b47ca3e61b1`, implementation 02_estimation/b0/estimator.py, 02_estimation/b0/evidence.py, 02_estimation/b0/tests/test_estimator.py, 02_estimation/b0/tests/test_evidence.py, 02_estimation/b0/configs/b0_g2_estimator.v1.json, 02_estimation/b0/configs/b0_g2_estimator_approval.v1.json, review pending (no decision source), coverage partial
 - Gap: Missing accepted evidence for: B0-VER-ACCEL-CONTAMINATION.
 
 ### B0-REQ-0016
