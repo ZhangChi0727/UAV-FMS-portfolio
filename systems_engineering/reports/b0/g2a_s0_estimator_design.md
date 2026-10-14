@@ -1,8 +1,8 @@
 # G2-A S0 attitude-estimator design candidate
 
-Status: **candidate pending original-PA DESIGN_ACCEPT**  
-Date: 2026-10-14 (Australia/Perth)  
-Base: `main@731f1adde0676733474e2038734cc4e2cc70c67b`  
+Status: **candidate pending original-PA DESIGN_ACCEPT**
+Date: 2026-10-14 (Australia/Perth)
+Base: `main@731f1adde0676733474e2038734cc4e2cc70c67b`
 Execution issue: #5
 
 ## Decision boundary
@@ -12,7 +12,13 @@ reinterpret frozen G0, requirements, model or verification specifications. The
 approved G0 v2 JSON remains the authority for messages, timing, reset, frames,
 units and quaternion policy. Its blob is
 `1beff6e6a9a81d0ab92b2059a93207ffed9d291d` and its file SHA-256 is
-`cf3ba49791a316e5c5f99b3eb0989633659327b544c95a89a0162828cc72c86a`.
+`5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c`.
+That digest is computed over the committed LF bytes, not the Windows CRLF
+working-tree representation. The loader normalizes only CRLF/CR line endings to
+LF before hashing the file it actually loads, then runs the authoritative G0
+validator. Consequently a platform checkout retains the same identity while a
+numeric, field or other semantic byte change fails closed. It does not recompute
+or rewrite the frozen G0 source.
 
 G0 deliberately does **not** prescribe a complementary correction gain, an
 accelerometer-norm gate width, or a maximum correction step. The candidate
@@ -25,7 +31,7 @@ values, performance tuning, or literature-derived flight limits.
 The implementation will expose:
 
 ```text
-reset(EstimatorInitialState, reset_epoch_s, rng_seed) -> StateEstimate
+reset(EstimatorInitialState, ResetEpoch{id, timestamp_s}, rng_seed) -> StateEstimate
 step(IMUSample) -> StateEstimate
 ```
 
@@ -37,12 +43,22 @@ estimator initial quaternion/rate only. Plant truth, `PlantState`, `SensorTruth`
 scenario attitude offsets and true sensor bias are absent from the runtime API.
 
 The reset return is timestamped at the reset boundary and uses the explicit
-initial state. The first accepted sample must be exactly one configured IMU
-period after that boundary. Later samples must be exactly one configured period
-after the last accepted sample within the existing G0 numerical comparison
-tolerance. A rejected call changes no quaternion, rate, timestamp, cache or
-counter except a separately returned immutable rejection diagnostic; production
-state remains atomic.
+initial state. Runtime reset time must not precede the last accepted timestamp;
+an equal boundary is allowed for an idempotent repeat reset, and a new epoch ID
+must be greater than the previous ID. The first accepted sample must be exactly
+one configured IMU period after that boundary. Later samples must lie on a
+positive integer multiple of the 0.005 s reset-epoch grid and be strictly later
+than the last accepted sample. This permits recovery at the next due tick after
+an explicitly rejected invalid sample without requiring reset; gyro propagation
+uses the elapsed time since the last accepted state. Duplicate, stale or
+off-grid timestamps are rejected. The G2 test tolerance for grid comparison is
+`1e-12 s`, an implementation-test tolerance pending PA approval rather than a
+new G0 timing value.
+
+A rejected call changes no quaternion, rate, accepted timestamp, cache or
+accepted counter. Rejection information is returned as an immutable diagnostic
+owned by the call result rather than stored in estimator propagation state, so
+the production update is atomic.
 
 ## Numerical update
 
@@ -78,8 +94,12 @@ q_next = canonicalize(normalize(q_pred ⊗ ExpQuaternion(delta_theta)))
 ```
 
 The proposed gain is `1.0 s^-1`; at the G0 0.005 s IMU period the small-error
-correction fraction is approximately 0.005 per sample. The 0.01 rad step cap
-bounds a single accepted correction independently of vector direction. These
+correction fraction is approximately 0.005 per sample. Because the cross product
+of unit vectors has norm at most one, a legal one-period update is at most
+0.005 rad; the 0.01 rad cap is therefore a redundant defence for this version,
+not a normally reachable production branch. Its clamp helper is tested directly
+with an explicit non-production vector, while the public `step` test proves the
+legal-period bound without injecting an illegal `dt`. These
 are conservative component-design choices intended to make sign, gating and
 atomicity independently testable before G3 tuning; they assert no closed-loop
 settling or flight envelope.
@@ -108,6 +128,28 @@ Changing the G0 timing, message fields, operating envelope, acceptance criteria
 or frozen verification decision rules is outside this S0. If PA determines the
 candidate choices do so, implementation stops for a user-controlled normative
 change request.
+
+## S0 numerical comparison contract
+
+The candidate implementation tests use separate units and comparisons:
+
+- quaternion components: sign-align expected/actual, then maximum component
+  absolute error `<= 1e-12`;
+- quaternion norm: dimensionless `abs(norm(q)-1) <= 1e-12`, which is stricter
+  than G0's public unit-quaternion validity tolerance `1e-6` but does not replace
+  that interface rule;
+- body vectors and known gravity directions: maximum component absolute error
+  `<= 1e-12` in the vector's stated unit;
+- timestamps: absolute grid error `<= 1e-12 s`;
+- sign-invariant physical attitude is additionally checked through rotation
+  matrices, avoiding an ill-conditioned `acos` near zero.
+
+Propagation points include zero, `1e-12`, `1e-9` and `1e-6 rad/s`, principal
+axes at `±0.3 rad/s`, a non-identity starting quaternion, a simultaneous
+`[0.3,-0.2,0.1] rad/s` rate, and sequential x-then-y updates whose order cannot
+commute. Fusion uses closed-form stationary gravity for known ±roll/±pitch and
+combined roll/pitch attitudes. Expected quaternions and gravity vectors are
+formed in test-only formulas, never through production helpers.
 
 ## Planned implementation boundary
 
