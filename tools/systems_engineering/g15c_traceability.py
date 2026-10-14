@@ -128,7 +128,9 @@ def validate_ledger(
             _need(req_id in requirements, f"verification has unknown requirement: {spec_id} -> {req_id}")
             _need(spec_id in requirements[req_id]["verification_ids"], f"reverse/forward mismatch: {spec_id} -> {req_id}")
 
-    superseded: set[str] = set()
+    superseded: set[str] = {
+        record["supersedes"] for record in records.values() if record["supersedes"] is not None
+    }
     auditable_records: set[str] = set()
     effective_now = now or datetime.now(timezone.utc)
     for record_id, record in records.items():
@@ -188,7 +190,7 @@ def validate_ledger(
         if record["coverage"] == "complete":
             locators = " ".join(execution["criterion_locators"])
             _need(all(spec_id in locators for spec_id in record["verification_spec_ids"]), f"complete record lacks a criterion locator for every specification: {record_id}")
-        if check_files and execution["result"] != "not_run":
+        if check_files and execution["result"] != "not_run" and record_id not in superseded:
             try:
                 subprocess.check_output(["git", "cat-file", "-e", f"{record['implementation']['commit']}^{{commit}}"], cwd=repo, stderr=subprocess.DEVNULL)
             except (OSError, subprocess.CalledProcessError) as exc:
