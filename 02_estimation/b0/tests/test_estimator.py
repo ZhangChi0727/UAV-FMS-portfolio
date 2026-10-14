@@ -271,6 +271,7 @@ def test_first_sample_must_be_first_due_tick_and_rejection_is_atomic(epoch, time
     [
         Sample(1e308),
         Sample(0.005, gyro_b_rad_s=(1e308, 0, 0), specific_force_b_m_s2=(0, 0, 0)),
+        Sample(0.005, gyro_b_rad_s=(10**1000, 0, 0), specific_force_b_m_s2=(0, 0, 0)),
         Sample(0.005, specific_force_b_m_s2=(1e308, 1e308, 1e308)),
     ],
 )
