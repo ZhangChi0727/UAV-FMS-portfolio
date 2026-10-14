@@ -52,7 +52,7 @@ def _integer(value: Any, name: str) -> int:
 def _vector(value: Any, length: int, name: str) -> np.ndarray:
     try:
         result = np.asarray(value, dtype=np.float64)
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise EstimatorContractError(f"{name} must be a finite length-{length} vector") from exc
     if result.shape != (length,) or not np.all(np.isfinite(result)):
         raise EstimatorContractError(f"{name} must be a finite length-{length} vector")
