@@ -76,6 +76,18 @@ def build_evidence() -> dict:
     yaw.reset(EstimatorInitialState(yaw_initial, (0, 0, 0)), ResetEpoch(0, 0.0), 7)
     yaw_output = yaw.step(Sample(0.005))
 
+    gate_upper = parameters.gravity_m_s2 + parameters.accelerometer_gate_deviation_m_s2
+    gate_inside_force = [math.nextafter(gate_upper, parameters.gravity_m_s2), 0.0, 0.0]
+    gate_outside_force = [math.nextafter(gate_upper, math.inf), 0.0, 0.0]
+    gate_inside_norm = float(np.linalg.norm(gate_inside_force))
+    gate_outside_norm = float(np.linalg.norm(gate_outside_force))
+    gate_inside = AttitudeEstimator(parameters)
+    gate_inside.reset(EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), ResetEpoch(0, 0.0), 7)
+    gate_inside_result = gate_inside.process(Sample(0.005, force=gate_inside_force))
+    gate_outside = AttitudeEstimator(parameters)
+    gate_outside.reset(EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), ResetEpoch(0, 0.0), 7)
+    gate_outside_result = gate_outside.process(Sample(0.005, force=gate_outside_force))
+
     gap = AttitudeEstimator(parameters)
     gap.reset(EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), ResetEpoch(4, 12.0), 7)
     gap.step(Sample(12.005, force=(0, 0, 0)))
@@ -130,6 +142,26 @@ def build_evidence() -> dict:
                 "initial_q_nb": yaw_initial.tolist(),
                 "max_component_abs_change": float(np.max(np.abs(yaw_output.q_nb_estimate - yaw_initial))),
             },
+            "acceleration_contamination_gate": {
+                "gravity_m_s2": parameters.gravity_m_s2,
+                "maximum_absolute_deviation_m_s2": parameters.accelerometer_gate_deviation_m_s2,
+                "boundary": "inclusive",
+                "inside": {
+                    "specific_force_b_m_s2": gate_inside_force,
+                    "computed_norm_m_s2": gate_inside_norm,
+                    "independent_expected_eligible": abs(gate_inside_norm - parameters.gravity_m_s2)
+                    <= parameters.accelerometer_gate_deviation_m_s2,
+                    "diagnostics": gate_inside_result.diagnostics.__dict__,
+                },
+                "outside": {
+                    "specific_force_b_m_s2": gate_outside_force,
+                    "computed_norm_m_s2": gate_outside_norm,
+                    "independent_expected_eligible": abs(gate_outside_norm - parameters.gravity_m_s2)
+                    <= parameters.accelerometer_gate_deviation_m_s2,
+                    "diagnostics": gate_outside_result.diagnostics.__dict__,
+                },
+                "limitation_classification": "selected_module_cases_only_near_g_lateral_acceleration_can_be_indistinguishable",
+            },
             "atomic_rejection": {
                 "reason": rejection.reason,
                 "q_unchanged": bool(np.array_equal(before.q_nb_estimate, after.q_nb_estimate)),
@@ -142,8 +174,10 @@ def build_evidence() -> dict:
             "gap_elapsed_periods_is_3": recovered.diagnostics.elapsed_periods == 3,
             "gap_missing_periods_is_2": recovered.diagnostics.missing_periods == 2,
             "gap_correction_is_capped": recovered.diagnostics.correction_capped,
-            "tilt_fusion_component_abs_le_2e_12": float(np.max(np.abs(fused.estimate.q_nb_estimate - fusion_expected))) <= 2e-12,
+            "tilt_fusion_component_abs_le_1e_12": float(np.max(np.abs(fused.estimate.q_nb_estimate - fusion_expected))) <= 1e-12,
             "gravity_does_not_supply_absolute_yaw": float(np.max(np.abs(yaw_output.q_nb_estimate - yaw_initial))) <= 1e-12,
+            "contamination_gate_inside_is_eligible": gate_inside_result.diagnostics.correction_eligible,
+            "contamination_gate_outside_is_ineligible": not gate_outside_result.diagnostics.correction_eligible,
             "invalid_input_is_atomic": bool(np.array_equal(before.q_nb_estimate, after.q_nb_estimate)) and before.timestamp_s == after.timestamp_s,
         },
         "limitations": [
