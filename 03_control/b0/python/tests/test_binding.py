@@ -40,6 +40,7 @@ def inputs(time, held, epoch=0):
     q = c.AttitudeCommand()
     q.q_nb = [1, 0, 0, 0]
     q.timestamp_s = time
+    q.valid = True
     q.epoch_id = epoch
     s = c.StateEstimate()
     s.q_nb = [1, 0, 0, 0]

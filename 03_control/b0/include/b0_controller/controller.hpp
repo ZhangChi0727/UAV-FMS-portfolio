@@ -35,7 +35,7 @@ struct ControllerParameters {
     double quaternion_norm_tolerance{};
 };
 
-struct AttitudeCommand { Quat q_nb{}; double timestamp_s{}; std::int64_t epoch_id{}; };
+struct AttitudeCommand { Quat q_nb{}; double timestamp_s{}; bool valid{}; std::int64_t epoch_id{}; };
 struct StateEstimate { Quat q_nb{}; Vec3 omega_b_rad_s{}; double timestamp_s{}; bool valid{}; std::int64_t epoch_id{}; };
 struct ActuatorFeedback {
     Vec3 actual_torque_body_Nm{};
@@ -69,6 +69,7 @@ struct ControllerSnapshot {
     bool reset{};
     std::int64_t epoch_id{-1};
     std::int64_t tick_index{};
+    double epoch_origin_s{};
     double expected_timestamp_s{};
     Vec3 integral_Nm{}, derivative_filtered_rad_s2{}, previous_rate_rad_s{};
     bool has_previous_rate{};

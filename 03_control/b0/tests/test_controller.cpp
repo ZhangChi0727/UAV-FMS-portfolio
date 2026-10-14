@@ -10,7 +10,7 @@ static ControllerParameters params() {
     return {{4,4,2.5},{.08,.08,.06},{.02,.02,.015},{.004,.004,.003},{.15,.15,.1},
             {2,2,1.5},{.35,.35,.2},{8,8,8},{2,2,2},.02,.005,1e-12,1e-6};
 }
-static AttitudeCommand command(double t, double angle=.1, std::int64_t epoch=0) { return {{std::cos(angle/2),std::sin(angle/2),0,0},t,epoch}; }
+static AttitudeCommand command(double t, double angle=.1, std::int64_t epoch=0) { return {{std::cos(angle/2),std::sin(angle/2),0,0},t,true,epoch}; }
 static StateEstimate estimate(double t, double rate=0, std::int64_t epoch=0) { return {{1,0,0,0},{rate,0,0},t,true,epoch}; }
 static ActuatorFeedback feedback(double t, const TorqueCommand& held, double actual=0) { return {{actual,0,0},held.limited_torque_body_Nm,held.saturated,t,held.timestamp_s,held.epoch_id}; }
 
@@ -49,4 +49,14 @@ TEST_CASE("reset epoch rules") {
     CascadedController c(params()); c.reset({}, {4,12});
     REQUIRE_THROWS_AS(c.reset({}, {4,13}),ControllerContractError);
     auto zero=c.reset({}, {5,13}); REQUIRE(zero.timestamp_s==13); REQUIRE_FALSE(zero.saturated[0]);
+}
+TEST_CASE("integer grid remains stable beyond prior drift failure") {
+    CascadedController c(params()); auto held=c.reset({}, {0,0});
+    for(std::int64_t tick=1; tick<=4000; ++tick) {
+        const double time=static_cast<double>(tick)*.005;
+        held=c.step(command(time,0),estimate(time),feedback(time,held),.005);
+    }
+    REQUIRE(held.timestamp_s == 20.0);
+    CascadedController huge(params());
+    REQUIRE_THROWS_AS(huge.reset({}, {0,1e16}),ControllerContractError);
 }
