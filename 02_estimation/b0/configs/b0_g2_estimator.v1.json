@@ -1,0 +1,42 @@
+{
+  "schema_version": "b0-g2-estimator/v1",
+  "status": "candidate_pending_design_accept",
+  "authority": {
+    "g0_config_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "g0_git_blob": "1beff6e6a9a81d0ab92b2059a93207ffed9d291d",
+    "g0_canonical_lf_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+    "base_commit": "731f1adde0676733474e2038734cc4e2cc70c67b",
+    "rule": "Values owned by G0 are loaded from the referenced G0 file; its CRLF and CR bytes are normalized to LF before checking the canonical digest. This file contains only G2 estimator implementation choices."
+  },
+  "implementation_choices": {
+    "complementary_correction_gain_per_s": 1.0,
+    "accelerometer_norm_gate": {
+      "reference_m_s2": "load:/imu_contract/gravity_ned_m_s2 norm",
+      "maximum_absolute_deviation_m_s2": 1.4709975,
+      "boundary": "inclusive"
+    },
+    "maximum_correction_step_rad": 0.01,
+    "gap_recovery": {
+      "gyro_approximation": "hold_current_measurement_over_elapsed_time_since_last_accepted_state",
+      "diagnostics": ["elapsed_periods", "missing_periods", "gap_approximated", "correction_capped"],
+      "validity_note": "a grid-aligned recovered estimate is valid but explicitly gap_approximated; no unobserved motion is reconstructed"
+    },
+    "correction_axis": "cross(normalized_measured_specific_force_b, predicted_stationary_specific_force_b)",
+    "correction_application": "right_multiply_q_nb_by_rotation_vector_after_gyro_propagation",
+    "angular_rate_output": "copy_current_valid_gyro_sample_without_bias_estimation",
+    "test_tolerances": {
+      "quaternion_component_abs": 1e-12,
+      "quaternion_norm_abs": 1e-12,
+      "vector_component_abs": 1e-12,
+      "timestamp_abs_s": 1e-12
+    }
+  },
+  "g0_loaded_values": {
+    "sample_period_s": "timing.base_period_s * timing.schedules.imu_every_ticks",
+    "quaternion_norm_tolerance": "conventions.quaternion.unit_norm_tolerance",
+    "quaternion_sign_policy": "conventions.quaternion.sign_policy",
+    "gravity_ned_m_s2": "imu_contract.gravity_ned_m_s2",
+    "reset_q_nb": "initialization_contract.default_component_state.estimator_q_nb",
+    "reset_omega_b_rad_s": "initialization_contract.default_component_state.estimator_omega_b_rad_s"
+  }
+}

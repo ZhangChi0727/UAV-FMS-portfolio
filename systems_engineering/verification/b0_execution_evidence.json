@@ -63,6 +63,122 @@
       "review": {"status": "pending", "reviewer": null, "source": null},
       "coverage": "partial",
       "supersedes": null
+    },
+    {
+      "id": "B0-EXEC-G2A-ESTIMATOR-CORE-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": ["B0-VER-ESTIMATOR-PROPAGATION", "B0-VER-ESTIMATOR-FUSION"],
+      "requirement_ids": ["B0-REQ-0012", "B0-REQ-0013"],
+      "model_ids": ["B0-MODEL-ESTIMATOR", "B0-MODEL-STATE-ESTIMATE", "B0-MODEL-IMU-SAMPLE"],
+      "implementation": {
+        "commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "paths": ["02_estimation/b0/estimator.py", "02_estimation/b0/evidence.py", "02_estimation/b0/tests/test_estimator.py", "02_estimation/b0/tests/test_evidence.py", "02_estimation/b0/configs/b0_g2_estimator.v1.json", "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],
+        "symbols": ["AttitudeEstimator", "EstimatorInitialState", "StateEstimate", "build_evidence"]
+      },
+      "execution": {
+        "result": "pass", "method": "test", "level": "module",
+        "command": "python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json",
+        "working_directory": "02_estimation/b0",
+        "environment": "GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6",
+        "inputs": ["05_integration/b0/configs/b0_g0_contract.v2.json", "02_estimation/b0/configs/b0_g2_estimator.v1.json", "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],
+        "seed": 7,
+        "initial_conditions": "Each deterministic probe uses an explicit scalar-first Hamilton attitude estimate and declared reset epoch; exact cases are retained in the raw artifact.",
+        "started_at": "2026-10-14T02:36:58Z", "completed_at": "2026-10-14T02:37:14Z", "exit_code": 0,
+        "tests": {"passed": 53, "failed": 0, "skipped": 0, "xfailed": 0},
+        "raw_result": "All 53 estimator-track tests passed and the retained evidence artifact reports passing propagation, tilt-fusion, contamination-gate, gap-recovery and atomic-rejection probes.",
+        "criterion_locators": ["systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-PROPAGATION", "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ESTIMATOR-FUSION"]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834",
+        "artifact_id": 11866700834,
+        "artifact_file": "g2a_estimator_evidence.json",
+        "sha256": "1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6",
+        "archive_sha256": "a931cfab4eb47f2c1e7a351330b576396be8734bdc3fccd470ed9122eb42277d",
+        "source_run": "38501959732",
+        "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "verified_at": null,
+        "expires_at": "2027-01-12T02:36:58Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "The implementation revision, evidence-producing revision and applicability target are identical. The checker also requires committed HEAD to retain every byte in the estimator dependency closure.",
+        "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "target_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "relevant_files": [
+          {"path": ".github/workflows/ci.yml", "source_sha256": "c8dc24a10d6f9127ae2b31fe905610d7ed6b931503e69405d55f3a892cc5c142", "target_sha256": "c8dc24a10d6f9127ae2b31fe905610d7ed6b931503e69405d55f3a892cc5c142"},
+          {"path": "02_estimation/b0/estimator.py", "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9", "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},
+          {"path": "02_estimation/b0/evidence.py", "source_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b", "target_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},
+          {"path": "02_estimation/b0/tests/test_estimator.py", "source_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a", "target_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},
+          {"path": "02_estimation/b0/tests/test_evidence.py", "source_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af", "target_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},
+          {"path": "02_estimation/b0/configs/b0_g2_estimator.v1.json", "source_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4", "target_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},
+          {"path": "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json", "source_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae", "target_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},
+          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c", "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},
+          {"path": "05_integration/b0/validate_config.py", "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5", "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}
+        ]
+      },
+      "review": {"status": "pending", "reviewer": null, "source": null},
+      "coverage": "complete",
+      "supersedes": null
+    },
+    {
+      "id": "B0-EXEC-G2A-ESTIMATOR-LIMITS-20261014",
+      "record_kind": "production_evidence",
+      "verification_spec_ids": ["B0-VER-YAW-LIMITATION", "B0-VER-ACCEL-CONTAMINATION"],
+      "requirement_ids": ["B0-REQ-0014", "B0-REQ-0015"],
+      "model_ids": ["B0-MODEL-ESTIMATOR", "B0-MODEL-EVALUATOR", "B0-MODEL-IMU-SAMPLE"],
+      "implementation": {
+        "commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "paths": ["02_estimation/b0/estimator.py", "02_estimation/b0/evidence.py", "02_estimation/b0/tests/test_estimator.py", "02_estimation/b0/tests/test_evidence.py", "02_estimation/b0/configs/b0_g2_estimator.v1.json", "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],
+        "symbols": ["AttitudeEstimator", "EstimatorDiagnostics", "build_evidence"]
+      },
+      "execution": {
+        "result": "pass", "method": "analysis", "level": "module",
+        "command": "python -m ruff check . && python -m pytest -q tests && python evidence.py --output g2a_estimator_evidence.json",
+        "working_directory": "02_estimation/b0",
+        "environment": "GitHub Actions ubuntu-latest; Python 3.11; NumPy 1.26.4; pytest 8.3.5; ruff 0.8.6",
+        "inputs": ["05_integration/b0/configs/b0_g0_contract.v2.json", "02_estimation/b0/configs/b0_g2_estimator.v1.json", "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json"],
+        "seed": 7,
+        "initial_conditions": "Yaw is defined only relative to the explicit initialization attitude; contamination probes begin from a stationary bounded attitude with declared force inputs.",
+        "started_at": "2026-10-14T02:36:58Z", "completed_at": "2026-10-14T02:37:14Z", "exit_code": 0,
+        "tests": {"passed": 53, "failed": 0, "skipped": 0, "xfailed": 0},
+        "raw_result": "The retained artifact demonstrates no absolute-yaw claim and records correction gating for the selected contamination cases; broader integrated scenario characterization remains pending.",
+        "criterion_locators": ["systems_engineering/verification/b0_verification_specifications.json#B0-VER-YAW-LIMITATION", "systems_engineering/verification/b0_verification_specifications.json#B0-VER-ACCEL-CONTAMINATION"]
+      },
+      "evidence": {
+        "availability": "remote_unverified",
+        "uri": "https://api.github.com/repos/ZhangChi0727/UAV-FMS-portfolio/actions/artifacts/11866700834",
+        "artifact_id": 11866700834,
+        "artifact_file": "g2a_estimator_evidence.json",
+        "sha256": "1e9c9635c487985d26f2e111bd0535cf86a262ef493fde2302dc64920a68c1a6",
+        "archive_sha256": "a931cfab4eb47f2c1e7a351330b576396be8734bdc3fccd470ed9122eb42277d",
+        "source_run": "38501959732",
+        "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "verified_at": null,
+        "expires_at": "2027-01-12T02:36:58Z",
+        "retention": "GitHub Actions artifact retention; hash remains in this ledger after expiry, but expired evidence cannot count as auditable acceptance."
+      },
+      "applicability": {
+        "status": "applicable_exact",
+        "basis": "The implementation revision, evidence-producing revision and applicability target are identical. The checker also requires committed HEAD to retain every byte in the estimator dependency closure.",
+        "source_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "target_commit": "ccc8523fd17cebd10d3fd67c6b6f9864950be8de",
+        "relevant_files": [
+          {"path": ".github/workflows/ci.yml", "source_sha256": "c8dc24a10d6f9127ae2b31fe905610d7ed6b931503e69405d55f3a892cc5c142", "target_sha256": "c8dc24a10d6f9127ae2b31fe905610d7ed6b931503e69405d55f3a892cc5c142"},
+          {"path": "02_estimation/b0/estimator.py", "source_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9", "target_sha256": "7fc25fae2d9f9a3fb9d3967587850202d6f432ab0da84f2194ae577769450ed9"},
+          {"path": "02_estimation/b0/evidence.py", "source_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b", "target_sha256": "06e9959ba862789e798f9ae9cbba9696428b36e97179f68452a85434a90a198b"},
+          {"path": "02_estimation/b0/tests/test_estimator.py", "source_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a", "target_sha256": "81c7bff6a4ed228a81214ab969b6260ad71f8b0d72abfb102130baf934e4538a"},
+          {"path": "02_estimation/b0/tests/test_evidence.py", "source_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af", "target_sha256": "355338cd0e5244917f181e74ef15efb7bf3b24a51049a4836c2d732119feb1af"},
+          {"path": "02_estimation/b0/configs/b0_g2_estimator.v1.json", "source_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4", "target_sha256": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4"},
+          {"path": "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json", "source_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae", "target_sha256": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae"},
+          {"path": "05_integration/b0/configs/b0_g0_contract.v2.json", "source_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c", "target_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"},
+          {"path": "05_integration/b0/validate_config.py", "source_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5", "target_sha256": "21c6c3b93a632f91d0198aa9d0653dd7785e2e2ad948ef8ef9d01a07ff7bf0f5"}
+        ]
+      },
+      "review": {"status": "pending", "reviewer": null, "source": null},
+      "coverage": "partial",
+      "supersedes": null
     }
   ]
 }
