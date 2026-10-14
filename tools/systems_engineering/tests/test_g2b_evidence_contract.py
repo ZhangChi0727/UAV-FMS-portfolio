@@ -37,9 +37,10 @@ def case_traces(digest: str) -> dict:
         for node in nodes:
             output = ""
             if node in mutation_oracles:
-                # CTest may truncate wrapper output; the exact mutation/oracle
-                # relationship is independently fixed by MUTATION_ORACLES.
-                output = "detected subject mutation"
+                output = (
+                    "detected subject mutation with unchanged oracle node: "
+                    f"{mutation_oracles[node]}"
+                )
             source_kind = "pytest" if node.startswith("python/") else "ctest"
             collected_name = (
                 node if source_kind == "ctest" else node.rsplit("::", 1)[-1]
@@ -771,6 +772,19 @@ def test_mutation_detection_requires_the_detection_marker(tmp_path: Path):
     item = deepcopy(artifact())
     sample, source_record, row_record = _mutation_fixture(item)
     output = "oracle ran but no subject-mutation detection marker was emitted"
+    source_record["output"] = output
+    row_record["output"] = output
+    sample["actual"]["execution"]["output"] = output
+    with pytest.raises(ValueError, match="mutation detection marker"):
+        evidence_module.validate_evidence(
+            item, **_validation_kwargs(item, tmp_path)
+        )
+
+
+def test_mutation_detection_marker_must_name_the_unchanged_oracle(tmp_path: Path):
+    item = deepcopy(artifact())
+    sample, source_record, row_record = _mutation_fixture(item)
+    output = "detected subject mutation with an unspecified oracle"
     source_record["output"] = output
     row_record["output"] = output
     sample["actual"]["execution"]["output"] = output

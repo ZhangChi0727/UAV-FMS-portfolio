@@ -18,8 +18,8 @@ def main() -> int:
         text=True,
     )
     output = completed.stdout + completed.stderr
-    print(output, end="")
     if completed.returncode != 1:
+        print(output, end="")
         print(
             f"mutation detection requires Catch2 assertion-failure exit 1; "
             f"received {completed.returncode}",
@@ -27,12 +27,18 @@ def main() -> int:
         )
         return 1
     if test_name not in output or "FAILED" not in output:
+        print(output, end="")
         print(
             "mutation process failed without the predeclared numeric node reporting failure",
             file=sys.stderr,
         )
         return 1
-    print(f"detected subject mutation with unchanged oracle node: {test_name}")
+    marker = f"detected subject mutation with unchanged oracle node: {test_name}"
+    # CTest may retain only the beginning and end of long output in JUnit.
+    # Emit the proven marker on both sides so the retained XML stays auditable.
+    print(marker)
+    print(output, end="")
+    print(marker)
     return 0
 
 
