@@ -34,6 +34,32 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "b0-controller-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "cacheVariables": {
+        "BUILD_LEGACY_NAVIGATION": "OFF",
+        "BUILD_DEVELOPMENT_READINESS_SMOKE": "OFF",
+        "BUILD_B0_CONTROLLER": "ON",
+        "BUILD_TESTING": "ON",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "b0-controller-debug",
+      "displayName": "B0 controller (Debug)",
+      "inherits": "b0-controller-base",
+      "binaryDir": "${sourceDir}/build/b0-controller/debug",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "b0-controller-release",
+      "displayName": "B0 controller (Release)",
+      "inherits": "b0-controller-base",
+      "binaryDir": "${sourceDir}/build/b0-controller/release",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
   "buildPresets": [
@@ -44,6 +70,14 @@
     {
       "name": "development-readiness-release",
       "configurePreset": "development-readiness-release"
+    },
+    {
+      "name": "b0-controller-debug",
+      "configurePreset": "b0-controller-debug"
+    },
+    {
+      "name": "b0-controller-release",
+      "configurePreset": "b0-controller-release"
     }
   ],
   "testPresets": [
@@ -60,6 +94,16 @@
       "output": {
         "outputOnFailure": true
       }
+    },
+    {
+      "name": "b0-controller-debug",
+      "configurePreset": "b0-controller-debug",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "b0-controller-release",
+      "configurePreset": "b0-controller-release",
+      "output": { "outputOnFailure": true }
     }
   ]
 }
