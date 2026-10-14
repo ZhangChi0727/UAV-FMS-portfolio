@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "component": "b0_g2_cascaded_controller",
+  "status": "candidate_pending_design_accept",
+  "authority": {
+    "g0_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "g0_git_blob": "1beff6e6a9a81d0ab92b2059a93207ffed9d291d",
+    "g0_canonical_lf_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+    "validator_path": "05_integration/b0/validate_config.py",
+    "line_ending_normalization": "CRLF_or_CR_to_LF_only_before_sha256",
+    "approval_overlay_required": true
+  },
+  "numeric_policy": {
+    "scalar_type": "float64",
+    "vector_length": 3,
+    "quaternion_order": "wxyz_scalar_first_hamilton",
+    "quaternion_rotation": "body_to_ned",
+    "attitude_error_vector": "two_times_canonical_error_quaternion_vector",
+    "attitude_error_equation": "q_error=conjugate(q_estimate)_hamilton_product_q_command",
+    "half_turn_tie_break": "when_scalar_is_zero_negate_if_first_nonzero_vector_component_is_negative",
+    "rate_target_clamp": "componentwise_symmetric",
+    "derivative_input": "measured_body_rate",
+    "derivative_discretization": "backward_euler_first_order_low_pass",
+    "derivative_alpha_equation": "dt_s/(derivative_time_constant_s+dt_s)",
+    "derivative_first_step": "zero_then_initialize_previous_measurement",
+    "request_uses_integral_state": "current_before_this_tick_update",
+    "integral_discretization": "forward_euler_after_current_request_and_limit",
+    "saturation_comparison": "strict_abs_request_greater_than_limit",
+    "ordinary_absolute_tolerance": 1e-12,
+    "ordinary_relative_tolerance": 0.0,
+    "timestamp_absolute_tolerance_s": 1e-12,
+    "boundary_oracle": "nextafter_or_exact_binary_neighbor_selected_by_test"
+  },
+  "time_and_recovery": {
+    "controller_period_source": "timing.base_period_s_times_timing.schedules.controller_every_ticks",
+    "default_period_s": 0.005,
+    "reset_tick_runs_step": false,
+    "first_step_offset_periods": 1,
+    "step_timestamp_rule": "command_and_estimate_equal_current_due_tick_with_g0_tolerance",
+    "feedback_rule": "current_actuator_sample_identifies_a_known_command_published_strictly_before_current_due_tick",
+    "same_tick_retry_after_rejection": "allowed_and_must_match_no_rejection_control_trajectory",
+    "missed_due_tick_after_rejection": "reset_required_before_any_later_step",
+    "reason": "the_controller_must_not_infer_unobserved_integral_derivative_or_feedback_history",
+    "duplicate_or_stale_step": "reject_without_state_change",
+    "off_grid_or_late_step": "reject_without_state_change_and_require_reset_to_resume"
+  },
+  "reset_policy": {
+    "epoch_id_type": "signed_int64_nonnegative",
+    "epoch_id_rule": "strictly_increasing_for_an_existing_instance",
+    "timestamp_type": "finite_float64_seconds",
+    "timestamp_rule": "nondecreasing_across_resets_and_strictly_later_than_last_accepted_step_when_reusing_instance",
+    "duplicate_reset": "reject_without_state_change",
+    "published_request_Nm": [0.0, 0.0, 0.0],
+    "published_limited_Nm": [0.0, 0.0, 0.0],
+    "published_saturated": [false, false, false],
+    "cleared_state": ["integral", "derivative_filter", "previous_rate", "published_command_history", "recovery_fault"]
+  },
+  "pairing_policy": {
+    "identity_fields": ["epoch_id", "command_timestamp_s"],
+    "matched_value_fields": ["limited_torque_body_Nm", "saturated"],
+    "comparison": "timestamp_with_implementation_absolute_tolerance_values_exact_to_published_float64_bits",
+    "history": "all_commands_published_in_current_epoch_until_reset",
+    "unknown_future_old_epoch_or_value_mismatch": "reject_atomically",
+    "lag_back_calculation_reference": "matched_held_command_limited_torque_not_current_limited_torque"
+  },
+  "diagnostics": {
+    "result_fields": ["accepted", "reason", "epoch_id", "tick_index", "rate_error_rad_s", "derivative_raw_rad_s2", "derivative_filtered_rad_s2", "proportional_Nm", "integral_before_Nm", "derivative_Nm", "conditional_integral_rate_Nm_s", "limit_backcalculation_rate_Nm_s", "lag_backcalculation_rate_Nm_s", "integral_after_Nm", "requested_Nm", "limited_Nm", "saturated"],
+    "rejection_error": "ControllerContractError",
+    "python_mapping": "ValueError_subclass_with_same_reason_code",
+    "state_snapshot": "read_only_copy_for_test_and_diagnostics_only",
+    "verdict_policy": "diagnostics_report_numeric_facts_and_never_claim_verification_pass"
+  },
+  "binding_policy": {
+    "module_name": "b0_controller",
+    "array_input": "copied_to_fixed_size_C++_values_before_validation",
+    "integer_conversion": "reject_outside_signed_int64_before_cast",
+    "output_mapping": "requested_torque_body_Nm_limited_torque_body_Nm_saturated_timestamp_s",
+    "g1_compatibility": "construct_01_simulation_b0_contract_TorqueCommand_without_reclamping"
+  },
+  "build_policy": {
+    "language_standard": "C++17",
+    "extensions": false,
+    "core_target": "b0_controller_core",
+    "cpp_test_target": "b0_controller_cpp_tests",
+    "binding_target": "b0_controller",
+    "python_test_track": "03_control/b0/python/tests",
+    "required_build_types": ["Debug", "Release"],
+    "binding_is_required": true,
+    "legacy_navigation": false
+  }
+}
