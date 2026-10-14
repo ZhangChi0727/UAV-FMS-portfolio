@@ -255,6 +255,33 @@ def test_g2a_estimator_scope_requires_its_dependency_closure():
         validate(doc, files=True)
 
 
+def test_g2b_controller_scope_requires_its_dependency_closure():
+    doc = ledger()
+    record = next(
+        item
+        for item in doc["records"]
+        if "B0-VER-ESTIMATOR-PROPAGATION" in item["verification_spec_ids"]
+    )
+    record["id"] = "B0-EXEC-G2B-CONTROLLER-FIXTURE"
+    record["verification_spec_ids"] = ["B0-VER-CONTROLLER-SIGN"]
+    record["requirement_ids"] = ["B0-REQ-0016"]
+    record["model_ids"] = ["B0-MODEL-CONTROLLER"]
+    record["execution"]["criterion_locators"] = [
+        "systems_engineering/verification/b0_verification_specifications.json#B0-VER-CONTROLLER-SIGN"
+    ]
+    with pytest.raises(
+        TraceabilityError, match="incomplete G2-B controller dependency closure"
+    ):
+        validate(doc, files=True)
+
+
+def test_g2b_controller_closure_includes_ledger_contract_and_checker_regressions():
+    assert {
+        "systems_engineering/verification/b0_execution_evidence.schema.json",
+        "tools/systems_engineering/tests/test_g15c_traceability.py",
+    } <= trace.REQUIRED_G2B_CONTROLLER_CLOSURE
+
+
 def test_implementation_and_evidence_source_bytes_must_match():
     doc = ledger()
     doc["records"][0]["implementation"]["commit"] = "dfa1b23668076f8b41b9a4fc7372a6ef149493eb"

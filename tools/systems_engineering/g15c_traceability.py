@@ -21,6 +21,40 @@ class TraceabilityError(ValueError):
     """Raised when evidence cannot support the claimed traceability state."""
 
 
+REQUIRED_G2B_CONTROLLER_CLOSURE = {
+    ".github/workflows/ci.yml",
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "requirements/b0-dev.txt",
+    "03_control/b0/CMakeLists.txt",
+    "03_control/b0/README.md",
+    "03_control/b0/include/b0_controller/controller.hpp",
+    "03_control/b0/src/controller.cpp",
+    "03_control/b0/python/controller_bindings.cpp",
+    "03_control/b0/python/controller.py",
+    "03_control/b0/tests/test_controller.cpp",
+    "03_control/b0/tests/expect_mutation_detected.py",
+    "03_control/b0/python/tests/test_binding.py",
+    "03_control/b0/python/tests/test_adapter.py",
+    "03_control/b0/python/tests/test_config.py",
+    "03_control/b0/evidence.py",
+    "03_control/b0/configs/b0_g2_controller.v1.json",
+    "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+    "systems_engineering/reports/b0/g2b_s0_controller_design.md",
+    "systems_engineering/reports/b0/g2b_s0_controller_verification_matrix.md",
+    "systems_engineering/verification/b0_execution_evidence.schema.json",
+    "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "05_integration/b0/validate_config.py",
+    "02_estimation/b0/estimator.py",
+    "01_simulation/b0/contract.py",
+    "01_simulation/b0/actuator.py",
+    "tools/systems_engineering/g15c_traceability.py",
+    "tools/systems_engineering/tests/test_g15c_traceability.py",
+    "tools/systems_engineering/tests/test_g2b_evidence_contract.py",
+    "tools/systems_engineering/tests/test_g2b_matrix_closure.py",
+}
+
+
 def _need(condition: bool, message: str) -> None:
     if not condition:
         raise TraceabilityError(message)
@@ -201,11 +235,26 @@ def validate_ledger(
                 _git_revision_sha256(repo, record["implementation"]["commit"], value)
             g1_specs = {"B0-VER-PLANT-DYNAMICS", "B0-VER-PLANT-QUATERNION", "B0-VER-ACTUATOR-DYNAMICS", "B0-VER-IMU-GYRO", "B0-VER-IMU-SPECIFIC-FORCE"}
             g2a_estimator_specs = {"B0-VER-ESTIMATOR-PROPAGATION", "B0-VER-ESTIMATOR-FUSION", "B0-VER-YAW-LIMITATION", "B0-VER-ACCEL-CONTAMINATION"}
+            g2b_controller_specs = {
+                "B0-VER-CONTROLLER-SIGN",
+                "B0-VER-CONTROLLER-SATURATION",
+                "B0-VER-ANTI-WINDUP",
+                "B0-VER-PAIRED-COMMAND",
+                "B0-VER-PAIRED-FEEDBACK",
+                "B0-VER-INVALID-INPUT",
+                "B0-VER-INVALID-MEASUREMENT",
+                "B0-VER-RESET",
+                "B0-VER-CONVENTIONS",
+                "B0-VER-TRUTH-BOUNDARY",
+                "B0-VER-LANGUAGE-BOUNDARY",
+            }
             relevant_paths = {item["path"] for item in applicability["relevant_files"]}
             if set(record["verification_spec_ids"]) & g1_specs:
                 _need(required_g1_closure <= relevant_paths, f"incomplete G1 dependency closure: {record_id}")
             if set(record["verification_spec_ids"]) & g2a_estimator_specs:
                 _need(required_g2a_estimator_closure <= relevant_paths, f"incomplete G2-A estimator dependency closure: {record_id}")
+            if set(record["verification_spec_ids"]) & g2b_controller_specs:
+                _need(REQUIRED_G2B_CONTROLLER_CLOSURE <= relevant_paths, f"incomplete G2-B controller dependency closure: {record_id}")
             _need(set(record["implementation"]["paths"]) <= relevant_paths, f"implementation paths missing from applicability closure: {record_id}")
             for value in record["implementation"]["paths"]:
                 implementation_digest = _git_revision_sha256(repo, record["implementation"]["commit"], value)
@@ -326,7 +375,7 @@ def render_markdown(repo: Path, ledger_data: Mapping[str, Any] | None = None, *,
         lines.extend([f"### {req['id']}", "", f"- Title: {req['title']}", f"- Source: {source_text}", f"- Requirement: {req['statement']}", f"- Rationale: {req['rationale']}", f"- Model/responsibility: {', '.join(f'`{value}`' for value in req['model_element_ids'])}; responsible {', '.join(f'`{value}`' for value in req['responsible_components'])}.", f"- Verification: {verification_text}", f"- Execution/evidence/review: {execution_text}", f"- Gap: {_requirement_gap(req, current_records)}", ""])
     lines.extend([
         "## Reading and filtering", "", "Use the ledger fields `execution.level`, `execution.result`, `evidence.availability`, `applicability.status`, `review.status`, and `coverage`. Module and integration records are distinct; fixture records are prohibited from the production ledger.", "",
-        "## Evidence chain", "", "The current record links the frozen specification IDs to G1 implementation paths, an Actions run artifact, SHA-256 content identity, relevant-file applicability hashes, and an explicit pending review. Artifact expiry changes evidence availability and must not silently preserve an auditable-pass claim.", "",
+        "## Evidence chain", "", "Current records link frozen specification IDs to component implementation paths, Actions run artifacts, SHA-256 content identities, relevant-file applicability hashes, and explicit review states. Artifact expiry changes evidence availability and must not silently preserve an auditable-pass claim.", "",
         "## External research-suite interface", "", "A future external suite may contribute a record only by supplying the same version, criterion, command, raw-evidence hash/URI, applicability, and review fields. This repository does not run or write to an external suite in G1.5-C.", "",
     ])
     return "\n".join(lines)
@@ -385,7 +434,7 @@ def render_html(repo: Path, ledger_data: Mapping[str, Any] | None = None, *, evi
     without_links = " ".join(f"<a href='#{value.lower()}'>{value}</a>" for value in without_ids) or "None"
     groups += f"<h3 id='group-with-execution'>Group: with execution</h3><p>{with_links}</p><h3 id='group-without-execution'>Group: without execution</h3><p>{without_links}</p>"
     current_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
-    body = f"<h1 id='top'>B0 G1.5-C verification traceability status</h1><p class='boundary'>Controlled current view. Frozen verification specifications remain planned/not_run and are not rewritten.</p><h2 id='conclusion'>First-screen conclusion</h2>{metric_html}<h2 id='versions'>Version boundary</h2><p>Frozen base <code>{ledger['baseline']['frozen_asset_commit']}</code>; controlled target <code>{ledger['baseline']['closeout_commit']}</code>; evaluated committed HEAD <code>{current_head}</code>.</p><h2 id='records'>Execution records</h2>{records}<h2 id='requirements'>Requirement index</h2><nav>{nav}</nav>{groups}<h2 id='chains'>Requirement chains</h2>{chains}<h2 id='filtering'>Reading and filtering</h2><p>Filter ledger fields execution.level, execution.result, evidence.availability, applicability.status, review.status and coverage. Fixtures are prohibited from the production ledger.</p><h2 id='chain'>Evidence chain</h2><p>The current record links frozen specification IDs to G1 implementation paths, an Actions artifact, SHA-256 identity, relevant-file applicability hashes and explicit pending review. Artifact expiry cannot silently preserve an auditable-pass claim.</p><h2 id='external'>External research-suite interface</h2><p>A future external suite must provide the same version, criterion, command, evidence hash/URI, applicability and review fields. G1.5-C does not run or write to external suites.</p>"
+    body = f"<h1 id='top'>B0 G1.5-C verification traceability status</h1><p class='boundary'>Controlled current view. Frozen verification specifications remain planned/not_run and are not rewritten.</p><h2 id='conclusion'>First-screen conclusion</h2>{metric_html}<h2 id='versions'>Version boundary</h2><p>Frozen base <code>{ledger['baseline']['frozen_asset_commit']}</code>; controlled target <code>{ledger['baseline']['closeout_commit']}</code>; evaluated committed HEAD <code>{current_head}</code>.</p><h2 id='records'>Execution records</h2>{records}<h2 id='requirements'>Requirement index</h2><nav>{nav}</nav>{groups}<h2 id='chains'>Requirement chains</h2>{chains}<h2 id='filtering'>Reading and filtering</h2><p>Filter ledger fields execution.level, execution.result, evidence.availability, applicability.status, review.status and coverage. Fixtures are prohibited from the production ledger.</p><h2 id='chain'>Evidence chain</h2><p>Current records link frozen specification IDs to component implementation paths, Actions artifacts, SHA-256 identities, relevant-file applicability hashes and explicit review states. Artifact expiry cannot silently preserve an auditable-pass claim.</p><h2 id='external'>External research-suite interface</h2><p>A future external suite must provide the same version, criterion, command, evidence hash/URI, applicability and review fields. G1.5-C does not run or write to external suites.</p>"
     return f"<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>B0 G1.5-C traceability</title><style>:root{{--bg:#0d1117;--panel:#161b22;--text:#c9d1d9;--muted:#8b949e;--accent:#7ee787}}*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 ui-monospace,SFMono-Regular,Consolas,Liberation Mono,monospace}}main{{max-width:1100px;margin:auto;padding:32px}}h1,h2{{color:var(--accent)}}h1{{font-size:clamp(1.5rem,4vw,2.4rem);line-height:1.2}}h2{{border-bottom:1px solid #30363d;padding-bottom:.4rem;margin-top:2rem}}h3{{font-size:1rem;margin:.1rem 0 .35rem;color:var(--accent)}}p{{overflow-wrap:anywhere;margin:.35rem 0}}.boundary{{color:var(--muted);margin-top:1rem}}.card,.record,.requirement{{background:var(--panel);border-left:3px solid var(--accent);padding:.7rem 1rem;margin:.6rem 0}}.record span,.requirement span{{color:var(--accent)}}.empty{{color:var(--muted)}}a{{color:#58a6ff}}nav{{display:flex;flex-wrap:wrap;gap:.8rem}}code{{font-family:inherit}}@media(max-width:700px){{main{{padding:18px}}}}</style><main>{body}</main></html>\n"
 
 
