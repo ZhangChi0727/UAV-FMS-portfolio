@@ -92,6 +92,22 @@ def test_constant_rate_propagation_matches_closed_form(rate):
     assert abs(np.linalg.norm(output.q_nb_estimate) - 1.0) <= Q_TOL
 
 
+def test_two_hundred_constant_rate_samples_match_closed_form_and_rotation_matrix():
+    rate = np.array([0.3, -0.2, 0.1])
+    estimator = make_estimator(axis_angle([0.2, -0.1, 0.05]))
+    initial = estimator.estimate.q_nb_estimate
+    output = None
+    for tick in range(1, 201):
+        output = estimator.step(Sample(tick * 0.005, rate, (0.0, 0.0, 0.0)))
+    expected = qmul(initial, axis_angle(rate * 1.0))
+    actual = align(output.q_nb_estimate, expected)
+    assert np.max(np.abs(actual - expected)) <= Q_TOL
+    assert abs(np.linalg.norm(actual) - 1.0) <= Q_TOL
+    actual_matrix = np.array([rotate_n_to_b(actual, axis) for axis in np.eye(3)]).T
+    expected_matrix = np.array([rotate_n_to_b(expected, axis) for axis in np.eye(3)]).T
+    assert np.max(np.abs(actual_matrix - expected_matrix)) <= Q_TOL
+
+
 def test_nonidentity_and_noncommuting_propagation():
     initial = axis_angle([0.2, -0.1, 0.05])
     xy = make_estimator(initial)
@@ -128,7 +144,7 @@ def test_stationary_gravity_correction_matches_independent_formula(rotation):
     expected = qmul(initial, axis_angle(0.005 * innovation))
     expected /= np.linalg.norm(expected)
     assert result.diagnostics.correction_applied
-    assert np.max(np.abs(align(result.estimate.q_nb_estimate, expected) - expected)) <= 2e-12
+    assert np.max(np.abs(align(result.estimate.q_nb_estimate, expected) - expected)) <= Q_TOL
 
 
 def test_gravity_correction_does_not_create_absolute_yaw_observation():
@@ -142,16 +158,22 @@ def test_gravity_correction_does_not_create_absolute_yaw_observation():
 
 def test_accelerometer_gate_float_boundaries_and_zero_force():
     params = load_estimator_parameters()
+    lower = params.gravity_m_s2 - params.accelerometer_gate_deviation_m_s2
     upper = params.gravity_m_s2 + params.accelerometer_gate_deviation_m_s2
-    inside = math.nextafter(upper, params.gravity_m_s2)
-    outside = math.nextafter(upper, math.inf)
-    assert abs(np.linalg.norm([inside, 0, 0]) - params.gravity_m_s2) <= params.accelerometer_gate_deviation_m_s2
-    assert abs(np.linalg.norm([outside, 0, 0]) - params.gravity_m_s2) > params.accelerometer_gate_deviation_m_s2
-    eligible = make_estimator().process(Sample(0.005, specific_force_b_m_s2=(inside, 0, 0)))
-    rejected = make_estimator().process(Sample(0.005, specific_force_b_m_s2=(outside, 0, 0)))
+    cases = [
+        (lower, True),
+        (math.nextafter(lower, params.gravity_m_s2), True),
+        (math.nextafter(lower, -math.inf), False),
+        (upper, True),
+        (math.nextafter(upper, params.gravity_m_s2), True),
+        (math.nextafter(upper, math.inf), False),
+    ]
+    for magnitude, expected in cases:
+        actual_norm = float(np.linalg.norm([magnitude, 0, 0]))
+        assert (abs(actual_norm - params.gravity_m_s2) <= params.accelerometer_gate_deviation_m_s2) is expected
+        result = make_estimator().process(Sample(0.005, specific_force_b_m_s2=(magnitude, 0, 0)))
+        assert result.diagnostics.correction_eligible is expected
     zero = make_estimator().process(Sample(0.005, specific_force_b_m_s2=(0, 0, 0)))
-    assert eligible.diagnostics.correction_eligible
-    assert not rejected.diagnostics.correction_eligible
     assert not zero.diagnostics.correction_eligible
 
 
@@ -169,6 +191,17 @@ def test_gap_recovery_uses_elapsed_time_and_caps_public_correction():
     delta = qmul(before.q_nb_estimate * np.array([1, -1, -1, -1]), result.estimate.q_nb_estimate)
     angle = 2 * math.atan2(np.linalg.norm(delta[1:]), abs(delta[0]))
     assert angle == pytest.approx(0.01, abs=2e-12)
+
+
+def test_gap_recovery_cap_at_nonzero_reset_boundary():
+    estimator = make_estimator(epoch=8, time=25.0)
+    estimator.step(Sample(25.005, specific_force_b_m_s2=(0, 0, 0)))
+    estimator.process(Sample(25.010, valid=False))
+    estimator.process(Sample(25.015, valid=False))
+    result = estimator.process(Sample(25.020, specific_force_b_m_s2=(9.80665, 0, 0)))
+    assert result.diagnostics.correction_capped
+    assert result.diagnostics.elapsed_periods == 3
+    assert result.diagnostics.missing_periods == 2
 
 
 def test_gap_recovery_gyro_constant_approximation_at_nonzero_epoch():
@@ -220,6 +253,38 @@ def test_duplicate_and_stale_timestamps_reject_then_next_grid_tick_recovers():
     assert recovered.diagnostics.elapsed_periods == 1
 
 
+@pytest.mark.parametrize("epoch,time", [(0, 0.0), (7, 12.0)])
+def test_first_sample_must_be_first_due_tick_and_rejection_is_atomic(epoch, time):
+    estimator = make_estimator(epoch=epoch, time=time)
+    before = estimator.estimate
+    rejected = estimator.process(Sample(time + 0.010))
+    assert not rejected.diagnostics.accepted
+    assert "first due tick" in rejected.diagnostics.reason
+    assert np.array_equal(before.q_nb_estimate, estimator.estimate.q_nb_estimate)
+    accepted = estimator.process(Sample(time + 0.005))
+    assert accepted.diagnostics.accepted
+    assert accepted.diagnostics.elapsed_periods == 1
+
+
+@pytest.mark.parametrize(
+    "sample",
+    [
+        Sample(1e308),
+        Sample(0.005, gyro_b_rad_s=(1e308, 0, 0), specific_force_b_m_s2=(0, 0, 0)),
+        Sample(0.005, specific_force_b_m_s2=(1e308, 1e308, 1e308)),
+    ],
+)
+def test_extreme_finite_sample_is_rejected_atomically_and_step_wraps(sample):
+    estimator = make_estimator()
+    before = estimator.estimate
+    result = estimator.process(sample)
+    assert not result.diagnostics.accepted
+    assert np.array_equal(before.q_nb_estimate, estimator.estimate.q_nb_estimate)
+    with pytest.raises(EstimatorContractError) as caught:
+        estimator.step(sample)
+    assert not caught.value.diagnostics.accepted
+
+
 def test_step_raises_with_diagnostics_without_state_change():
     estimator = make_estimator()
     before = estimator.estimate
@@ -255,6 +320,15 @@ def test_reset_rejects_nonunit_quaternion_and_bad_seed_atomically():
         estimator.reset(EstimatorInitialState((2, 0, 0, 0), (0, 0, 0)), ResetEpoch(1, 0), 7)
     with pytest.raises(EstimatorContractError):
         estimator.reset(EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), ResetEpoch(1, 0), -1)
+    assert np.array_equal(before.q_nb_estimate, estimator.estimate.q_nb_estimate)
+
+
+@pytest.mark.parametrize("initial,epoch", [(None, ResetEpoch(1, 0)), (EstimatorInitialState((1, 0, 0, 0), (0, 0, 0)), None)])
+def test_reset_wrong_public_types_raise_contract_error_atomically(initial, epoch):
+    estimator = make_estimator()
+    before = estimator.estimate
+    with pytest.raises(EstimatorContractError):
+        estimator.reset(initial, epoch, 7)
     assert np.array_equal(before.q_nb_estimate, estimator.estimate.q_nb_estimate)
 
 
@@ -300,7 +374,39 @@ def test_unapproved_estimator_configuration_change_fails_closed(tmp_path):
         load_estimator_parameters(candidate)
 
 
+@pytest.mark.parametrize("mutation", ["numeric", "missing_field", "wrong_version", "missing_file"])
+def test_loader_rejects_altered_missing_or_wrong_version_g0(tmp_path, mutation):
+    source_g0 = REPO / "05_integration/b0/configs/b0_g0_contract.v2.json"
+    g0_document = json.loads(source_g0.read_text(encoding="utf-8"))
+    g0_path = tmp_path / "g0.json"
+    if mutation == "numeric":
+        g0_document["timing"]["base_period_s"] = 0.003
+    elif mutation == "missing_field":
+        del g0_document["timing"]["base_period_s"]
+    elif mutation == "wrong_version":
+        g0_document["schema_version"] = "b0-g0-contract/v999"
+    if mutation != "missing_file":
+        g0_path.write_text(json.dumps(g0_document, indent=2) + "\n", encoding="utf-8")
+
+    config_dir = tmp_path / "configs"
+    config_dir.mkdir()
+    source_config = TRACK / "configs/b0_g2_estimator.v1.json"
+    source_approval = TRACK / "configs/b0_g2_estimator_approval.v1.json"
+    candidate_document = json.loads(source_config.read_text(encoding="utf-8"))
+    candidate_document["authority"]["g0_config_path"] = str(g0_path)
+    candidate = config_dir / source_config.name
+    candidate.write_text(json.dumps(candidate_document, indent=2) + "\n", encoding="utf-8")
+    approval_document = json.loads(source_approval.read_text(encoding="utf-8"))
+    approval_document["approved_config_canonical_lf_sha256"] = _canonical_lf_digest(candidate)
+    (config_dir / source_approval.name).write_text(json.dumps(approval_document, indent=2) + "\n", encoding="utf-8")
+    with pytest.raises(EstimatorContractError):
+        load_estimator_parameters(candidate)
+
+
 def test_public_runtime_api_has_no_truth_input():
     names = set(AttitudeEstimator.process.__code__.co_varnames)
     assert "truth" not in " ".join(names).lower()
     assert "plant" not in " ".join(names).lower()
+    estimator = make_estimator()
+    with pytest.raises(TypeError):
+        estimator.process(Sample(0.005), truth={"q_nb": [1, 0, 0, 0]})

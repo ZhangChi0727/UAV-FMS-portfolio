@@ -280,9 +280,17 @@ class AttitudeEstimator:
         )
 
     def reset(self, initial_state: EstimatorInitialState, reset_epoch: ResetEpoch, rng_seed: Any) -> StateEstimate:
+        if not isinstance(initial_state, EstimatorInitialState):
+            raise EstimatorContractError("initial_state must be EstimatorInitialState")
+        if not isinstance(reset_epoch, ResetEpoch):
+            raise EstimatorContractError("reset_epoch must be ResetEpoch")
         seed = _integer(rng_seed, "rng_seed")
         q_input = initial_state.q_nb
-        norm = float(np.linalg.norm(q_input))
+        with np.errstate(over="raise", invalid="raise"):
+            try:
+                norm = float(np.linalg.norm(q_input))
+            except FloatingPointError as exc:
+                raise EstimatorContractError("initial quaternion norm is outside the supported numeric domain") from exc
         if not math.isfinite(norm) or abs(norm - 1.0) > self._parameters.unit_norm_tolerance:
             raise EstimatorContractError("initial quaternion violates G0 unit norm tolerance")
         if self._reset_epoch is not None:
@@ -316,35 +324,48 @@ class AttitudeEstimator:
         if not bool(imu_sample.valid):
             return self._reject("imu_sample.valid is false")
 
-        relative = (timestamp - self._reset_epoch.timestamp_s) / self._parameters.sample_period_s
-        tick = int(round(relative))
-        expected = self._reset_epoch.timestamp_s + tick * self._parameters.sample_period_s
+        try:
+            relative = (timestamp - self._reset_epoch.timestamp_s) / self._parameters.sample_period_s
+            if not math.isfinite(relative) or abs(relative) > 2**53:
+                raise EstimatorContractError("imu sample timestamp is outside the supported reset grid")
+            tick = int(round(relative))
+            expected = self._reset_epoch.timestamp_s + tick * self._parameters.sample_period_s
+        except (ArithmeticError, ValueError, EstimatorContractError) as exc:
+            return self._reject(str(exc))
         if tick <= self._last_tick:
             return self._reject("imu sample timestamp is duplicate or stale")
         if tick < 1 or abs(timestamp - expected) > self._parameters.timestamp_tolerance_s:
             return self._reject("imu sample timestamp is off the reset-epoch grid")
+        if self._last_tick == 0 and tick != 1:
+            return self._reject("first imu sample must occur at the first due tick after reset")
 
-        elapsed_periods = tick - self._last_tick
-        missing_periods = elapsed_periods - 1
-        dt = elapsed_periods * self._parameters.sample_period_s
-        previous = self._estimate
-        q_pred = _normalize(_multiply(previous.q_nb_estimate, _rotation_quaternion(gyro * dt)))
+        try:
+            with np.errstate(over="raise", invalid="raise", divide="raise"):
+                elapsed_periods = tick - self._last_tick
+                missing_periods = elapsed_periods - 1
+                dt = elapsed_periods * self._parameters.sample_period_s
+                previous = self._estimate
+                q_pred = _normalize(_multiply(previous.q_nb_estimate, _rotation_quaternion(gyro * dt)))
 
-        force_norm = float(np.linalg.norm(force))
-        eligible = abs(force_norm - self._parameters.gravity_m_s2) <= self._parameters.accelerometer_gate_deviation_m_s2
-        applied = False
-        capped = False
-        q_next = q_pred
-        if eligible and force_norm > 0.0:
-            measured = force / force_norm
-            predicted = _rotate_ned_to_body(q_pred, np.array([0.0, 0.0, -1.0]))
-            innovation = np.cross(measured, predicted)
-            correction, capped = _magnitude_clamp(
-                self._parameters.correction_gain_per_s * dt * innovation,
-                self._parameters.maximum_correction_step_rad,
-            )
-            q_next = _normalize(_multiply(q_pred, _rotation_quaternion(correction)))
-            applied = bool(np.linalg.norm(correction) > 0.0)
+                force_norm = float(np.linalg.norm(force))
+                if not math.isfinite(force_norm):
+                    raise EstimatorContractError("specific-force norm is outside the supported numeric domain")
+                eligible = abs(force_norm - self._parameters.gravity_m_s2) <= self._parameters.accelerometer_gate_deviation_m_s2
+                applied = False
+                capped = False
+                q_next = q_pred
+                if eligible and force_norm > 0.0:
+                    measured = force / force_norm
+                    predicted = _rotate_ned_to_body(q_pred, np.array([0.0, 0.0, -1.0]))
+                    innovation = np.cross(measured, predicted)
+                    correction, capped = _magnitude_clamp(
+                        self._parameters.correction_gain_per_s * dt * innovation,
+                        self._parameters.maximum_correction_step_rad,
+                    )
+                    q_next = _normalize(_multiply(q_pred, _rotation_quaternion(correction)))
+                    applied = bool(np.linalg.norm(correction) > 0.0)
+        except (ArithmeticError, ValueError, EstimatorContractError) as exc:
+            return self._reject(f"imu sample derived arithmetic rejected: {exc}")
 
         estimate = StateEstimate(q_next, gyro, timestamp, True)
         diagnostics = EstimatorDiagnostics(
