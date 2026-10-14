@@ -36,13 +36,15 @@
     "default_period_s": 0.005,
     "reset_tick_runs_step": false,
     "first_step_offset_periods": 1,
-    "step_timestamp_rule": "command_and_estimate_equal_current_due_tick_with_g0_tolerance",
+    "step_timestamp_rule": "command_and_estimate_equal_current_due_tick_with_implementation_timestamp_absolute_tolerance_s",
     "feedback_rule": "current_actuator_sample_identifies_a_known_command_published_strictly_before_current_due_tick",
-    "same_tick_retry_after_rejection": "allowed_and_must_match_no_rejection_control_trajectory",
-    "missed_due_tick_after_rejection": "reset_required_before_any_later_step",
+    "same_expected_tick_retry_after_any_rejection": "allowed_and_must_match_no_rejection_control_trajectory",
+    "early_call_recovery": "retry_at_the_unchanged_expected_due_tick_without_reset",
+    "missed_expected_due_tick": "a_later_tick_is_rejected_and_reset_is_required_to_resume",
     "reason": "the_controller_must_not_infer_unobserved_integral_derivative_or_feedback_history",
-    "duplicate_or_stale_step": "reject_without_state_change",
-    "off_grid_or_late_step": "reject_without_state_change_and_require_reset_to_resume"
+    "duplicate_or_stale_step": "reject_without_state_change_and_preserve_the_already_scheduled_next_due_tick",
+    "off_grid_before_expected_step": "reject_without_state_change_and_allow_the_expected_due_tick",
+    "off_grid_or_late_after_expected_step": "reject_without_state_change_and_require_reset_to_resume"
   },
   "reset_policy": {
     "epoch_id_type": "signed_int64_nonnegative",
@@ -53,15 +55,23 @@
     "published_request_Nm": [0.0, 0.0, 0.0],
     "published_limited_Nm": [0.0, 0.0, 0.0],
     "published_saturated": [false, false, false],
-    "cleared_state": ["integral", "derivative_filter", "previous_rate", "published_command_history", "recovery_fault"]
+    "cleared_state": ["integral", "derivative_filter", "previous_rate", "expected_held_command"]
   },
   "pairing_policy": {
-    "identity_fields": ["epoch_id", "command_timestamp_s"],
+    "identity_fields": ["controller_session_epoch_id", "command_timestamp_s"],
     "matched_value_fields": ["limited_torque_body_Nm", "saturated"],
     "comparison": "timestamp_with_implementation_absolute_tolerance_values_exact_to_published_float64_bits",
-    "history": "all_commands_published_in_current_epoch_until_reset",
-    "unknown_future_old_epoch_or_value_mismatch": "reject_atomically",
+    "expected_feedback_command": "the_single_most_recent_command_published_before_the_current_due_tick_reset_command_on_first_step_then_previous_successful_step_command",
+    "superseded_command": "reject_even_if_it_was_published_in_the_current_epoch",
+    "unknown_future_old_epoch_superseded_or_value_mismatch": "reject_atomically",
     "lag_back_calculation_reference": "matched_held_command_limited_torque_not_current_limited_torque"
+  },
+  "feedback_validity": {
+    "feedback_timestamp": "finite_and_equal_current_due_tick_with_implementation_absolute_tolerance",
+    "actual_torque_body_Nm": "length_three_finite_and_componentwise_abs_not_greater_than_g0_torque_limit",
+    "limited_torque_body_Nm": "length_three_finite_and_exactly_equal_expected_held_command",
+    "saturated": "length_three_boolean_and_exactly_equal_expected_held_command",
+    "command_timestamp_s": "finite_and_equal_expected_held_command_with_implementation_absolute_tolerance"
   },
   "diagnostics": {
     "result_fields": ["accepted", "reason", "epoch_id", "tick_index", "rate_error_rad_s", "derivative_raw_rad_s2", "derivative_filtered_rad_s2", "proportional_Nm", "integral_before_Nm", "derivative_Nm", "conditional_integral_rate_Nm_s", "limit_backcalculation_rate_Nm_s", "lag_backcalculation_rate_Nm_s", "integral_after_Nm", "requested_Nm", "limited_Nm", "saturated"],
@@ -75,7 +85,16 @@
     "array_input": "copied_to_fixed_size_C++_values_before_validation",
     "integer_conversion": "reject_outside_signed_int64_before_cast",
     "output_mapping": "requested_torque_body_Nm_limited_torque_body_Nm_saturated_timestamp_s",
-    "g1_compatibility": "construct_01_simulation_b0_contract_TorqueCommand_without_reclamping"
+    "g1_compatibility": "construct_01_simulation_b0_contract_TorqueCommand_without_reclamping",
+    "g0_step_return": "TorqueCommand_only",
+    "diagnostics_access": "separate_read_only_last_successful_diagnostics_and_snapshot",
+    "epoch_metadata": "adapter_wraps_frozen_messages_with_active_controller_session_epoch_without_modifying_wire_fields"
+  },
+  "defect_detection": {
+    "oracle": "unchanged_correct_independent_numeric_oracle",
+    "subject_variants": ["attitude_feedback_sign_reversed", "antiwindup_backcalculation_sign_reversed", "antiwindup_disabled", "lag_uses_current_limited"],
+    "variant_build": "deterministic_build_directory_copy_of_core_with_one_audited_textual_mutation_per_target_never_installed_or_committed_as_production",
+    "required_outcome": "variant_compiles_and_the_predeclared_owning_numeric_test_fails_before_production_target_is_rebuilt_and_passes"
   },
   "build_policy": {
     "language_standard": "C++17",
