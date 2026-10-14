@@ -234,10 +234,19 @@ jobs:
           ctest --preset "${{ matrix.preset }}" --output-on-failure \
             --output-log "${evidence_dir}/ctest-${{ matrix.artifact_suffix }}.log" \
             --output-junit "${evidence_dir}/ctest-${{ matrix.artifact_suffix }}.xml"
+          (
+            cd 03_control/b0
+            B0_CONTROLLER_MODULE_DIR="${GITHUB_WORKSPACE}/${{ matrix.module_dir }}" \
+            B0_CONTROLLER_REPO="${GITHUB_WORKSPACE}" \
+              python -m pytest -q python/tests \
+              --junitxml="${evidence_dir}/pytest-${{ matrix.artifact_suffix }}.xml"
+          )
           python 03_control/b0/evidence.py \
             --module-dir "${{ matrix.module_dir }}" \
             --build-dir "${{ matrix.build_dir }}" \
             --build-type "${{ matrix.build_type }}" \
+            --ctest-junit "${evidence_dir}/ctest-${{ matrix.artifact_suffix }}.xml" \
+            --pytest-junit "${evidence_dir}/pytest-${{ matrix.artifact_suffix }}.xml" \
             --output "${evidence_dir}/g2b_controller_evidence_${{ matrix.artifact_suffix }}.json"
 
       - name: Upload controller component evidence

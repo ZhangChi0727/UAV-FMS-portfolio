@@ -30,15 +30,44 @@ void translate_controller_error(std::exception_ptr pointer) {
 }
 
 double strict_scalar(py::handle value, const char* name) {
-    if (PyBool_Check(value.ptr()) || PySequence_Check(value.ptr()) ||
-        !PyNumber_Check(value.ptr())) {
+    if (PyBool_Check(value.ptr()) || PySequence_Check(value.ptr())) {
         throw py::type_error(std::string(name) + " must be a finite real scalar");
     }
+
+    // PyNumber_Check/PyNumber_Float also accept complex and bool-like scalar
+    // types.  In particular, NumPy complex scalars can silently discard their
+    // imaginary part.  The numeric tower gives us the intended real-scalar
+    // boundary without taking a compile-time dependency on NumPy.
+    const py::object real_type = py::module_::import("numbers").attr("Real");
+    const int is_real = PyObject_IsInstance(value.ptr(), real_type.ptr());
+    if (is_real < 0) throw py::error_already_set();
+    if (is_real == 0) {
+        throw py::type_error(std::string(name) + " must be a finite real scalar");
+    }
+
     py::object float_value = py::reinterpret_steal<py::object>(PyNumber_Float(value.ptr()));
     if (!float_value) throw py::error_already_set();
     const double converted = PyFloat_AsDouble(float_value.ptr());
     if (!std::isfinite(converted)) {
         throw py::value_error(std::string(name) + " must be finite");
+    }
+    py::object comparison_value = py::reinterpret_borrow<py::object>(value);
+    const py::object integral_type =
+        py::module_::import("numbers").attr("Integral");
+    const int is_integral =
+        PyObject_IsInstance(value.ptr(), integral_type.ptr());
+    if (is_integral < 0) throw py::error_already_set();
+    if (is_integral != 0) {
+        comparison_value =
+            py::reinterpret_steal<py::object>(PyNumber_Long(value.ptr()));
+        if (!comparison_value) throw py::error_already_set();
+    }
+    const int lossless = PyObject_RichCompareBool(
+        comparison_value.ptr(), float_value.ptr(), Py_EQ);
+    if (lossless < 0) throw py::error_already_set();
+    if (lossless == 0) {
+        throw py::value_error(
+            std::string(name) + " must be exactly representable as a double");
     }
     return converted;
 }
@@ -234,7 +263,16 @@ PYBIND11_MODULE(b0_controller, module) {
     py::class_<CascadedController>(module, "CascadedController")
         .def(py::init<ControllerParameters>())
         .def("reset", &CascadedController::reset)
-        .def("step", &CascadedController::step)
+        .def(
+            "step",
+            [](CascadedController& controller,
+               const AttitudeCommand& command,
+               const StateEstimate& estimate,
+               const ActuatorFeedback& feedback,
+               py::handle dt_s) {
+                return controller.step(
+                    command, estimate, feedback, strict_scalar(dt_s, "dt_s"));
+            })
         .def("last_diagnostics", &CascadedController::last_diagnostics)
         .def("snapshot", &CascadedController::snapshot);
 }
