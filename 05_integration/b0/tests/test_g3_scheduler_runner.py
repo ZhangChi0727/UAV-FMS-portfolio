@@ -8,7 +8,11 @@ from pathlib import Path
 import pytest
 
 from runner import (
+    ACCEPTANCE_SEED_HISTORY,
+    BEHAVIOR_CLOSURE_PATHS,
+    CONTROLLER_BUILD_INPUT_PATHS,
     RunnerContractError,
+    _acceptance_seed_provenance,
     _run_g3_bind_smoke,
     compare_g3_bind_results,
     run_saturation_reachability,
@@ -128,3 +132,35 @@ def test_rate_kp_x_study_protocol_is_finite_tuning_only_and_one_dimensional() ->
     assert len(candidates) == len(set(candidates))
     assert candidates == [0.08, 0.17, 0.175, 0.176, 0.18, 0.19, 0.2]
     assert all(0.0 <= value <= 0.2 for value in candidates)
+
+
+def test_acceptance_seed_provenance_separates_run_execution_from_history() -> None:
+    tuning = _acceptance_seed_provenance(False)
+    assert tuning["acceptance_seed_executed_this_run"] is False
+    assert tuning["acceptance_seed_previously_exposed"] is True
+    assert tuning["acceptance_seed_exposure_cumulative"] is True
+    assert tuning["acceptance_seed_exposure_history"] == ACCEPTANCE_SEED_HISTORY
+
+    diagnostic = _acceptance_seed_provenance(True)
+    assert diagnostic["acceptance_seed_executed_this_run"] is True
+    assert diagnostic["acceptance_seed_previously_exposed"] is True
+    assert diagnostic["acceptance_seed_exposure_cumulative"] is True
+
+
+def test_behavior_closure_contains_public_runtime_build_and_ci_inputs() -> None:
+    required = {
+        "01_simulation/b0/__init__.py",
+        "01_simulation/b0/quaternion.py",
+        "03_control/b0/include/b0_controller/controller.hpp",
+        "03_control/b0/src/controller.cpp",
+        "03_control/b0/python/controller_bindings.cpp",
+        "03_control/b0/CMakeLists.txt",
+        "CMakeLists.txt",
+        "CMakePresets.json",
+        "requirements/b0-dev.txt",
+        ".github/workflows/ci.yml",
+        ".github/workflows/g3a.yml",
+    }
+    assert required <= set(BEHAVIOR_CLOSURE_PATHS)
+    assert set(CONTROLLER_BUILD_INPUT_PATHS) <= set(BEHAVIOR_CLOSURE_PATHS)
+    assert len(BEHAVIOR_CLOSURE_PATHS) == len(set(BEHAVIOR_CLOSURE_PATHS))

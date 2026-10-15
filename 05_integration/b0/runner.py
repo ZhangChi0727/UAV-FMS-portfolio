@@ -32,6 +32,58 @@ G0_PATH = REPO_ROOT / "05_integration/b0/configs/b0_g0_contract.v2.json"
 TUNING_SEED = 2026100900
 IDENTITY = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float64)
 RUN_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
+ACCEPTANCE_SEED_HISTORY = {
+    "seed": 2026100906,
+    "previously_exposed": True,
+    "exposure_source_commit": "78abbbe27a6e451049d80fbcf9c8e031a5001b0c",
+    "exposure_start_sha256": "5cdf8a7a76e683e2d15e79d3716db232897d6f2f47a0a04c66a3e1fa4e399f0c",
+    "exposure_result_sha256": "79e691f5b17655935943ad2e4ae1cb784e1cc82d8a122c36cde8a5a385075a0b",
+    "exposure_final_sha256": "6a7771ebd67f86cd55822563ee5cb71530d964c19a6a1667f0af4919a7e65dde",
+}
+BEHAVIOR_CLOSURE_PATHS = (
+    ".github/workflows/ci.yml",
+    ".github/workflows/g3a.yml",
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "requirements/b0-dev.txt",
+    "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "05_integration/b0/configs/b0_g3_rate_kp_x_study.v1.json",
+    "05_integration/b0/validate_config.py",
+    "05_integration/b0/runner.py",
+    "05_integration/b0/scheduler.py",
+    "05_integration/b0/events.py",
+    "01_simulation/b0/__init__.py",
+    "01_simulation/b0/contract.py",
+    "01_simulation/b0/quaternion.py",
+    "01_simulation/b0/plant.py",
+    "01_simulation/b0/actuator.py",
+    "01_simulation/b0/imu.py",
+    "02_estimation/b0/estimator.py",
+    "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+    "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+    "03_control/b0/CMakeLists.txt",
+    "03_control/b0/include/b0_controller/controller.hpp",
+    "03_control/b0/src/controller.cpp",
+    "03_control/b0/python/controller_bindings.cpp",
+    "03_control/b0/python/controller.py",
+    "03_control/b0/configs/b0_g2_controller.v1.json",
+    "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+    "docs/work_orders/B0_PR11_v2_G1_closeout.md",
+    "systems_engineering/reports/b0/g0_approval_decision.md",
+    "systems_engineering/reports/b0/g2a_validation_record.md",
+    "systems_engineering/reports/b0/g2b_validation_record.md",
+    "systems_engineering/reports/b0/g3_s0_integration_design.md",
+    "systems_engineering/reports/b0/g3_s0_verification_matrix.md",
+)
+CONTROLLER_BUILD_INPUT_PATHS = (
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "requirements/b0-dev.txt",
+    "03_control/b0/CMakeLists.txt",
+    "03_control/b0/include/b0_controller/controller.hpp",
+    "03_control/b0/src/controller.cpp",
+    "03_control/b0/python/controller_bindings.cpp",
+)
 
 
 class RunnerContractError(ValueError):
@@ -149,16 +201,8 @@ def _canonical_lf_sha256(path: Path) -> str:
 
 
 def _source_identity() -> str:
-    relevant = (
-        ".github/workflows/ci.yml",
-        ".github/workflows/g3a.yml",
-        "05_integration/b0/runner.py",
-        "05_integration/b0/scheduler.py",
-        "05_integration/b0/events.py",
-        "05_integration/b0/configs/b0_g3_rate_kp_x_study.v1.json",
-    )
     status = subprocess.run(
-        ["git", "status", "--porcelain", "--", *relevant],
+        ["git", "status", "--porcelain", "--", *BEHAVIOR_CLOSURE_PATHS],
         cwd=REPO_ROOT,
         check=True,
         capture_output=True,
@@ -191,40 +235,61 @@ def _write_exclusive_json(path: Path, value: dict[str, Any]) -> str:
     return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
 
 
-def _file_identity(path: Path) -> dict[str, Any]:
+def _git_file_bytes(source_commit: str, relative_path: str) -> bytes:
+    return subprocess.run(
+        ["git", "show", f"{source_commit}:{relative_path}"],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+
+
+def _file_identity(path: Path, source_commit: str) -> dict[str, Any]:
+    relative_path = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
+    live_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
+    source_sha256 = hashlib.sha256(
+        _git_file_bytes(source_commit, relative_path)
+    ).hexdigest()
     return {
-        "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
-        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "path": relative_path,
+        "sha256": live_sha256,
+        "source_sha256": source_sha256,
+        "live_sha256": live_sha256,
+        "live_matches_source": live_sha256 == source_sha256,
     }
 
 
 def _authority_identity(
     source_commit: str, module_path: Path, build_type: str
 ) -> dict[str, Any]:
-    paths = [
-        G0_PATH,
-        REPO_ROOT / "05_integration/b0/validate_config.py",
-        REPO_ROOT / "01_simulation/b0/contract.py",
-        REPO_ROOT / "01_simulation/b0/plant.py",
-        REPO_ROOT / "01_simulation/b0/actuator.py",
-        REPO_ROOT / "01_simulation/b0/imu.py",
-        REPO_ROOT / "02_estimation/b0/estimator.py",
-        REPO_ROOT / "02_estimation/b0/configs/b0_g2_estimator.v1.json",
-        REPO_ROOT / "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
-        REPO_ROOT / "03_control/b0/python/controller.py",
-        REPO_ROOT / "03_control/b0/configs/b0_g2_controller.v1.json",
-        REPO_ROOT / "03_control/b0/configs/b0_g2_controller_approval.v1.json",
-        REPO_ROOT / "05_integration/b0/runner.py",
-        REPO_ROOT / "05_integration/b0/scheduler.py",
-        REPO_ROOT / "05_integration/b0/events.py",
-        REPO_ROOT / ".github/workflows/g3a.yml",
+    files = [
+        _file_identity(REPO_ROOT / relative_path, source_commit)
+        for relative_path in BEHAVIOR_CLOSURE_PATHS
     ]
+    if not all(item["live_matches_source"] for item in files):
+        raise RunnerContractError("behavior closure does not match source commit")
     return {
+        "schema_version": "b0-g3-authority-identity/v2",
         "source_commit": source_commit,
         "build_type": build_type,
         "controller_module_path": str(module_path),
         "controller_module_sha256": hashlib.sha256(module_path.read_bytes()).hexdigest(),
-        "files": [_file_identity(path) for path in paths],
+        "behavior_closure_complete": True,
+        "controller_build_input_paths": list(CONTROLLER_BUILD_INPUT_PATHS),
+        "files": files,
+    }
+
+
+def _acceptance_seed_provenance(executed_this_run: bool) -> dict[str, Any]:
+    return {
+        "acceptance_seed_executed_this_run": executed_this_run,
+        "acceptance_seed_previously_exposed": ACCEPTANCE_SEED_HISTORY[
+            "previously_exposed"
+        ],
+        "acceptance_seed_exposure_cumulative": (
+            executed_this_run or ACCEPTANCE_SEED_HISTORY["previously_exposed"]
+        ),
+        "acceptance_seed_exposure_history": dict(ACCEPTANCE_SEED_HISTORY),
     }
 
 
@@ -522,7 +587,10 @@ def _run_saturation_profile(
             if acceptance_exposure
             else "b0-g3-tuning-run/v1"
         ),
-        "acceptance_seed_exposed": acceptance_exposure,
+        "acceptance_seed_exposed": _acceptance_seed_provenance(
+            acceptance_exposure
+        )["acceptance_seed_exposure_cumulative"],
+        **_acceptance_seed_provenance(acceptance_exposure),
         "scenario_id": scenario["id"],
         "source_scenario_seed": scenario["seed"],
         "seed": seed,
@@ -734,7 +802,10 @@ def _run_saturation_profile(
             "source_scenario_seed": scenario["seed"],
             "seed": seed,
             "seed_override": None if acceptance_exposure else TUNING_SEED,
-            "acceptance_seed_exposed": acceptance_exposure,
+            "acceptance_seed_exposed": _acceptance_seed_provenance(
+                acceptance_exposure
+            )["acceptance_seed_exposure_cumulative"],
+            **_acceptance_seed_provenance(acceptance_exposure),
             "source_commit": source_commit,
             "build_type": build_type,
             "module_path": str(module_path),
@@ -895,6 +966,10 @@ def run_rate_kp_x_study(
         "module_dir": str(Path(module_dir).resolve()),
         "seed": TUNING_SEED,
         "acceptance_seed_executed": False,
+        "acceptance_seed_executed_this_run": False,
+        "acceptance_seed_previously_exposed": True,
+        "acceptance_seed_exposure_cumulative": True,
+        "acceptance_seed_exposure_history": dict(ACCEPTANCE_SEED_HISTORY),
         "candidate_results": results,
         "feasible_candidate_count": len(feasible),
         "ranked_overlay_candidate": feasible[0] if feasible else None,
