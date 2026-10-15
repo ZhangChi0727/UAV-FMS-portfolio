@@ -31,6 +31,11 @@ def test_real_components_complete_fixed_twelve_tick_loop() -> None:
     assert due[0]["command_q_nb"][1] > 0.0
     assert due[3]["command_q_nb"][1] > 0.0
     assert due[4]["command_q_nb"] == [1.0, 0.0, 0.0, 0.0]
+    assert [record["actuator_command_timestamp_s"] for record in result["records"][:3]] == [
+        0.0,
+        0.0,
+        0.005,
+    ]
     assert any(
         abs(value) > 0.0
         for record in due

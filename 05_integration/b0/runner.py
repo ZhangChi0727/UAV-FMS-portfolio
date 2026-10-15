@@ -151,9 +151,11 @@ def _canonical_lf_sha256(path: Path) -> str:
 def _source_identity() -> str:
     relevant = (
         ".github/workflows/ci.yml",
+        ".github/workflows/g3a.yml",
         "05_integration/b0/runner.py",
         "05_integration/b0/scheduler.py",
         "05_integration/b0/events.py",
+        "05_integration/b0/configs/b0_g3_rate_kp_x_study.v1.json",
     )
     status = subprocess.run(
         ["git", "status", "--porcelain", "--", *relevant],
@@ -189,6 +191,146 @@ def _write_exclusive_json(path: Path, value: dict[str, Any]) -> str:
     return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
 
 
+def _file_identity(path: Path) -> dict[str, Any]:
+    return {
+        "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+def _authority_identity(
+    source_commit: str, module_path: Path, build_type: str
+) -> dict[str, Any]:
+    paths = [
+        G0_PATH,
+        REPO_ROOT / "05_integration/b0/validate_config.py",
+        REPO_ROOT / "01_simulation/b0/contract.py",
+        REPO_ROOT / "01_simulation/b0/plant.py",
+        REPO_ROOT / "01_simulation/b0/actuator.py",
+        REPO_ROOT / "01_simulation/b0/imu.py",
+        REPO_ROOT / "02_estimation/b0/estimator.py",
+        REPO_ROOT / "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+        REPO_ROOT / "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+        REPO_ROOT / "03_control/b0/python/controller.py",
+        REPO_ROOT / "03_control/b0/configs/b0_g2_controller.v1.json",
+        REPO_ROOT / "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+        REPO_ROOT / "05_integration/b0/runner.py",
+        REPO_ROOT / "05_integration/b0/scheduler.py",
+        REPO_ROOT / "05_integration/b0/events.py",
+        REPO_ROOT / ".github/workflows/g3a.yml",
+    ]
+    return {
+        "source_commit": source_commit,
+        "build_type": build_type,
+        "controller_module_path": str(module_path),
+        "controller_module_sha256": hashlib.sha256(module_path.read_bytes()).hexdigest(),
+        "files": [_file_identity(path) for path in paths],
+    }
+
+
+def _reset_loop(
+    simulation: Any,
+    estimator_module: Any,
+    plant: Any,
+    actuator: Any,
+    imu: Any,
+    estimator: Any,
+    controller: Any,
+    plant_q_nb: Any,
+    plant_omega_b_rad_s: Any,
+    seed: int,
+    epoch_id: int = 0,
+    epoch_timestamp_s: float = 0.0,
+) -> tuple[Any, Any]:
+    class ControllerResetEpoch:
+        id = epoch_id
+        timestamp_s = epoch_timestamp_s
+
+    held_command = controller.reset(ControllerResetEpoch())
+    actuator_state = simulation.ActuatorInitialState(
+        actual_torque_body_Nm=np.zeros(3),
+        held_limited_torque_body_Nm=held_command.limited_torque_body_Nm,
+        held_command_timestamp_s=held_command.timestamp_s,
+        held_saturated=held_command.saturated,
+        held_requested_torque_body_Nm=held_command.requested_torque_body_Nm,
+    )
+    actuator.reset(actuator_state, epoch_timestamp_s)
+    plant.reset(
+        simulation.PlantInitialState(plant_q_nb, plant_omega_b_rad_s),
+        epoch_timestamp_s,
+    )
+    imu.reset(simulation.IMUInitialState(), epoch_timestamp_s, seed)
+    estimator.reset(
+        estimator_module.EstimatorInitialState(IDENTITY, np.zeros(3)),
+        estimator_module.ResetEpoch(epoch_id, epoch_timestamp_s),
+        seed,
+    )
+    return held_command, actuator.feedback
+
+
+_VECTOR_PARAMETER_FIELDS = (
+    "attitude_kp",
+    "rate_kp",
+    "rate_ki",
+    "rate_kd",
+    "integral_limit_Nm",
+    "rate_limit_rad_s",
+    "torque_limit_Nm",
+    "kaw_limit_per_s",
+    "kaw_lag_per_s",
+)
+_SCALAR_PARAMETER_FIELDS = (
+    "derivative_time_constant_s",
+    "controller_period_s",
+    "timestamp_tolerance_s",
+    "quaternion_norm_tolerance",
+)
+
+
+def _sealed_parameters(parameters: Any) -> dict[str, Any]:
+    sealed = {
+        field: [float(value) for value in getattr(parameters, field)]
+        for field in _VECTOR_PARAMETER_FIELDS
+    }
+    sealed.update(
+        {field: float(getattr(parameters, field)) for field in _SCALAR_PARAMETER_FIELDS}
+    )
+    return sealed
+
+
+def _study_controller(
+    adapter_module: Any, controller_module: Any, rate_kp_x: float
+) -> tuple[Any, dict[str, Any]]:
+    if not math.isfinite(rate_kp_x) or not 0.0 <= rate_kp_x <= 0.2:
+        raise RunnerContractError("study rate_kp[0] must be finite and within [0,0.2]")
+    accepted = adapter_module.load_controller_parameters(controller_module)
+    parameters = controller_module.ControllerParameters()
+    for field in _VECTOR_PARAMETER_FIELDS:
+        setattr(parameters, field, list(getattr(accepted, field)))
+    for field in _SCALAR_PARAMETER_FIELDS:
+        setattr(parameters, field, float(getattr(accepted, field)))
+    rate_kp = list(parameters.rate_kp)
+    rate_kp[0] = rate_kp_x
+    parameters.rate_kp = rate_kp
+    sealed = _sealed_parameters(parameters)
+    accepted_sealed = _sealed_parameters(accepted)
+    changed = []
+    for field in (*_VECTOR_PARAMETER_FIELDS, *_SCALAR_PARAMETER_FIELDS):
+        if sealed[field] != accepted_sealed[field]:
+            changed.append(field)
+    if changed not in ([], ["rate_kp"]):
+        raise RunnerContractError(f"study parameter whitelist violated: {changed}")
+    if sealed["rate_kp"][1:] != accepted_sealed["rate_kp"][1:]:
+        raise RunnerContractError("study changed a non-x rate Kp")
+    adapter = object.__new__(adapter_module.ControllerAdapter)
+    adapter.module = controller_module
+    adapter.parameters = parameters
+    adapter.core = controller_module.CascadedController(parameters)
+    adapter.epoch_id = None
+    adapter.g1_contract = adapter_module._load_g1_contract(REPO_ROOT)
+    return adapter, sealed
+
+
 def _run_g3_bind_smoke(module_dir: Path, build_type: str, seed: int) -> dict[str, Any]:
     if seed != TUNING_SEED:
         raise RunnerContractError("G3-BIND accepts only the approved tuning seed")
@@ -222,21 +364,18 @@ def _run_g3_bind_smoke(module_dir: Path, build_type: str, seed: int) -> dict[str
     estimator = estimator_module.AttitudeEstimator()
     controller = adapter_module.ControllerAdapter(controller_module)
 
-    plant.reset(simulation.PlantInitialState(IDENTITY, np.zeros(3)), 0.0)
-    actuator.reset(simulation.ActuatorInitialState(), 0.0)
-    imu.reset(simulation.IMUInitialState(), 0.0, seed)
-    estimator.reset(
-        estimator_module.EstimatorInitialState(IDENTITY, np.zeros(3)),
-        estimator_module.ResetEpoch(0, 0.0),
+    held_command, feedback = _reset_loop(
+        simulation,
+        estimator_module,
+        plant,
+        actuator,
+        imu,
+        estimator,
+        controller,
+        IDENTITY,
+        np.zeros(3),
         seed,
     )
-
-    class ControllerResetEpoch:
-        id = 0
-        timestamp_s = 0.0
-
-    held_command = controller.reset(ControllerResetEpoch())
-    feedback = actuator.feedback
     call_counts = {name: 0 for name in ("plant", "actuator", "imu", "estimator", "controller")}
     records: list[dict[str, Any]] = []
 
@@ -335,13 +474,19 @@ def run_g3_bind_smoke(module_dir: str | Path, build_type: str) -> dict[str, Any]
     return _run_g3_bind_smoke(Path(module_dir), build_type, TUNING_SEED)
 
 
-def run_saturation_reachability(
+def _run_saturation_profile(
     module_dir: str | Path,
     build_type: str,
     output_root: str | Path,
     run_id: str,
+    *,
+    seed: int,
+    rate_kp_x: float | None,
+    purpose: str,
+    acceptance_exposure: bool,
+    protocol_identity: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Run the first frozen saturation diagnostic with append-only exposure records."""
+    """Run the frozen saturation template through one explicitly labelled profile."""
 
     if not RUN_ID_PATTERN.fullmatch(run_id):
         raise RunnerContractError("run_id does not match the approved identity pattern")
@@ -360,33 +505,51 @@ def run_saturation_reachability(
     scenario = _scenario(contract, "saturation_withdrawal")
     if scenario["seed"] != 2026100906:
         raise RunnerContractError("frozen saturation acceptance seed identity changed")
+    if acceptance_exposure:
+        if seed != scenario["seed"] or rate_kp_x is not None:
+            raise RunnerContractError("acceptance diagnostic must use frozen seed and parameters")
+    elif seed != TUNING_SEED or rate_kp_x is None:
+        raise RunnerContractError("study profile requires tuning seed and explicit x rate Kp")
     scheduler = IntegerScheduler.from_contract(contract)
     events = EventSchedule(scenario["events"])
     controller_module, module_path = _load_controller_module(module_directory.resolve())
     module_hash = hashlib.sha256(module_path.read_bytes()).hexdigest()
     started_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    authority = _authority_identity(source_commit, module_path, build_type)
     start_record = {
-        "schema_version": "b0-g3-seed-exposure/v1",
-        "acceptance_seed_exposed": True,
+        "schema_version": (
+            "b0-g3-seed-exposure/v1"
+            if acceptance_exposure
+            else "b0-g3-tuning-run/v1"
+        ),
+        "acceptance_seed_exposed": acceptance_exposure,
         "scenario_id": scenario["id"],
-        "seed": scenario["seed"],
-        "purpose": "reachability_diagnostic",
+        "source_scenario_seed": scenario["seed"],
+        "seed": seed,
+        "seed_override": None if acceptance_exposure else TUNING_SEED,
+        "purpose": purpose,
         "source_commit": source_commit,
         "g0_config_path": str(G0_PATH.relative_to(REPO_ROOT)).replace("\\", "/"),
         "g0_config_canonical_lf_sha256": _canonical_lf_sha256(G0_PATH),
         "module_path": str(module_path),
         "module_sha256": module_hash,
+        "authority": authority,
         "build_type": build_type,
         "run_id": run_id,
+        "protocol_identity": protocol_identity,
+        "rate_kp_x": rate_kp_x,
         "started_at": started_at,
         "record_state": "started_before_execution",
     }
-    start_hash = _write_exclusive_json(
-        run_directory / "seed-exposure-start.json", start_record
+    start_name = "seed-exposure-start.json" if acceptance_exposure else "run-start.json"
+    final_name = "seed-exposure-final.json" if acceptance_exposure else "run-final.json"
+    result_name = (
+        "reachability-result.json" if acceptance_exposure else "tuning-result.json"
     )
+    start_hash = _write_exclusive_json(run_directory / start_name, start_record)
 
-    result_path = run_directory / "reachability-result.json"
-    final_path = run_directory / "seed-exposure-final.json"
+    result_path = run_directory / result_name
+    final_path = run_directory / final_name
     try:
         simulation = _load_simulation_package()
         estimator_module = _load_python_file(
@@ -402,27 +565,25 @@ def run_saturation_reachability(
         actuator = simulation.Actuator(parameters)
         imu = simulation.IMU(parameters)
         estimator = estimator_module.AttitudeEstimator()
-        controller = adapter_module.ControllerAdapter(controller_module)
-        plant.reset(
-            simulation.PlantInitialState(
-                scenario["initial_q_nb"], scenario["initial_body_rate_rad_s"]
-            ),
-            0.0,
+        if rate_kp_x is None:
+            controller = adapter_module.ControllerAdapter(controller_module)
+            sealed_parameters = _sealed_parameters(controller.parameters)
+        else:
+            controller, sealed_parameters = _study_controller(
+                adapter_module, controller_module, rate_kp_x
+            )
+        held_command, feedback = _reset_loop(
+            simulation,
+            estimator_module,
+            plant,
+            actuator,
+            imu,
+            estimator,
+            controller,
+            scenario["initial_q_nb"],
+            scenario["initial_body_rate_rad_s"],
+            seed,
         )
-        actuator.reset(simulation.ActuatorInitialState(), 0.0)
-        imu.reset(simulation.IMUInitialState(), 0.0, scenario["seed"])
-        estimator.reset(
-            estimator_module.EstimatorInitialState(IDENTITY, np.zeros(3)),
-            estimator_module.ResetEpoch(0, 0.0),
-            scenario["seed"],
-        )
-
-        class ControllerResetEpoch:
-            id = 0
-            timestamp_s = 0.0
-
-        held_command = controller.reset(ControllerResetEpoch())
-        feedback = actuator.feedback
         duration_ticks = round(float(scenario["duration_s"]) / scheduler.base_period_s)
         if duration_ticks != 2400:
             raise RunnerContractError("frozen saturation duration must be 2400 ticks")
@@ -495,6 +656,26 @@ def run_saturation_reachability(
                     feedback,
                     scheduler.controller_every_ticks * scheduler.base_period_s,
                 )
+                diagnostics = controller.core.last_diagnostics()
+                if rate_kp_x is not None:
+                    expected_proportional_x = (
+                        rate_kp_x * diagnostics.rate_error_rad_s[0]
+                    )
+                    if abs(
+                        diagnostics.proportional_Nm[0] - expected_proportional_x
+                    ) > 1e-12:
+                        raise RunnerContractError(
+                            "study core did not use the sealed x rate Kp"
+                        )
+                    expected_request_x = (
+                        diagnostics.proportional_Nm[0]
+                        + diagnostics.integral_before_Nm[0]
+                        + diagnostics.derivative_Nm[0]
+                    )
+                    if abs(held_command.requested_torque_body_Nm[0] - expected_request_x) > 1e-12:
+                        raise RunnerContractError(
+                            "study request failed the independent P+I+D invariant"
+                        )
                 request = held_command.requested_torque_body_Nm
                 request_min = np.minimum(request_min, request)
                 request_max = np.maximum(request_max, request)
@@ -504,13 +685,33 @@ def run_saturation_reachability(
                     "event_ids": list(active.event_ids),
                     "command_q_nb": _vector(active.command_q_nb),
                     "truth_q_nb": _vector(plant_state.q_nb),
+                    "truth_omega_b_rad_s": _vector(plant_state.omega_b_rad_s),
+                    "raw_imu_gyro_b_rad_s": _vector(raw_sample.gyro_b_rad_s),
+                    "raw_imu_specific_force_b_m_s2": _vector(
+                        raw_sample.specific_force_b_m_s2
+                    ),
+                    "adapted_imu_gyro_b_rad_s": _vector(gyro),
+                    "adapted_imu_specific_force_b_m_s2": _vector(force),
                     "estimate_q_nb": _vector(estimate.q_nb_estimate),
+                    "estimate_omega_b_rad_s": _vector(
+                        estimate.omega_b_estimate_rad_s
+                    ),
                     "request_Nm": _vector(request),
                     "limited_Nm": _vector(held_command.limited_torque_body_Nm),
                     "saturated": [bool(value) for value in held_command.saturated],
                     "feedback_actual_Nm": _vector(feedback.actual_torque_body_Nm),
                     "feedback_command_timestamp_s": float(
                         feedback.command_timestamp_s
+                    ),
+                    "integral_before_Nm": _vector(diagnostics.integral_before_Nm),
+                    "integral_after_Nm": _vector(diagnostics.integral_after_Nm),
+                    "proportional_Nm": _vector(diagnostics.proportional_Nm),
+                    "derivative_Nm": _vector(diagnostics.derivative_Nm),
+                    "limit_backcalculation_rate_Nm_s": _vector(
+                        diagnostics.limit_backcalculation_rate_Nm_s
+                    ),
+                    "lag_backcalculation_rate_Nm_s": _vector(
+                        diagnostics.lag_backcalculation_rate_Nm_s
                     ),
                 }
                 publications.append(publication)
@@ -524,19 +725,28 @@ def run_saturation_reachability(
         ) * scheduler.base_period_s
         result = {
             "schema_version": "b0-g3-saturation-reachability/v1",
-            "classification": "development_reachability_diagnostic_not_acceptance",
+            "classification": (
+                "development_reachability_diagnostic_not_acceptance"
+                if acceptance_exposure
+                else "tuning_development_profile_not_acceptance"
+            ),
             "scenario_id": scenario["id"],
-            "seed": scenario["seed"],
-            "acceptance_seed_exposed": True,
+            "source_scenario_seed": scenario["seed"],
+            "seed": seed,
+            "seed_override": None if acceptance_exposure else TUNING_SEED,
+            "acceptance_seed_exposed": acceptance_exposure,
             "source_commit": source_commit,
             "build_type": build_type,
             "module_path": str(module_path),
             "module_sha256": module_hash,
+            "authority": authority,
+            "protocol_identity": protocol_identity,
+            "controller_parameters": sealed_parameters,
             "window_ticks": [200, 1000],
             "request_min_Nm": _vector(request_min),
             "request_max_Nm": _vector(request_max),
-            "limit_margin_min_Nm": _vector(-limits - request_min),
-            "limit_margin_max_Nm": _vector(limits - request_max),
+            "negative_limit_headroom_Nm": _vector(request_min + limits),
+            "positive_limit_headroom_Nm": _vector(limits - request_max),
             "saturated_publications": saturated_publications,
             "saturated_intervals": saturated_intervals,
             "saturation_union_duration_s": union_duration_s,
@@ -578,6 +788,124 @@ def run_saturation_reachability(
         if not final_path.exists():
             _write_exclusive_json(final_path, failure_record)
         raise
+
+
+def run_saturation_reachability(
+    module_dir: str | Path,
+    build_type: str,
+    output_root: str | Path,
+    run_id: str,
+) -> dict[str, Any]:
+    """Run the first frozen diagnostic with append-only seed exposure records."""
+
+    return _run_saturation_profile(
+        module_dir,
+        build_type,
+        output_root,
+        run_id,
+        seed=2026100906,
+        rate_kp_x=None,
+        purpose="reachability_diagnostic",
+        acceptance_exposure=True,
+    )
+
+
+def run_rate_kp_x_study(
+    protocol_path: str | Path,
+    module_dir: str | Path,
+    build_type: str,
+    output_root: str | Path,
+    study_id: str,
+) -> dict[str, Any]:
+    """Execute the predeclared tuning-seed-only x-rate-Kp feasibility set once."""
+
+    if not RUN_ID_PATTERN.fullmatch(study_id):
+        raise RunnerContractError("study_id does not match the approved identity pattern")
+    protocol_file = Path(protocol_path).resolve()
+    expected_protocol = (
+        REPO_ROOT
+        / "05_integration/b0/configs/b0_g3_rate_kp_x_study.v1.json"
+    ).resolve()
+    if protocol_file != expected_protocol:
+        raise RunnerContractError("study requires the repository-controlled protocol")
+    protocol = json.loads(protocol_file.read_text(encoding="utf-8"))
+    if protocol.get("schema_version") != "b0-g3-rate-kp-x-study/v1":
+        raise RunnerContractError("unsupported study protocol identity")
+    budget = protocol["execution_budget"]
+    candidates = budget["candidates_rate_kp_x"]
+    if budget["maximum_runs"] != 8 or not 1 <= len(candidates) <= 8:
+        raise RunnerContractError("study candidate budget exceeds PA authorization")
+    if len(candidates) != len(set(candidates)) or 0.08 not in candidates:
+        raise RunnerContractError("study candidates must be unique and include baseline")
+    if protocol["profile"]["seed"] != TUNING_SEED:
+        raise RunnerContractError("study protocol must use the tuning seed")
+    source_commit = _source_identity()
+    protocol_hash = hashlib.sha256(protocol_file.read_bytes()).hexdigest()
+    protocol_identity = {
+        "path": str(protocol_file.relative_to(REPO_ROOT)).replace("\\", "/"),
+        "sha256": protocol_hash,
+        "source_commit": source_commit,
+    }
+    study_root = Path(output_root).resolve() / study_id
+    study_root.mkdir(parents=True, exist_ok=False)
+    results: list[dict[str, Any]] = []
+    for index, candidate in enumerate(candidates):
+        value = float(candidate)
+        candidate_id = f"{index + 1:02d}-kp-x-{value:.3f}".replace(".", "p")
+        result = _run_saturation_profile(
+            module_dir,
+            build_type,
+            study_root,
+            candidate_id,
+            seed=TUNING_SEED,
+            rate_kp_x=value,
+            purpose="rate_kp_x_feasibility_study",
+            acceptance_exposure=False,
+            protocol_identity=protocol_identity,
+        )
+        result_path = study_root / candidate_id / "tuning-result.json"
+        results.append(
+            {
+                "candidate_index": index,
+                "candidate_id": candidate_id,
+                "rate_kp_x": value,
+                "saturation_union_duration_s": result[
+                    "saturation_union_duration_s"
+                ],
+                "feasible": result["saturation_union_duration_s"] >= 0.05,
+                "result_sha256": hashlib.sha256(result_path.read_bytes()).hexdigest(),
+                "parameter_sha256": hashlib.sha256(
+                    json.dumps(
+                        result["controller_parameters"],
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ).encode("utf-8")
+                ).hexdigest(),
+            }
+        )
+    feasible = [item for item in results if item["feasible"]]
+    feasible.sort(key=lambda item: (abs(item["rate_kp_x"] - 0.08), item["rate_kp_x"]))
+    summary = {
+        "schema_version": "b0-g3-rate-kp-x-study-result/v1",
+        "classification": "feasibility_only_not_parameter_acceptance",
+        "study_id": study_id,
+        "source_commit": source_commit,
+        "protocol": protocol_identity,
+        "build_type": build_type,
+        "module_dir": str(Path(module_dir).resolve()),
+        "seed": TUNING_SEED,
+        "acceptance_seed_executed": False,
+        "candidate_results": results,
+        "feasible_candidate_count": len(feasible),
+        "ranked_overlay_candidate": feasible[0] if feasible else None,
+        "next_action": (
+            "return_one_candidate_for_PARAMETER_ACCEPT_review"
+            if feasible
+            else "stop_and_return_no_feasible_candidate"
+        ),
+    }
+    _write_exclusive_json(study_root / "study-summary.json", summary)
+    return summary
 
 
 def compare_g3_bind_results(
@@ -648,14 +976,23 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--g3-bind-smoke", action="store_true")
     parser.add_argument("--reachability-diagnostic", action="store_true")
+    parser.add_argument("--rate-kp-x-study", action="store_true")
     parser.add_argument("--module-dir", type=Path)
     parser.add_argument("--build-type", choices=("Debug", "Release"))
     parser.add_argument("--seed", type=int, default=TUNING_SEED)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--run-id")
+    parser.add_argument("--protocol", type=Path)
     args = parser.parse_args(argv)
-    if args.g3_bind_smoke == args.reachability_diagnostic:
+    if sum(
+        bool(value)
+        for value in (
+            args.g3_bind_smoke,
+            args.reachability_diagnostic,
+            args.rate_kp_x_study,
+        )
+    ) != 1:
         parser.error("select exactly one G3-A execution mode")
     if args.module_dir is None or args.build_type is None:
         parser.error("--module-dir and --build-type are required")
@@ -667,6 +1004,22 @@ def main(argv: list[str] | None = None) -> int:
         if args.output is not None:
             parser.error("--output is only valid with --g3-bind-smoke")
         result = run_saturation_reachability(
+            args.module_dir,
+            args.build_type,
+            args.output_root,
+            args.run_id,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.rate_kp_x_study:
+        if args.seed != TUNING_SEED:
+            parser.error("the study seed is fixed by its protocol")
+        if args.output_root is None or args.run_id is None or args.protocol is None:
+            parser.error("--output-root, --run-id and --protocol are required")
+        if args.output is not None:
+            parser.error("--output is only valid with --g3-bind-smoke")
+        result = run_rate_kp_x_study(
+            args.protocol,
             args.module_dir,
             args.build_type,
             args.output_root,
@@ -693,5 +1046,6 @@ __all__ = [
     "RunnerContractError",
     "compare_g3_bind_results",
     "run_g3_bind_smoke",
+    "run_rate_kp_x_study",
     "run_saturation_reachability",
 ]
