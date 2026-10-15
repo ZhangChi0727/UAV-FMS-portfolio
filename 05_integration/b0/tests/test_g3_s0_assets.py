@@ -6,6 +6,8 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
 
 TRACK_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = TRACK_ROOT.parents[1]
@@ -14,6 +16,7 @@ SCHEMA_PATH = TRACK_ROOT / "schema" / "b0_g3_integration_evidence.schema.json"
 MATRIX_PATH = (
     REPO_ROOT / "systems_engineering/reports/b0/g3_s0_verification_matrix.md"
 )
+DESIGN_PATH = REPO_ROOT / "systems_engineering/reports/b0/g3_s0_integration_design.md"
 
 
 def _json(path: Path) -> dict:
@@ -63,6 +66,18 @@ def _matrix_scenario_rows() -> list[list[str]]:
         assert len(fields) == 8
         rows.append(fields)
     return rows
+
+
+def _atomic_binding(field: str) -> str | None:
+    value = field.strip()
+    if value == "—":
+        return None
+    assert re.fullmatch(r"`?[A-Za-z0-9_]+`?", value)
+    return value.strip("`")
+
+
+def _assert_atomic_binding(expected: str | None, field: str) -> None:
+    assert _atomic_binding(field) == expected
 
 
 def test_g3_evidence_schema_has_strict_top_level_envelope() -> None:
@@ -216,7 +231,7 @@ def test_g3_matrix_projects_every_g0_criterion_exactly_once() -> None:
         for criterion in scenario["acceptance"]:
             actual_scenario, row = indexed[criterion["id"]]
             metric_reducer = row[2].strip("`")
-            binding = row[3].strip("`")
+            binding = row[3]
             window = row[4].strip("`")
             comparison = row[5].strip("`")
 
@@ -229,9 +244,10 @@ def test_g3_matrix_projects_every_g0_criterion_exactly_once() -> None:
                 f"{criterion['window']['end_tick']})"
             )
             if "event_id" in criterion:
-                assert criterion["event_id"] in binding
-            if "axis" in criterion:
-                assert criterion["axis"] == binding
+                expected_binding = criterion["event_id"]
+            else:
+                expected_binding = criterion.get("axis")
+            _assert_atomic_binding(expected_binding, binding)
 
             match = comparison_pattern.search(comparison)
             assert match is not None, criterion["id"]
@@ -243,6 +259,75 @@ def test_g3_matrix_projects_every_g0_criterion_exactly_once() -> None:
             else:
                 parsed_limit = float(limit_text)
             assert parsed_limit == criterion["limit"]
+
+
+def test_g3_atomic_event_binding_rejects_near_match() -> None:
+    with pytest.raises(AssertionError):
+        _assert_atomic_binding(
+            "step_x_positive",
+            "`step_x_positive_WRONG_EVENT`",
+        )
+
+
+def test_g3_test_report_envelope_retains_nonpassing_counts() -> None:
+    schema = _json(SCHEMA_PATH)
+    report_schema = schema["$defs"]["test_report"]
+    report = {
+        "suite": "structural-negative-fixture",
+        "build_type": "Python",
+        "junit_path": "artifacts/nonpassing.xml",
+        "junit_sha256": "0" * 64,
+        "collected": 7,
+        "passed": 1,
+        "failed": 1,
+        "skipped": 2,
+        "xfailed": 3,
+    }
+    assert set(report) == set(report_schema["required"])
+    assert sum(report[name] for name in ("passed", "failed", "skipped", "xfailed")) == (
+        report["collected"]
+    )
+    for name in ("collected", "passed", "failed", "skipped", "xfailed"):
+        field_schema = report_schema["properties"][name]
+        assert field_schema == {"type": "integer", "minimum": 0}
+        assert report[name] >= field_schema["minimum"]
+    assert "semantic acceptance" in report_schema["x-b0-acceptance-rule"]
+    assert report["failed"] and report["skipped"] and report["xfailed"]
+
+
+def test_g3_saturation_interval_end_weighting_fixture() -> None:
+    period_s = 0.0025
+
+    def clipped_weight_s(feedback_tick: int, start: int, end: int) -> float:
+        covered_ticks = max(
+            0,
+            min(feedback_tick, end) - max(feedback_tick - 1, start),
+        )
+        return covered_ticks * period_s
+
+    assert clipped_weight_s(200, 200, 202) == 0.0
+    assert clipped_weight_s(201, 200, 202) == period_s
+    assert clipped_weight_s(202, 200, 202) == period_s
+    assert clipped_weight_s(203, 200, 202) == 0.0
+    assert sum(
+        clipped_weight_s(tick, 200, 202) for tick in (200, 201, 202, 203)
+    ) == 0.005
+    design = DESIGN_PATH.read_text(encoding="utf-8")
+    assert "feedback recorded at boundary tick `k` describes the actuator" in design
+    assert "interval `[k-1,k)`" in design
+
+
+def test_g3_bind_smoke_fixture_is_nonzero_and_tuning_only() -> None:
+    matrix = MATRIX_PATH.read_text(encoding="utf-8")
+    design = DESIGN_PATH.read_text(encoding="utf-8")
+    for text in (matrix, design):
+        assert "`run_g3_bind_smoke(module_dir, build_type)`" in text
+        assert "tuning seed `2026100900`" in text
+        assert "`qx(0.1 rad)`" in text
+        assert "local `[2,10)`" in text
+        assert "ticks 1..12" in text
+        assert "2,4,6,8,10,12" in text
+        assert "not a ninth G0 scenario" in text
 
 
 def test_g3_claim_boundary_cannot_encode_release_or_hardware_completion() -> None:
