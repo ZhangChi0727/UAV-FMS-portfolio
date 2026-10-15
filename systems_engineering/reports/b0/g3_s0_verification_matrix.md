@@ -78,7 +78,7 @@ preserved within each scenario.
 | Overshoot | pre-event and target command plus truth quaternion over the event | signed-axis progress and percent overshoot |
 | Roll/pitch RMS | truth and estimate relative quaternion at valid estimator due ticks | separate roll and pitch RMS values; both compared |
 | Yaw drift | relative truth/estimate quaternion and actual due timestamps | unwrapped relative-yaw adjacent rates and maximum absolute rate |
-| Saturation time | each actuator interval's paired requested, limited and status fields | strict-trigger union duration across axes |
+| Saturation time | each phase-2 actuator interval-end record with paired requested, limited and status fields | union of clipped `[k-1,k)` intervals across axes; publication 200 then saturated consumptions 201/202 gives 0.005 s in `[200,202)`, while ticks 200/203 are boundary negatives |
 | Controller integral | successful controller-tick `integral_before` and `integral_after` | per-axis maximum absolute value over both retained series |
 | Limitation | event activity, adapted/raw sample, truth/estimate and estimator gate diagnostics | complete limitation record boolean; no algorithm feedback |
 | Invalid/reset | event ID/kind/owner/reason, before/after snapshot and retry/replay traces | exact rejection set/count and reset replay boolean |
@@ -95,7 +95,7 @@ every metric family; `G3-SCENARIO` binds the real run.
 | `stationary_zero_command` | `stationary_attitude_peak` | `attitude_error_rad / max_abs` | — | `[0,2000)` | `<= 0.0174533 rad` | base truth vs identity command; G3-METRIC/SCENARIO |
 | `stationary_zero_command` | `stationary_rate_peak` | `body_rate_error_rad_s / max_abs` | — | `[0,2000)` | `<= 0.05 rad/s` | valid due truth-estimate rate; G3-METRIC/SCENARIO |
 | `stationary_zero_command` | `stationary_quaternion_norm` | `quaternion_norm_error / max_abs` | — | `[0,2000)` | `<= 1e-6 1` | updated valid estimates; G3-METRIC/SCENARIO |
-| `initial_attitude_offset` | `offset_tilt_settling_time` | `tilt_settling_time_s / max` | origin 0 | `[0,2400)` | `<= 3 s` | truth vs identity command, 100 intervals; G3-METRIC/SCENARIO |
+| `initial_attitude_offset` | `offset_tilt_settling_time` | `tilt_settling_time_s / max` | — | `[0,2400)` | `<= 3 s` | origin 0; truth vs identity command, 100 intervals; G3-METRIC/SCENARIO |
 | `initial_attitude_offset` | `offset_tilt_peak_error` | `tilt_error_rad / peak` | — | `[0,2400)` | `<= 0.4 rad` | base truth tilt; G3-METRIC/SCENARIO |
 | `tri_axis_signed_steps` | `step_x_positive_settling_time` | `tracking_settling_time_s / max` | `step_x_positive` | `[200,900)` | `<= 1.2 s` | event-start origin, 100 intervals; G3-METRIC/SCENARIO |
 | `tri_axis_signed_steps` | `step_x_positive_overshoot` | `tracking_overshoot_percent / max` | `step_x_positive` | `[200,900)` | `<= 20 %` | signed x progress; G3-METRIC/SCENARIO |
@@ -127,7 +127,7 @@ every metric family; `G3-SCENARIO` binds the real run.
 | `saturation_withdrawal` | `saturation_duration_upper_bound` | `actuator_saturation_time_s / total_time` | — | `[0,2400)` | `<= 2 s` | paired held interval union; G3-METRIC/SCENARIO |
 | `saturation_withdrawal` | `saturation_triggered_duration` | `actuator_saturation_time_s / total_time` | `saturation_command` | `[200,1000)` | `>= 0.05 s` | positive reachability gate; G3-METRIC/SCENARIO |
 | `acceleration_contamination` | `acceleration_limitation_recorded` | `limitation_event_recorded / all` | `additive_specific_force_contamination` | `[400,1200)` | `== true bool` | raw/adapted sample and diagnostics; G3-EVENT/SCENARIO |
-| `invalid_input_and_reset` | `invalid_input_rejected` | `invalid_input_rejection_count / min` | exact two invalid events | `[0,1200)` | `>= 2 count` plus exact-set closure | owner/reason/snapshot/retry; G3-INVALID/SCENARIO |
+| `invalid_input_and_reset` | `invalid_input_rejected` | `invalid_input_rejection_count / min` | — | `[0,1200)` | `>= 2 count` plus exact-set closure | exact two invalid events; owner/reason/snapshot/retry; G3-INVALID/SCENARIO |
 | `invalid_input_and_reset` | `reset_is_deterministic` | `reset_replay_match / all` | `deterministic_all_component_reset` | `[1000,1200)` | `== true bool` | local +2/+4 valid updates; G3-RESET/REPLAY/SCENARIO |
 
 ## Criterion record requirements
@@ -141,16 +141,24 @@ The set of criterion IDs must be exact and unique; a family-level aggregate
 cannot substitute for any row.
 
 The Debug/Release G3-BIND positive check builds and loads each real controller
-extension rather than reusing one artifact under two labels. Each build starts
-an independent real plant→actuator→IMU→estimator→controller loop from the same
-explicit initial conditions, prescribed command schedule and tuning seed
-`2026100900` through local boundaries 0..12. IMU samples and actuator feedback
-must emerge from that build's own loop; replaying a precomputed IMU/feedback
-trace is not this check. Module path/hash/build type must differ as expected;
-schedule, booleans, reasons, update flags and integer fields match exactly, and
-every finite floating field is compared with
-`abs(a-b) <= 1e-12 + 1e-12*abs(b)`. This is an interface/reproducibility check,
-not acceptance-seed performance evidence.
+extension rather than reusing one artifact under two labels. The planned
+test-only helper is `run_g3_bind_smoke(module_dir, build_type)`; it rejects any
+seed other than tuning seed `2026100900` and is not exposed as an approved
+scenario CLI entry or configuration overlay. Each build independently runs the
+real plant→actuator→IMU→estimator→controller loop over local boundaries 0..12
+with approved G1/G2 parameters, plant/estimator identity quaternion, zero body
+rate, zero controller and actuator state, and command `qx(0.1 rad)` active on
+local `[2,10)`, then zero.
+Plant and actuator each receive exactly 12 calls at local ticks 1..12;
+IMU/estimator/controller each receive exactly six calls at 2,4,6,8,10,12.
+IMU samples and actuator feedback must emerge from that build's own loop;
+replaying a precomputed IMU/feedback trace or using only a zero command is not
+this check. Module path/hash/build type must differ as expected; schedule,
+booleans, reasons, update flags and integer fields match exactly, and every
+finite floating field is compared with
+`abs(a-b) <= 1e-12 + 1e-12*abs(b)`. This development
+interface/reproducibility fixture is not a ninth G0 scenario and is not
+acceptance-seed performance evidence.
 
 ## Fail-closed rules
 
@@ -172,3 +180,8 @@ not acceptance-seed performance evidence.
 - A failed or inconclusive run may validly satisfy the structural schema so its
   failure is retained; only recomputed semantic closure may authorize an
   accepted terminal claim.
+- Raw test-report counters are non-negative structural data. A report with
+  failures, skips, xfails or zero collection remains recordable but cannot
+  support `ACCEPT`; the mandatory semantic gate must reconcile JUnit totals,
+  require nonzero collection and require all mandatory production tests to
+  pass with zero skipped/xfail.

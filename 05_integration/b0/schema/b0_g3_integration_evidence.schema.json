@@ -13,6 +13,8 @@
     "reject missing, truncated, non-finite, wrong-frame, wrong-unit or falsely paired raw data",
     "recompute replay and closure hashes and reject source, target, module, configuration or report identity mismatch",
     "reconcile JUnit collected, passed, failed, skipped and xfailed totals with the retained report",
+    "allow raw test reports to retain nonzero failure skip and xfail counts without treating structural validity as acceptance",
+    "for each required production acceptance suite require collected greater than zero passed equals collected and failed skipped and xfailed equal zero",
     "require artifact availability and expiry to support every verification claim",
     "retain failed and inconclusive executions without allowing them to satisfy an accepted terminal claim",
     "record every acceptance-seed exposure and prohibit acceptance-seed tuning or selection"
@@ -1130,22 +1132,26 @@
         },
         "collected": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 0
         },
         "passed": {
           "type": "integer",
           "minimum": 0
         },
         "failed": {
-          "const": 0
+          "type": "integer",
+          "minimum": 0
         },
         "skipped": {
-          "const": 0
+          "type": "integer",
+          "minimum": 0
         },
         "xfailed": {
-          "const": 0
+          "type": "integer",
+          "minimum": 0
         }
-      }
+      },
+      "x-b0-acceptance-rule": "structural validity retains raw reports; semantic acceptance additionally requires required production suites to have collected > 0, passed == collected, failed == skipped == xfailed == 0, and counts equal retained JUnit"
     },
     "artifact_provenance": {
       "type": "object",

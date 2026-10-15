@@ -256,8 +256,17 @@ for the angle, logarithm and Euler calculations below.
   not called absolute yaw.
 - Saturation time is recomputed from each actuator interval's paired held
   requested/limited/status fields using strict `abs(request)>limit`. The
-  duration is the union over axes after window clipping, never a count of sparse
-  publications or a sum over axes.
+  phase-2 feedback recorded at boundary tick `k` describes the actuator
+  interval `[k-1,k)`, not `[k,k+1)`. For criterion window `[a,b)`, its
+  time weight is
+  `max(0,min(k,b)-max(k-1,a))*0.0025 s`; duration is the union over axes
+  after this interval clipping, never a count of sparse publications or a sum
+  over axes. A controller publication at tick 200 is first consumed at
+  actuator ticks 201 and 202, which represent `[200,201)` and `[201,202)`;
+  if both are saturated, window `[200,202)` contributes exactly 0.005 s.
+  Actuator tick 200 (before publication) and tick 203 (after the window) are
+  explicit negative boundary fixtures. This actuator interval-end convention
+  is independent of the settling metric's forward boundary-sample convention.
 - Integral limits inspect both `integral_before_Nm` used in the current request
   and `integral_after_Nm` stored for the next step; the criterion uses the
   maximum absolute declared-axis value across their union, while evidence
@@ -329,6 +338,18 @@ tool/interface prerequisite only; it is not the planned G3-BIND 12-tick
 closed-loop check or G3 performance evidence. No new account, service,
 permission or dependency is required by this design candidate.
 
+The planned G3-BIND check uses the test-only
+`run_g3_bind_smoke(module_dir, build_type)` helper, never the approved-scenario
+CLI. It accepts only tuning seed `2026100900`. Debug and Release each create
+their own real-component loop with the approved G1/G2 parameters, identity
+plant/estimator attitude, zero body rate and zero controller/actuator state. A
+non-zero `qx(0.1 rad)` command is
+active on local `[2,10)` over boundaries 0..12. Plant and actuator are called
+12 times at local ticks 1..12; IMU, estimator and controller are each called six
+times at 2,4,6,8,10,12. Sensor and feedback traces must emerge independently in
+each loop and cannot be precomputed playback. This is a development fixture,
+not a ninth G0 scenario, configuration overlay or acceptance-seed run.
+
 ## Implementation and command boundary after approval
 
 G3-A may add a small runner, event adapter and adjacent tests under
@@ -385,6 +406,16 @@ tests must cover duplicate IDs with different payloads, scenario/criterion
 misbinding, mismatched counts/statuses, deleted raw rows, altered values,
 truncated JUnit, false replay, wrong source/module, hash mismatch and expired or
 unverified evidence presented as verified.
+
+The same separation applies to test reports. Their structural schema retains
+the actual non-negative `collected/passed/failed/skipped/xfailed` counters,
+including failed, skipped, xfailed or zero-collection reports. Such a record is
+valid evidence *of what happened*, but cannot support `ACCEPT`. The later
+semantic acceptance gate must reconcile all counters with retained JUnit,
+require each mandatory production suite to collect at least one test, and
+require `passed == collected` with zero failed/skipped/xfailed. S0 tests only
+prove that the envelope can retain both passing and nonpassing reports; they do
+not claim that the G3-C semantic gate already exists.
 
 ## Review decisions requested
 
