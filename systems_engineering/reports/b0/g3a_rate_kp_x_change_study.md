@@ -88,6 +88,11 @@ attestation head `5f359236b6cfba9c25a5446e4d3dfda5e3acccf9`:
 - raw SHA and canonical-LF/source-checkout hashes are distinguished so Windows
   line-ending filters cannot create a false source mismatch.
 
+The `16/33` count is specifically the number of paths present in the original
+`authority.files` array. It does not mean the protocol identity was absent:
+the protocol path, hash and source commit were separately captured in each
+run's original `protocol_identity` object.
+
 A non-scenario identity check at commit
 `c71c3c0dde3533985eeea0b67f81de1cde751df4` exercised the new enforcement:
 all 33 live closure paths matched that source commit, and the Debug controller
@@ -95,6 +100,25 @@ module SHA-256 remained
 `2692faceb020bbe43a95aac6e2f4a4d38efabc4454a9b3e7784cb76b7da3d3cc`.
 This check did not execute a scenario or seed and does not repair the historical
 study's missing execution-time capture.
+
+The first sidecar is retained unchanged. A stricter v2 sidecar refines only its
+source-equivalence policy after PA review found that an arbitrary checkout
+filter must not be accepted as equivalent to a Git blob:
+
+- path: `build/g3-development/g3a-rate-kp-x-study-v1-debug-20261015/provenance-erratum.v2-source-policy.json`;
+- SHA-256: `22b622395fe6136e62bdac08d030216815bbe43ff56f0beee1be6d9b88403642`;
+- attestation head: `58e982cc1dd07de55ea316a34bc25f48398471e8`;
+- policy: `exact_git_blob_or_canonical_lf_only`;
+- all checkout-filter outputs observed for the 33 paths were verified to be
+  line-ending-equivalent to their Git blobs;
+- the current `runner.py` intentionally differs from study source `559716a…`
+  because it contains the later provenance repairs; this is recorded as a live
+  mismatch, not hidden as source equivalence.
+
+The code now treats checkout-filter hashes as diagnostics only. A semantic
+smudge-filter counterexample is required to fail the source match, while exact
+bytes and CRLF/LF-only transformations pass. The v2 sidecar still reports
+`formal_study_evidence_complete=false`; it does not upgrade historical evidence.
 
 This is deliberately classified as
 `post_execution_attestation_negative_feasibility_finding_formal_evidence_incomplete`.
