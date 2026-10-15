@@ -112,3 +112,19 @@ def test_reachability_run_identity_is_rejected_before_any_seed_exposure(
             tmp_path.resolve(), "Debug", tmp_path / "output", "bad id"
         )
     assert not (tmp_path / "output").exists()
+
+
+def test_rate_kp_x_study_protocol_is_finite_tuning_only_and_one_dimensional() -> None:
+    protocol = json.loads(
+        (
+            TRACK_ROOT / "configs/b0_g3_rate_kp_x_study.v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    candidates = protocol["execution_budget"]["candidates_rate_kp_x"]
+    assert protocol["profile"]["seed"] == 2026100900
+    assert protocol["profile"]["acceptance_seed_must_not_run"] is True
+    assert protocol["parameter_whitelist"]["field"] == "controller.rate_pid.kp.x"
+    assert 1 <= len(candidates) <= 8
+    assert len(candidates) == len(set(candidates))
+    assert candidates == [0.08, 0.17, 0.175, 0.176, 0.18, 0.19, 0.2]
+    assert all(0.0 <= value <= 0.2 for value in candidates)

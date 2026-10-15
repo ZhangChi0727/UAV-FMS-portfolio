@@ -46,3 +46,20 @@ shortfall; the runner does not change the frozen command, limits or threshold.
 
 Generated traces and exposure records remain outside tracked source. They are
 inputs to later G3 evidence work, not repository documentation by themselves.
+
+After a retained frozen-seed shortfall, the original PA authorized the bounded
+x-axis rate-Kp feasibility protocol in
+`configs/b0_g3_rate_kp_x_study.v1.json`. It is a tuning-development profile,
+not a production overlay or acceptance run:
+
+```sh
+python runner.py --rate-kp-x-study \
+  --protocol configs/b0_g3_rate_kp_x_study.v1.json \
+  --module-dir <absolute-controller-module-directory> \
+  --build-type Debug --output-root <ignored-or-temporary-root> \
+  --run-id <unique-study-id>
+```
+
+The candidate list and stopping rules must be committed before this command is
+run. It rejects every seed except `2026100900`, changes only `rate_kp[0]` before
+constructing the real C++ core, and retains every declared candidate result.
