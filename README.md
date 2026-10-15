@@ -4,12 +4,13 @@ A modular experimental platform for flight-control development, state estimation
 embedded implementation, and reproducible verification.
 
 **Current status:** planning baseline B0 v0.2 is active. G0, G1 and the complete
-G1.5-A/B/C governance sequence are accepted. G2-A estimator is merged and has
-original-PA post-merge acceptance. G2-B controller S0 was accepted at
-`7084584ef9e69995b88201164fa8659e4ef57c79`; PR #22 is the active engineering
-increment. Its corrective implementation/evidence package is assembled for
-original-PA re-review but is not accepted. G2-B, G2 overall, G3/G4 and overall
-B0 completion remain open.
+G1.5-A/B/C governance sequence are accepted. G2-A and G2-B are merged and have
+original-PA post-merge acceptance; the controlled closeout is recorded in
+[G2 closeout and G3 readiness](systems_engineering/reports/b0/g2_closeout_and_g3_readiness.md).
+G3-A is the active engineering increment. Its exact S0 design candidate has
+original-PA `DESIGN_ACCEPT`; deterministic integration implementation is now in
+progress. No approved scenario or closed-loop performance result is yet claimed.
+G3/G4 and overall B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
 ## Start here
@@ -41,10 +42,10 @@ or a publication. Each is independently scoped in the extension registry.
 | 02_estimation/ | Attitude estimation; optional navigation | Legacy EKF/UKF scaffold |
 | 03_control/ | B0 cascaded control; optional advanced control | Legacy geometric/LQR scaffold |
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
-| 05_integration/ | Execution adapters, scenarios, evidence integration | Legacy integration scaffold |
+| 05_integration/ | Execution adapters, scenarios, evidence integration | G3-A deterministic integration implementation in progress |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2-A accepted; G2-B candidate evidence retained, PA review pending |
-| docs/ | Roadmap, environment and work orders | G2-B work order active; corrective candidate in PR #22 |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2 accepted; G3-A S0 candidate under review |
+| docs/ | Roadmap, environment and work orders | G3 work order dispatched; G3-A implementation active |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
 
