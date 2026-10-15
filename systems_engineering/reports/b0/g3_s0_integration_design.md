@@ -1,10 +1,11 @@
 # B0 G3 S0 integration design candidate
 
-Status: **candidate pending original-PA `DESIGN_ACCEPT`**. Date: 2026-10-15
+Status: **original-PA `DESIGN_ACCEPT` for exact candidate
+`e3a5df2c7b21b4f4a4c7c6f296e0711222ac2569`**. Date: 2026-10-15
 (Australia/Perth). Scope: G3-A deterministic integration, the G3-B metric
 interpretations needed before implementation, and the G3-C evidence envelope.
-No scheduler, event, metric or scenario result is implemented or claimed by
-this document.
+The decision accepts this document's design only. Implementation and scenario
+results remain separately reviewed and are not claimed by this document.
 
 ## Authority and identity
 

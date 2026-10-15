@@ -12,8 +12,8 @@ Completed component increment: [G2 estimator/controller work order](work_orders/
 with G2-A and G2-B merged and original-PA post-merge accepted; see the
 [G2 closeout and G3 readiness record](../systems_engineering/reports/b0/g2_closeout_and_g3_readiness.md).
 Active primary increment: [G3 work order](work_orders/B0_G3_work_order.md), split
-into three sequential PRs. G3-A is at its S0 design gate; scheduler/event/metric
-implementation must wait for original-PA `DESIGN_ACCEPT` of the exact candidate.
+into three sequential PRs. G3-A is implementing the accepted exact S0 design;
+scenario-performance and evidence acceptance remain later gated work.
 Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md),
 [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md), the retained
 [G1.5-B structured phase-one pilot](work_orders/B0_G1_5_B_structured_sysml_pilot_work_order.md),

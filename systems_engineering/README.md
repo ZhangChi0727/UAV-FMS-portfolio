@@ -8,7 +8,8 @@ PA accepted closeout K3; G1.5-C is now the active verification-traceability and
 reporting layer. G2-A and G2-B are merged and post-merge accepted; the
 [current G2 closeout and G3 readiness record](reports/b0/g2_closeout_and_g3_readiness.md)
 separates that component acceptance from evidence availability. G3-A is active
-only at the S0 design gate pending original-PA `DESIGN_ACCEPT`. This does not
+in implementation after original-PA `DESIGN_ACCEPT` of exact S0 candidate
+`e3a5df2c7b21b4f4a4c7c6f296e0711222ac2569`. This does not
 claim G3, G4, overall B0 completion, hardware, flight, or research results.
 
 ## Reading route
