@@ -244,18 +244,47 @@ def _git_file_bytes(source_commit: str, relative_path: str) -> bytes:
     ).stdout
 
 
+def _git_checkout_file_bytes(source_commit: str, relative_path: str) -> bytes:
+    return subprocess.run(
+        [
+            "git",
+            "cat-file",
+            "--filters",
+            f"--path={relative_path}",
+            f"{source_commit}:{relative_path}",
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+
+
 def _file_identity(path: Path, source_commit: str) -> dict[str, Any]:
     relative_path = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
-    live_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
-    source_sha256 = hashlib.sha256(
-        _git_file_bytes(source_commit, relative_path)
+    live_bytes = path.read_bytes()
+    source_bytes = _git_file_bytes(source_commit, relative_path)
+    source_checkout_bytes = _git_checkout_file_bytes(source_commit, relative_path)
+    live_sha256 = hashlib.sha256(live_bytes).hexdigest()
+    source_sha256 = hashlib.sha256(source_bytes).hexdigest()
+    source_checkout_sha256 = hashlib.sha256(source_checkout_bytes).hexdigest()
+    live_canonical_lf_sha256 = hashlib.sha256(
+        live_bytes.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    ).hexdigest()
+    source_canonical_lf_sha256 = hashlib.sha256(
+        source_bytes.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
     ).hexdigest()
     return {
         "path": relative_path,
         "sha256": live_sha256,
-        "source_sha256": source_sha256,
+        "source_blob_sha256": source_sha256,
+        "source_checkout_sha256": source_checkout_sha256,
         "live_sha256": live_sha256,
-        "live_matches_source": live_sha256 == source_sha256,
+        "source_canonical_lf_sha256": source_canonical_lf_sha256,
+        "live_canonical_lf_sha256": live_canonical_lf_sha256,
+        "live_matches_source": (
+            live_sha256 in {source_sha256, source_checkout_sha256}
+            or live_canonical_lf_sha256 == source_canonical_lf_sha256
+        ),
     }
 
 
