@@ -8,11 +8,12 @@ No calendar duration or numerical result is implied.
 
 Execution detail: [B0 work order](work_orders/B0_work_order.md).
 Environment handoff: [development readiness work order](work_orders/development_readiness.md).
-Active component increment: [G2 estimator/controller work order](work_orders/B0_G2_work_order.md),
-with G2-A merged and post-merge accepted and the detailed
-[G2-B controller work order](work_orders/B0_G2_B_work_order.md) now holding a
-corrective implementation/evidence candidate for original-PA re-review in PR
-#22 after S0 `DESIGN_ACCEPT`; G2-B is not yet accepted.
+Completed component increment: [G2 estimator/controller work order](work_orders/B0_G2_work_order.md),
+with G2-A and G2-B merged and original-PA post-merge accepted; see the
+[G2 closeout and G3 readiness record](../systems_engineering/reports/b0/g2_closeout_and_g3_readiness.md).
+Active primary increment: [G3 work order](work_orders/B0_G3_work_order.md), split
+into three sequential PRs. G3-A is at its S0 design gate; scheduler/event/metric
+implementation must wait for original-PA `DESIGN_ACCEPT` of the exact candidate.
 Systems-engineering sequence: [G1.5 total work order](work_orders/B0_G1_5_work_order.md),
 [G1.5-A work order](work_orders/B0_G1_5_A_work_order.md), the retained
 [G1.5-B structured phase-one pilot](work_orders/B0_G1_5_B_structured_sysml_pilot_work_order.md),
@@ -20,8 +21,8 @@ the completed [G1.5-B joint-baseline work order](work_orders/B0_G1_5_B_joint_bas
 and the completed [B-closeout/G1.5-C work order](work_orders/B0_G1_5_C_closeout_and_verification_work_order.md).
 G1.5-A established the document/model structure and the pilot remains a
 non-authoritative method record. G1.5-B is approved, frozen and merged. The
-original PA accepted closeout K3 and the G1.5-C reporting layer. G2 proceeds
-only through its own authorized issues, work orders and review gates.
+original PA accepted closeout K3 and the G1.5-C reporting layer. G2 is closed;
+G3 proceeds only through Issue #7, its dispatched work order and review gates.
 
 Remote execution: [B0 milestone](https://github.com/ZhangChi0727/UAV-FMS-portfolio/milestone/1).
 Issues [#3](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/3)
