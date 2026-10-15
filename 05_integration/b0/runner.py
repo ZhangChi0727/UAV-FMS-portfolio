@@ -259,6 +259,18 @@ def _git_checkout_file_bytes(source_commit: str, relative_path: str) -> bytes:
     ).stdout
 
 
+def _canonical_lf_bytes(value: bytes) -> bytes:
+    return value.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _live_bytes_match_source(live_bytes: bytes, source_blob_bytes: bytes) -> bool:
+    """Accept exact Git bytes or the explicitly allowed line-ending transform only."""
+
+    return live_bytes == source_blob_bytes or _canonical_lf_bytes(
+        live_bytes
+    ) == _canonical_lf_bytes(source_blob_bytes)
+
+
 def _file_identity(path: Path, source_commit: str) -> dict[str, Any]:
     relative_path = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
     live_bytes = path.read_bytes()
@@ -267,24 +279,23 @@ def _file_identity(path: Path, source_commit: str) -> dict[str, Any]:
     live_sha256 = hashlib.sha256(live_bytes).hexdigest()
     source_sha256 = hashlib.sha256(source_bytes).hexdigest()
     source_checkout_sha256 = hashlib.sha256(source_checkout_bytes).hexdigest()
-    live_canonical_lf_sha256 = hashlib.sha256(
-        live_bytes.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-    ).hexdigest()
+    live_canonical_lf_sha256 = hashlib.sha256(_canonical_lf_bytes(live_bytes)).hexdigest()
     source_canonical_lf_sha256 = hashlib.sha256(
-        source_bytes.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        _canonical_lf_bytes(source_bytes)
     ).hexdigest()
     return {
         "path": relative_path,
         "sha256": live_sha256,
         "source_blob_sha256": source_sha256,
         "source_checkout_sha256": source_checkout_sha256,
+        "source_checkout_is_line_ending_equivalent": _live_bytes_match_source(
+            source_checkout_bytes, source_bytes
+        ),
         "live_sha256": live_sha256,
         "source_canonical_lf_sha256": source_canonical_lf_sha256,
         "live_canonical_lf_sha256": live_canonical_lf_sha256,
-        "live_matches_source": (
-            live_sha256 in {source_sha256, source_checkout_sha256}
-            or live_canonical_lf_sha256 == source_canonical_lf_sha256
-        ),
+        "source_match_policy": "exact_git_blob_or_canonical_lf_only",
+        "live_matches_source": _live_bytes_match_source(live_bytes, source_bytes),
     }
 
 

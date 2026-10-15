@@ -15,6 +15,7 @@ from runner import (
     BEHAVIOR_CLOSURE_PATHS,
     CONTROLLER_BUILD_INPUT_PATHS,
     REPO_ROOT,
+    _live_bytes_match_source,
 )
 
 
@@ -163,7 +164,12 @@ def build_attestation(study_root: Path, exposure_root: Path) -> dict[str, Any]:
             _canonical_lf(live_bytes)
         ).hexdigest()
         recorded_sha256 = recorded_files.get(relative_path)
-        source_raw_variants = {source_sha256, source_checkout_sha256}
+        checkout_is_line_ending_equivalent = _live_bytes_match_source(
+            source_checkout_bytes, source_bytes
+        )
+        source_raw_variants = {source_sha256}
+        if checkout_is_line_ending_equivalent:
+            source_raw_variants.add(source_checkout_sha256)
         if recorded_sha256 is not None and recorded_sha256 not in source_raw_variants:
             raise AttestationError(
                 f"execution-time hash does not match source commit: {relative_path}"
@@ -173,14 +179,17 @@ def build_attestation(study_root: Path, exposure_root: Path) -> dict[str, Any]:
                 "path": relative_path,
                 "source_commit_blob_sha256": source_sha256,
                 "source_commit_checkout_sha256": source_checkout_sha256,
+                "source_checkout_is_line_ending_equivalent": (
+                    checkout_is_line_ending_equivalent
+                ),
                 "source_commit_canonical_lf_sha256": source_canonical_lf_sha256,
                 "execution_time_hash_recorded": recorded_sha256 is not None,
                 "execution_time_recorded_sha256": recorded_sha256,
                 "attestation_live_sha256": live_sha256,
                 "attestation_live_canonical_lf_sha256": live_canonical_lf_sha256,
-                "attestation_live_matches_study_source": (
-                    live_sha256 in source_raw_variants
-                    or live_canonical_lf_sha256 == source_canonical_lf_sha256
+                "source_match_policy": "exact_git_blob_or_canonical_lf_only",
+                "attestation_live_matches_study_source": _live_bytes_match_source(
+                    live_bytes, source_bytes
                 ),
             }
         )
