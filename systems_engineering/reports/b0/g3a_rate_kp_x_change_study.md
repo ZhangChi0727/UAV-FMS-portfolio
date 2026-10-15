@@ -88,6 +88,14 @@ attestation head `5f359236b6cfba9c25a5446e4d3dfda5e3acccf9`:
 - raw SHA and canonical-LF/source-checkout hashes are distinguished so Windows
   line-ending filters cannot create a false source mismatch.
 
+A non-scenario identity check at commit
+`c71c3c0dde3533985eeea0b67f81de1cde751df4` exercised the new enforcement:
+all 33 live closure paths matched that source commit, and the Debug controller
+module SHA-256 remained
+`2692faceb020bbe43a95aac6e2f4a4d38efabc4454a9b3e7784cb76b7da3d3cc`.
+This check did not execute a scenario or seed and does not repair the historical
+study's missing execution-time capture.
+
 This is deliberately classified as
 `post_execution_attestation_negative_feasibility_finding_formal_evidence_incomplete`.
 The missing execution-time closure cannot be retroactively presented as if it
