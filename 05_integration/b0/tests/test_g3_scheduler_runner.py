@@ -13,6 +13,7 @@ from runner import (
     CONTROLLER_BUILD_INPUT_PATHS,
     RunnerContractError,
     _acceptance_seed_provenance,
+    _live_bytes_match_source,
     _run_g3_bind_smoke,
     compare_g3_bind_results,
     run_saturation_reachability,
@@ -164,3 +165,12 @@ def test_behavior_closure_contains_public_runtime_build_and_ci_inputs() -> None:
     assert required <= set(BEHAVIOR_CLOSURE_PATHS)
     assert set(CONTROLLER_BUILD_INPUT_PATHS) <= set(BEHAVIOR_CLOSURE_PATHS)
     assert len(BEHAVIOR_CLOSURE_PATHS) == len(set(BEHAVIOR_CLOSURE_PATHS))
+
+
+def test_source_match_accepts_only_exact_or_line_ending_equivalent_bytes() -> None:
+    source = b"gain=0.08\nmode=frozen\n"
+    assert _live_bytes_match_source(source, source)
+    assert _live_bytes_match_source(source.replace(b"\n", b"\r\n"), source)
+
+    semantic_smudge_filter_output = b"gain=0.20\nmode=frozen\n"
+    assert not _live_bytes_match_source(semantic_smudge_filter_output, source)
