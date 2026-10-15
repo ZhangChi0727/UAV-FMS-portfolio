@@ -208,7 +208,11 @@ def build_attestation(study_root: Path, exposure_root: Path) -> dict[str, Any]:
 
     cache_path = REPO_ROOT / "build/b0-controller/debug/CMakeCache.txt"
     return {
-        "schema_version": "b0-g3-study-provenance-erratum/v1",
+        "schema_version": "b0-g3-study-provenance-erratum/v2",
+        "refines_source_match_policy_from_sidecar_sha256": (
+            "96bee5b0c61b3a266ae3bddbf259640ee9639e1a159143b31b70f4dd59d5217b"
+        ),
+        "source_match_policy": "exact_git_blob_or_canonical_lf_only",
         "classification": (
             "post_execution_attestation_negative_feasibility_finding_"
             "formal_evidence_incomplete"
