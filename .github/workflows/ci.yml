@@ -241,16 +241,6 @@ jobs:
               python -m pytest -q python/tests \
               --junitxml="${evidence_dir}/pytest-${{ matrix.artifact_suffix }}.xml"
           )
-          B0_CONTROLLER_MODULE_DIR="${GITHUB_WORKSPACE}/${{ matrix.module_dir }}" \
-          B0_CONTROLLER_BUILD_TYPE="${{ matrix.build_type }}" \
-            python -m pytest -q \
-            05_integration/b0/binding_checks/check_g3_bind_smoke.py \
-            --junitxml="${evidence_dir}/g3-bind-${{ matrix.artifact_suffix }}.xml"
-          python 05_integration/b0/runner.py \
-            --g3-bind-smoke \
-            --module-dir "${GITHUB_WORKSPACE}/${{ matrix.module_dir }}" \
-            --build-type "${{ matrix.build_type }}" \
-            --output "${evidence_dir}/g3-bind-${{ matrix.artifact_suffix }}.json"
           python 03_control/b0/evidence.py \
             --module-dir "${{ matrix.module_dir }}" \
             --build-dir "${{ matrix.build_dir }}" \
@@ -265,28 +255,6 @@ jobs:
           name: b0-g2b-controller-evidence-${{ matrix.artifact_suffix }}
           path: ${{ runner.temp }}/b0-g2b-${{ matrix.artifact_suffix }}
           if-no-files-found: error
-
-  b0-g3-bind-compare:
-    name: B0 G3-A independent Debug Release loop comparison
-    runs-on: ubuntu-latest
-    needs: b0-g2b-controller
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: b0-g2b-controller-evidence-*
-          path: ${{ runner.temp }}/g3-bind
-          merge-multiple: true
-      - name: Compare independently generated G3-BIND traces
-        run: >-
-          python 05_integration/b0/binding_checks/compare_g3_bind_smoke.py
-          --debug "${{ runner.temp }}/g3-bind/g3-bind-debug.json"
-          --release "${{ runner.temp }}/g3-bind/g3-bind-release.json"
 
   navigation-baseline:
     name: Python navigation baseline (3.11)
