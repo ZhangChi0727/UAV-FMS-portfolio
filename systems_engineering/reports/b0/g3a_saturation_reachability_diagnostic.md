@@ -27,6 +27,7 @@ not committed and is currently local-only.
 | `seed-exposure-start.json` | `5cdf8a7a76e683e2d15e79d3716db232897d6f2f47a0a04c66a3e1fa4e399f0c` | 820 |
 | `reachability-result.json` | `79e691f5b17655935943ad2e4ae1cb784e1cc82d8a122c36cde8a5a385075a0b` | 1,203,150 |
 | `seed-exposure-final.json` | `6a7771ebd67f86cd55822563ee5cb71530d964c19a6a1667f0af4919a7e65dde` | 1,149 |
+| `reachability-derived-summary.v1.json` | `0bf9b9f3a5704c559cfcbcc3e639deabd0c1717136e8b71869d3afc7af2905c3` | derived, source-preserving summary |
 
 The start record was created exclusively before component execution. The final
 record binds start-record hash
@@ -47,6 +48,12 @@ controller publication and no saturated held actuator interval.
 | x requested torque maximum | `0.16076572340476172 Nm` | below `0.35 Nm` positive limit |
 | y requested torque range | `[-0.0026453459741338837, 0.0026074076617446573] Nm` | within `±0.35 Nm` |
 | z requested torque range | `[-0.002029010343015998, 0.0020694580450473098] Nm` | within `±0.2 Nm` |
+
+The source result remains byte-for-byte unchanged. The later derived summary
+uses signed-limit headroom names and records the x-axis negative and positive
+headrooms as `0.18346317617511335 Nm` and `0.18923427659523825 Nm`, respectively.
+Positive headroom means that the request remained inside the corresponding
+signed limit; it is not saturation margin in the sense of an exercised limit.
 
 The result is `valid_shortfall`, not an execution error. It confirms the S0
 reachability risk: the accepted initial controller parameters and frozen 40°
