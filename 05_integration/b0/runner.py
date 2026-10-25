@@ -579,6 +579,34 @@ def run_g3_bind_smoke(module_dir: str | Path, build_type: str) -> dict[str, Any]
     return _run_g3_bind_smoke(Path(module_dir), build_type, TUNING_SEED)
 
 
+def run_g3a_evidence_batch(
+    module_dir: str | Path,
+    build_type: str,
+    output_root: str | Path,
+    run_id: str,
+    authority_path: str | Path,
+) -> dict[str, Any]:
+    """Run the fixed G3-A development batch through its dedicated driver.
+
+    The import is deliberately lazy so the legacy G3-BIND and bounded study
+    entry points retain their existing import and execution paths.  The
+    delegated driver fixes the profile catalogue and tuning seed; this public
+    wrapper exposes no profile or seed selector.
+    """
+
+    driver = _load_python_file(
+        "b0_g3a_evidence_driver",
+        REPO_ROOT / "05_integration/b0/g3a_evidence_driver.py",
+    )
+    return driver.run_g3a_evidence_batch(
+        Path(module_dir),
+        build_type,
+        Path(output_root),
+        run_id,
+        Path(authority_path),
+    )
+
+
 def _run_saturation_profile(
     module_dir: str | Path,
     build_type: str,
@@ -1090,6 +1118,7 @@ def compare_g3_bind_results(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--g3-bind-smoke", action="store_true")
+    parser.add_argument("--g3a-evidence", action="store_true")
     parser.add_argument("--reachability-diagnostic", action="store_true")
     parser.add_argument("--rate-kp-x-study", action="store_true")
     parser.add_argument("--module-dir", type=Path)
@@ -1099,11 +1128,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output-root", type=Path)
     parser.add_argument("--run-id")
     parser.add_argument("--protocol", type=Path)
+    parser.add_argument("--authority", type=Path)
     args = parser.parse_args(argv)
     if sum(
         bool(value)
         for value in (
             args.g3_bind_smoke,
+            args.g3a_evidence,
             args.reachability_diagnostic,
             args.rate_kp_x_study,
         )
@@ -1111,6 +1142,22 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("select exactly one G3-A execution mode")
     if args.module_dir is None or args.build_type is None:
         parser.error("--module-dir and --build-type are required")
+    if args.g3a_evidence:
+        if args.seed != TUNING_SEED:
+            parser.error("the G3-A evidence seed is fixed by its profile definition")
+        if args.output_root is None or args.run_id is None or args.authority is None:
+            parser.error("--output-root, --run-id and --authority are required")
+        if args.output is not None or args.protocol is not None:
+            parser.error("--output and --protocol are not valid with --g3a-evidence")
+        result = run_g3a_evidence_batch(
+            args.module_dir,
+            args.build_type,
+            args.output_root,
+            args.run_id,
+            args.authority,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
     if args.reachability_diagnostic:
         if args.seed != TUNING_SEED:
             parser.error("--seed is not accepted for the frozen reachability diagnostic")
@@ -1161,6 +1208,7 @@ __all__ = [
     "RunnerContractError",
     "compare_g3_bind_results",
     "run_g3_bind_smoke",
+    "run_g3a_evidence_batch",
     "run_rate_kp_x_study",
     "run_saturation_reachability",
 ]
