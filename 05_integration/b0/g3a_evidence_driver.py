@@ -2253,7 +2253,7 @@ def _component_count_snapshot(
 ) -> dict[str, int]:
     """Read the actual twenty component counters used by rejection probes."""
 
-    raw = _require_mapping(session.call_counts, "session.call_counts")
+    raw = _require_internal_mapping(session.call_counts, "session.call_counts")
     expected_session = set(_SESSION_COUNTER_TO_EVIDENCE)
     if set(raw) != expected_session:
         raise EvidenceDriverError(
@@ -2796,7 +2796,9 @@ class _ProfileRecord:
         ]
         materialized_probes = [
             _materialize_rejection_probe(
-                _require_internal_mapping(item, "failure probe"),
+                self.canonicalize(
+                    _require_internal_mapping(item, "failure probe")
+                ),
                 profile_id=str(self.profile["profile_id"]),
                 lifecycle=lifecycle,
                 wire_by_id=self.wire_by_id,
@@ -2806,7 +2808,9 @@ class _ProfileRecord:
         ]
         materialized_operations = [
             _materialize_operation(
-                _require_internal_mapping(item, "failure operation"),
+                self.canonicalize(
+                    _require_internal_mapping(item, "failure operation")
+                ),
                 global_tick=(0 if global_tick is None else global_tick),
                 snapshots=self.snapshots,
                 canonicalize=self.canonicalize,

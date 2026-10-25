@@ -11,12 +11,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 from typing import Any, Mapping
 
 import numpy as np
 import pytest
 
+import g3a_evidence_driver as evidence_driver
 from integration_session import (
     EpochEnvelope,
     FAULT_CONTROLLER_NEGATIVE_DT,
@@ -29,6 +30,7 @@ from integration_session import (
     SessionLifecycle,
     TickDirective,
     canonical_snapshot_bytes,
+    canonical_snapshot_value,
     float64_hex,
     guard_envelope,
 )
@@ -400,13 +402,19 @@ class FakeIMU:
 
 
 class FakeEstimator:
-    def __init__(self, *, fail_process: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        fail_process: bool = False,
+        mutate_on_stale_rejection: bool = False,
+    ) -> None:
         self.reset_calls = 0
         self.process_calls = 0
         self.last_timestamp = 0.0
         self.epoch_id = -1
         self.estimate: FakeEstimate | None = None
         self.fail_process = fail_process
+        self.mutate_on_stale_rejection = mutate_on_stale_rejection
 
     def reset(
         self,
@@ -427,16 +435,18 @@ class FakeEstimator:
         return self.estimate
 
     def process(self, sample: FakeIMUSample) -> Any:
-        self.process_calls += 1
-        if self.fail_process:
-            raise RuntimeError("deliberate estimator process failure")
         if sample.timestamp_s <= self.last_timestamp:
+            if self.mutate_on_stale_rejection:
+                self.process_calls += 1
             return SimpleNamespace(
                 estimate=self.estimate,
                 diagnostics=FakeDiagnostics(
                     False, "imu sample timestamp is duplicate or stale"
                 ),
             )
+        self.process_calls += 1
+        if self.fail_process:
+            raise RuntimeError("deliberate estimator process failure")
         self.last_timestamp = sample.timestamp_s
         self.estimate = FakeEstimate(
             IDENTITY.copy(), sample.gyro_b_rad_s.copy(), sample.timestamp_s
@@ -547,6 +557,7 @@ def _make_bundle(
     fail_actuator_inner_step: bool = False,
     fail_imu_sample: bool = False,
     fail_estimator_process: bool = False,
+    mutate_estimator_on_stale_rejection: bool = False,
     bind_snapshotter: bool = True,
     event_schedule: FakeEvents | None = None,
     observer_omit_section_at_phase: int | None = None,
@@ -573,7 +584,10 @@ def _make_bundle(
         fail_inner_step=fail_actuator_inner_step,
     )
     imu = FakeIMU(fail_sample=fail_imu_sample)
-    estimator = FakeEstimator(fail_process=fail_estimator_process)
+    estimator = FakeEstimator(
+        fail_process=fail_estimator_process,
+        mutate_on_stale_rejection=mutate_estimator_on_stale_rejection,
+    )
     controller = FakeController()
     lifecycle_recorder = LifecycleRecorder(id_prefix="fake-g3a")
     events = (
@@ -1164,6 +1178,28 @@ def test_negative_dt_and_stale_timestamp_reject_without_state_then_retry_once() 
         == f'{operation["after_snapshot_id"]}/capture'
         for operation in rejected
     )
+    assert all(
+        canonical_snapshot_bytes(operation["before_snapshot"])
+        == canonical_snapshot_bytes(operation["after_snapshot"])
+        for operation in rejected
+    )
+    assert sum(
+        operation["attempt_kind"] == "same_tick_correction"
+        for operation in negative.operations
+    ) == 1
+    assert sum(
+        operation["attempt_kind"] == "same_tick_correction"
+        for operation in stale.operations
+    ) == 1
+    assert len(
+        [
+            operation
+            for operation in stale.operations
+            if operation["owner"] == "imu" and operation["method"] == "sample"
+        ]
+    ) == 1
+    assert bundle.imu.sample_calls == 2
+    assert bundle.session.call_counts["imu_sample_attempts"] == 2
     assert bundle.session.call_counts["controller_step_attempts"] == 3
     assert bundle.session.call_counts["controller_step_accepted"] == 2
     assert bundle.session.call_counts["controller_step_rejected"] == 1
@@ -1188,6 +1224,73 @@ def test_negative_dt_and_stale_timestamp_reject_without_state_then_retry_once() 
             assert operation["guard_ref"] == matching_guards[0]["guard_id"]
         assert attempts[0]["operation_id"] != attempts[1]["operation_id"]
     assert bundle.session.lifecycle is SessionLifecycle.ACTIVE
+
+
+def test_fake_estimator_stale_rejection_preserves_complete_snapshot() -> None:
+    estimator = FakeEstimator()
+    estimator.reset(
+        FakeEstimatorInitialState(IDENTITY.copy(), ZERO3.copy()),
+        FakeResetEpoch(0, 0.0),
+        2026100900,
+    )
+    before = estimator.snapshot()
+    result = estimator.process(
+        FakeIMUSample(0.0, ZERO3.copy(), ZERO3.copy(), True)
+    )
+    after = estimator.snapshot()
+    assert result.diagnostics == FakeDiagnostics(
+        False, "imu sample timestamp is duplicate or stale"
+    )
+    assert canonical_snapshot_bytes(before) == canonical_snapshot_bytes(after)
+
+
+def test_mutating_fake_stale_rejection_is_terminal_without_correction_or_resample(
+) -> None:
+    bundle = _make_bundle(
+        invalid_by_tick={4: "stale_timestamp"},
+        mutate_estimator_on_stale_rejection=True,
+    )
+    bundle.session.reset(0, reason="startup")
+    bundle.session.advance(1)
+    bundle.session.advance(2)
+    bundle.session.advance(3)
+
+    with pytest.raises(SessionContractError) as caught:
+        bundle.session.advance(
+            4,
+            directive=TickDirective(fault=FAULT_ESTIMATOR_STALE_TIMESTAMP),
+        )
+
+    assert caught.value.reason == "rejection_mutated_state"
+    frontier = caught.value.failure_frontier
+    assert frontier is bundle.session.failure_frontier
+    assert frontier is not None
+    estimator_operations = [
+        operation
+        for operation in frontier["operations"]
+        if operation["owner"] == "estimator"
+        and operation["method"] == "process"
+    ]
+    assert len(estimator_operations) == 1
+    assert estimator_operations[0]["attempt_kind"] == "injected_invalid"
+    assert not any(
+        operation["attempt_kind"] == "same_tick_correction"
+        for operation in frontier["operations"]
+    )
+    assert len(
+        [
+            operation
+            for operation in frontier["operations"]
+            if operation["owner"] == "imu" and operation["method"] == "sample"
+        ]
+    ) == 1
+    assert bundle.imu.sample_calls == 2
+    assert bundle.estimator.process_calls == 2
+    assert bundle.session.call_counts["imu_sample_attempts"] == 2
+    assert bundle.session.call_counts["estimator_process_attempts"] == 2
+    assert bundle.session.call_counts["estimator_process_accepted"] == 1
+    assert bundle.session.call_counts["estimator_process_rejected"] == 1
+    assert bundle.session.lifecycle is SessionLifecycle.TERMINAL_INCONCLUSIVE
 
 
 def test_invalid_path_unexpected_dut_exception_retains_first_cause_once() -> None:
@@ -1804,3 +1907,237 @@ def test_copy_and_rejection_snapshot_equality_remains_bit_exact_for_q() -> None:
     with pytest.raises(SessionContractError) as caught:
         IntegrationSession._assert_same_snapshot(exact, mutated_copy, "q-copy")
     assert caught.value.reason == "rejection_mutated_state"
+
+
+def test_driver_component_count_snapshot_accepts_readonly_session_mapping() -> None:
+    session_counts = {
+        key: index
+        for index, key in enumerate(evidence_driver._SESSION_COUNTER_TO_EVIDENCE)
+    }
+    session = SimpleNamespace(call_counts=MappingProxyType(session_counts))
+    lifecycle = [
+        {
+            "profile_id": "S",
+            "event": "return",
+            "method": "constructor",
+            "owner": "plant",
+        },
+        {
+            "profile_id": "other",
+            "event": "return",
+            "method": "constructor",
+            "owner": "actuator",
+        },
+        {
+            "profile_id": "S",
+            "event": "enter",
+            "method": "constructor",
+            "owner": "imu",
+        },
+    ]
+
+    actual = evidence_driver._component_count_snapshot(
+        session,
+        profile_id="S",
+        lifecycle=lifecycle,
+    )
+    expected = {
+        "plant_step_base": 5,
+        "actuator_step_base": 6,
+        "imu_sample": 7,
+        "estimator_process": 8,
+        "estimator_accepted": 9,
+        "estimator_rejected": 10,
+        "controller_step": 11,
+        "controller_accepted": 12,
+        "controller_rejected": 13,
+        "plant_reset": 0,
+        "actuator_reset": 1,
+        "imu_reset": 2,
+        "estimator_reset": 3,
+        "controller_reset": 4,
+        "plant_constructor": 1,
+        "actuator_constructor": 0,
+        "imu_constructor": 0,
+        "estimator_constructor": 0,
+        "controller_adapter_constructor": 0,
+        "controller_core_constructor": 0,
+    }
+    assert actual == expected
+    assert len(actual) == 20
+
+
+def test_driver_component_count_snapshot_rejects_invalid_readonly_counters() -> None:
+    valid = {
+        key: 0 for key in evidence_driver._SESSION_COUNTER_TO_EVIDENCE
+    }
+    invalid_cases = []
+    missing = dict(valid)
+    missing.pop(next(iter(missing)))
+    invalid_cases.append((missing, "session_counter_keys_mismatch"))
+    extra = {**valid, "unexpected_counter": 0}
+    invalid_cases.append((extra, "session_counter_keys_mismatch"))
+    boolean = dict(valid)
+    boolean[next(iter(boolean))] = True
+    invalid_cases.append((boolean, "session_counter_value_invalid"))
+    negative = dict(valid)
+    negative[next(iter(negative))] = -1
+    invalid_cases.append((negative, "session_counter_value_invalid"))
+
+    for values, reason in invalid_cases:
+        session = SimpleNamespace(call_counts=MappingProxyType(values))
+        with pytest.raises(evidence_driver.EvidenceDriverError, match=reason):
+            evidence_driver._component_count_snapshot(
+                session,
+                profile_id="S",
+                lifecycle=(),
+            )
+
+
+def test_driver_failure_materializers_detach_recursive_readonly_mappings() -> None:
+    def recursive_proxy(value: Any) -> Any:
+        if isinstance(value, dict):
+            return MappingProxyType(
+                {key: recursive_proxy(item) for key, item in value.items()}
+            )
+        if isinstance(value, list):
+            return tuple(recursive_proxy(item) for item in value)
+        return value
+
+    session_delta = {
+        key: 0 for key in evidence_driver._SESSION_COUNTER_TO_EVIDENCE
+    }
+    snapshot = {"session": {"phase_cursor": 4, "nested": {"value": 1}}}
+    probe = {
+        "probe_id": "failure-probe",
+        "kind": "stale_timestamp",
+        "global_tick": 7,
+        "phase": 4,
+        "consumer_operation_id": "operation",
+        "role": "imu",
+        "checked_refs": {},
+        "candidate_id": "candidate",
+        "original_legal_id": "legal",
+        "source_truth_id": None,
+        "source_field": None,
+        "target_field": None,
+        "derivation_site": None,
+        "guard_site": "estimator.consume.input_bundle",
+        "accepted": False,
+        "reason": "stale",
+        "before_snapshot_id": "probe/before",
+        "before_capture_id": "probe/before/capture",
+        "after_snapshot_id": "probe/after",
+        "after_capture_id": "probe/after/capture",
+        "before_snapshot": snapshot,
+        "after_snapshot": snapshot,
+        "component_call_delta": session_delta,
+    }
+    operation = {
+        "operation_id": "operation",
+        "owner": "estimator",
+        "method": "process",
+        "phase": 4,
+        "attempt_kind": "injected_invalid",
+        "inputs": {"adapted_imu": "candidate"},
+        "outputs": {},
+        "scalar_inputs": {"nested": {"value": 1}},
+        "reset_inputs": None,
+        "accepted": False,
+        "reason": "stale",
+        "guard_ref": "guard",
+        "before_snapshot_id": "operation/before",
+        "before_capture_id": "operation/before/capture",
+        "after_snapshot_id": "operation/after",
+        "after_capture_id": "operation/after/capture",
+        "before_snapshot": snapshot,
+        "after_snapshot": snapshot,
+    }
+    lifecycle = (
+        {
+            "profile_id": "S",
+            "owner": "observer",
+            "method": "capture_snapshot",
+            "event": "return",
+            "observation_index": 1,
+            "result": {"capture_id": "probe/before/capture"},
+        },
+        {
+            "profile_id": "S",
+            "owner": "observer",
+            "method": "capture_snapshot",
+            "event": "return",
+            "observation_index": 2,
+            "result": {"capture_id": "probe/after/capture"},
+        },
+    )
+
+    primary = RuntimeError("primary failure")
+    observed_frontier = {
+        "profile_id": "S",
+        "global_tick": 7,
+        "epoch_id": 2,
+        "epoch_origin_tick": 6,
+        "local_tick": 1,
+        "epoch_origin_s": 0.06,
+        "timestamp_s": 0.07,
+        "boundary_kind": "ordinary",
+        "event_ids": ["event"],
+        "held_before_id": "held/previous",
+        "published_after_id": None,
+        "operations": [operation],
+        "guards": [],
+        "probes": [probe],
+        "wires": [],
+        "component_call_counts": session_delta,
+        "original_exception": evidence_driver._exception_observation(primary),
+        "lifecycle_state": SessionLifecycle.TERMINAL_INCONCLUSIVE.value,
+        "phase_cursor": 4,
+        "termination_status": SessionLifecycle.TERMINAL_INCONCLUSIVE.value,
+        "required_after_imu_capture": None,
+        "retention_status": "complete",
+        "missing_observations": [],
+        "retention_exception": None,
+    }
+
+    def retain(raw_frontier: Mapping[str, Any]) -> dict[str, Any]:
+        record = evidence_driver._ProfileRecord.__new__(
+            evidence_driver._ProfileRecord
+        )
+        record.profile = {"profile_id": "S"}
+        record.canonicalize = canonical_snapshot_value
+        record.snapshots = evidence_driver._SnapshotStore()
+        record.wires = []
+        record.wire_by_id = {}
+        record.failure_frontiers = []
+        record.retention_failures = []
+        record.retain_failure_frontier(
+            primary,
+            lifecycle=lifecycle,
+            capture_site="driver.test",
+            observed_frontier=raw_frontier,
+        )
+        return {
+            "failure_frontiers": record.failure_frontiers,
+            "snapshots": record.snapshots.values,
+        }
+
+    readonly_frontier = recursive_proxy(observed_frontier)
+    readonly_probe = readonly_frontier["probes"][0]
+    frontier_before = canonical_snapshot_bytes(readonly_frontier)
+    from_dict = retain(observed_frontier)
+    from_readonly = retain(readonly_frontier)
+
+    assert from_readonly == from_dict
+    assert from_readonly["failure_frontiers"][0]["published_after_ref"] == (
+        "held/previous"
+    )
+    assert from_readonly["failure_frontiers"][0]["original_exception"] == (
+        evidence_driver._exception_observation(primary)
+    )
+    assert isinstance(json.dumps(from_readonly, sort_keys=True), str)
+    assert canonical_snapshot_bytes(readonly_frontier) == frontier_before
+    with pytest.raises(
+        evidence_driver.EvidenceDriverError, match="field_type_mismatch"
+    ):
+        evidence_driver._require_mapping(readonly_probe, "wire")
