@@ -102,7 +102,9 @@ def test_expected_parameter_pointer_uses_source_bytes_and_signed_zero(tmp_path):
     item.update({"source_path": "fixed.json", "json_pointer": "/x"})
     result = authority.expected_parameters(policy, source, tmp_path.resolve())
     assert result["components"]["estimator"]["sample_period_s"] == "-0x0.0p+0"
-    del policy["fixed_files"]["fixed.json"]
+    unfixed_raw = b'{"synthetic_unfixed_fixture":true,"x":-0.0}\n'
+    source["unfixed.json"] = unfixed_raw
+    item["source_path"] = "unfixed.json"
     with pytest.raises(authority.AuthorityError, match="parameter_source_not_fixed"):
         authority.expected_parameters(policy, source, tmp_path.resolve())
 
