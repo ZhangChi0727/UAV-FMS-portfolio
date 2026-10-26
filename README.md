@@ -7,9 +7,14 @@ embedded implementation, and reproducible verification.
 G1.5-A/B/C governance sequence are accepted. G2-A and G2-B are merged and have
 original-PA post-merge acceptance; the controlled closeout is recorded in
 [G2 closeout and G3 readiness](systems_engineering/reports/b0/g2_closeout_and_g3_readiness.md).
-G3-A is the active engineering increment. Its exact S0 design candidate has
-original-PA `DESIGN_ACCEPT`; deterministic integration implementation is now in
-progress. No approved scenario or closed-loop performance result is yet claimed.
+G3-A is the active engineering increment. Its exact local S3 source has original-PA
+[`IMPLEMENTATION_ACCEPT`](systems_engineering/reports/b0/g3a_local_s3_implementation_acceptance.md)
+after real Debug/Release development integration and independent raw-evidence review.
+Candidate CI and post-merge closure decisions are tracked in
+[PR #23](https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/23) and
+[Issue #7](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/7);
+local implementation acceptance alone does not close G3-A.
+No approved normal-scenario or closed-loop performance result is yet claimed.
 G3/G4 and overall B0 completion remain open.
 No completed flight, hardware, broad performance, or research results are claimed.
 
@@ -42,9 +47,9 @@ or a publication. Each is independently scoped in the extension registry.
 | 02_estimation/ | Attitude estimation; optional navigation | Legacy EKF/UKF scaffold |
 | 03_control/ | B0 cascaded control; optional advanced control | Legacy geometric/LQR scaffold |
 | 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
-| 05_integration/ | Execution adapters, scenarios, evidence integration | G3-A deterministic integration implementation in progress |
+| 05_integration/ | Execution adapters, scenarios, evidence integration | G3-A local implementation accepted; CI/main decisions tracked in PR #23 |
 | 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C and G2 accepted; G3-A S0 candidate under review |
+| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C/G2 accepted; G3-A local implementation review recorded |
 | docs/ | Roadmap, environment and work orders | G3 work order dispatched; G3-A implementation active |
 | research/ | Independently gated research packages | Candidates only |
 | literature/ | Shared bibliographic and evidence record | Historical pilot screening |
@@ -71,8 +76,8 @@ see [the track README](03_control/b0/README.md). The legacy target prerequisites
 include Eigen3 and Catch2.
 MATLAB, PyTorch, PX4, and hardware tools are extension-specific dependencies.
 
-No B0 run command exists yet. Add it with the implementation and retain a
-small reproducible scenario suite before declaring B0 complete.
+The [B0 integration track](05_integration/b0/README.md) documents the gated
+development runner. It is not yet the normal-scenario acceptance suite or B0 completion.
 
 ## Contribution policy
 
