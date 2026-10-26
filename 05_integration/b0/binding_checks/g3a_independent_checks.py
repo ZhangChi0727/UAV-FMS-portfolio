@@ -569,6 +569,44 @@ def _parameter_objects(raw: dict[str, Any], authority: dict[str, Any]) -> dict[s
     return parameters
 
 
+def _default_loader_parameter_binding(enter: dict[str, Any], result: dict[str, Any],
+                                      calls: dict[str, dict[str, Any]],
+                                      terminal: dict[str, dict[str, Any]],
+                                      parameters: dict[str, dict[str, Any]], path: str) -> None:
+    """Bind two actual value captures, not two Python object identities (spec 4.3)."""
+    binding_path = path + "/default_loader"
+    nested = [call for call in calls.values() if call.get("parent_call_id") == enter["call_id"]
+              and call.get("method") == "load_parameters"]
+    _need(len(nested) == 1, "constructor_binding_mismatch", binding_path)
+    loader = nested[0]
+    _need(loader.get("owner") == "estimator_loader"
+          and loader.get("callsite") == "estimator.load_estimator_parameters"
+          and loader.get("profile_id") == enter["profile_id"]
+          and loader.get("operation_id") == enter["operation_id"],
+          "constructor_binding_mismatch", binding_path + "/loader")
+    returned = terminal.get(loader["call_id"])
+    _need(type(returned) is dict and returned.get("event") == "return"
+          and returned.get("exception") is None and type(returned.get("result")) is dict
+          and all(returned.get(key) == loader.get(key) for key in
+                  ("call_id", "parent_call_id", "profile_id", "operation_id", "owner",
+                   "method", "callsite", "actor_id", "core_use")),
+          "constructor_binding_mismatch", binding_path + "/loader_return")
+    captures = []
+    for label, reference in (("loader", returned["result"].get("parameter_object_ref")),
+                             ("constructor", result.get("parameter_object_ref"))):
+        _need(type(reference) is str and reference in parameters,
+              "constructor_binding_mismatch", binding_path + "/" + label + "_parameter_object_ref")
+        capture = parameters[reference]
+        digest = capture.get("values_sha256")
+        _need(capture.get("kind") == "estimator" and capture.get("capture_kind") == "object_values"
+              and type(digest) is str and _sha(_encoded(capture["values"])) == digest.lower(),
+              "constructor_binding_mismatch", binding_path + "/" + label + "_capture")
+        captures.append(capture)
+    _need(_equal(captures[0]["values"], captures[1]["values"])
+          and captures[0]["values_sha256"].lower() == captures[1]["values_sha256"].lower(),
+          "constructor_binding_mismatch", binding_path + "/values")
+
+
 def _lifecycle(raw: dict[str, Any], authority: dict[str, Any],
                contexts: dict[str, dict[str, Any]], parameters: dict[str, dict[str, Any]]) -> dict[str, Any]:
     plan = authority["execution_plan"]
@@ -742,11 +780,7 @@ def _lifecycle(raw: dict[str, Any], authority: dict[str, Any],
                         _need(_equal(supplied["values"], parameters[reference]["values"]),
                               "constructor_binding_mismatch", path + "/result/parameter_values")
                 if enter["arguments"]["mode"] == "default_loader":
-                    nested = [calls[cid] for cid in calls if calls[cid]["parent_call_id"] == call_id
-                              and calls[cid]["method"] == "load_parameters"]
-                    _need(len(nested) == 1 and reference in parameters and
-                          terminal[nested[0]["call_id"]]["result"]["parameter_object_ref"] == reference,
-                          "constructor_binding_mismatch", path + "/default_loader")
+                    _default_loader_parameter_binding(enter, result, calls, terminal, parameters, path)
             elif method == "load_parameters":
                 kind = {"g1_loader": "g1", "estimator_loader": "estimator", "controller_loader": "controller"}.get(owner)
                 _need(reference in parameters and parameters[reference]["kind"] == kind,

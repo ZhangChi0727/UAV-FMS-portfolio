@@ -1112,6 +1112,29 @@ def test_truth_derived_estimator_and_controller_candidates_use_shared_guard() ->
         "estimate",
         "feedback",
     }
+    assert [
+        (
+            probe["source_field"],
+            probe["target_field"],
+            probe["derivation_site"],
+        )
+        for probe in result.probes
+    ] == [
+        (
+            "sensor_truth.omega_b_rad_s",
+            "imu.gyro_rad_s",
+            "integration_session.phase4.derive_imu_gyro_from_evaluator_truth",
+        ),
+        (
+            "sensor_truth.q_nb",
+            "estimate.q_nb",
+            "integration_session.phase5.derive_estimate_q_from_evaluator_truth",
+        ),
+    ]
+    assert all(
+        not any(probe["component_call_delta"].values())
+        for probe in result.probes
+    )
     n_e = next(
         wire
         for wire in result.wires
@@ -1133,16 +1156,22 @@ def test_truth_derived_estimator_and_controller_candidates_use_shared_guard() ->
         for wire in result.wires
         if wire.role == "estimate" and wire.producer == "estimator"
     )
+    assert n_e.parent_ids == (truth.envelope_id, legal_imu.envelope_id)
+    assert n_c.parent_ids == (truth.envelope_id, legal_estimate.envelope_id)
     assert np.array_equal(n_e.payload.gyro_b_rad_s, truth.payload.omega_b_rad_s)
     assert np.array_equal(
         n_e.payload.specific_force_b_m_s2,
         legal_imu.payload.specific_force_b_m_s2,
     )
+    assert n_e.payload.timestamp_s == legal_imu.payload.timestamp_s
+    assert n_e.payload.valid is legal_imu.payload.valid
     assert np.array_equal(n_c.payload.q_nb_estimate, truth.payload.q_nb)
     assert np.array_equal(
         n_c.payload.omega_b_estimate_rad_s,
         legal_estimate.payload.omega_b_estimate_rad_s,
     )
+    assert n_c.payload.timestamp_s == legal_estimate.payload.timestamp_s
+    assert n_c.payload.valid is legal_estimate.payload.valid
 
 
 def test_negative_dt_and_stale_timestamp_reject_without_state_then_retry_once() -> None:

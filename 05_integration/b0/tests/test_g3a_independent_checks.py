@@ -287,3 +287,256 @@ def test_synthetic_unit_fixture_sparse_t_next_is_actual_replay_point(profile_id,
 ])
 def test_synthetic_unit_fixture_normal_session_next_stays_base_tick(profile_id, completed_tick, next_tick):
     assert checks._expected_session_next_tick(profile_id, completed_tick) == next_tick
+
+
+def _synthetic_default_loader_fixture():
+    """A finite lifecycle fragment, not a schema-complete or real raw record."""
+    values = {
+        "sample_period_s": 1.0.hex(), "gravity_m_s2": 1.0.hex(),
+        "unit_norm_tolerance": 1.0.hex(), "correction_gain_per_s": 1.0.hex(),
+        "accelerometer_gate_deviation_m_s2": 1.0.hex(),
+        "maximum_correction_step_rad": 1.0.hex(), "timestamp_tolerance_s": 1.0.hex(),
+        "config_path": "/synthetic/estimator.json", "g0_config_path": "/synthetic/g0.json",
+    }
+    value_digest = hashlib.sha256(_json(values)).hexdigest()
+    parameter_ids = {name: "synthetic/parameter/" + name
+                     for name in ("fields", "constructed", "loader", "estimator")}
+    parameter_records = [
+        {"parameter_object_id": identifier, "kind": "estimator",
+         "capture_kind": "constructor_fields" if name == "fields" else "object_values",
+         "values": copy.deepcopy(values), "values_sha256": value_digest}
+        for name, identifier in parameter_ids.items()
+    ]
+    estimator_source = b"synthetic source binding only; never imported\n"
+    config_document = {"synthetic_metadata_fixture": True}
+    config_bytes = _json(config_document) + b"\n"
+    source_digest = hashlib.sha256(estimator_source).hexdigest()
+    config_digest = hashlib.sha256(config_bytes).hexdigest()
+    document_digest = hashlib.sha256(_json(config_document)).hexdigest()
+    source_locator = "02_estimation/b0/estimator.py"
+    config_locator = "05_integration/b0/configs/b0_g0_contract.v2.json"
+    sites = {
+        "estimator.AttitudeEstimator": {"owner": "estimator", "method": "constructor", "parent_site": None},
+        "estimator.load_estimator_parameters": {
+            "owner": "estimator_loader", "method": "load_parameters",
+            "parent_site": ["estimator.AttitudeEstimator"]},
+        "estimator.EstimatorParameters": {
+            "owner": "estimator_parameters", "method": "constructor",
+            "parent_site": ["estimator.load_estimator_parameters"]},
+        "validate_config.load_config": {
+            "owner": "g0_validator", "method": "load_config",
+            "parent_site": ["estimator.load_estimator_parameters"]},
+        "validate_config.validate_config": {
+            "owner": "g0_validator", "method": "validate_config",
+            "parent_site": ["estimator.load_estimator_parameters"]},
+    }
+    g1_values = {"config_path": "/synthetic/g0.json"}
+    authority = {
+        "parameter_inputs": {
+            "manifest_version": "b0-g3a-expected-parameter-inputs/v1",
+            "semantics": "approved_expected_inputs_not_runtime_observations",
+            "components": {"plant": g1_values, "actuator": copy.deepcopy(g1_values),
+                           "imu": copy.deepcopy(g1_values), "estimator": copy.deepcopy(values),
+                           "controller": {}}},
+        "input_artifact_bytes": {source_locator: estimator_source, config_locator: config_bytes},
+        "execution_plan": {"lifecycle_callsites": sites},
+        "identity": {"controller_module_sha256": "a" * 64},
+    }
+
+    def entered(name, site, parent, actor, arguments):
+        return {"observation_index": -1, "event": "enter", "call_id": "synthetic/" + name,
+                "parent_call_id": None if parent is None else "synthetic/" + parent,
+                "profile_id": "S", "operation_id": None, "owner": sites[site]["owner"],
+                "method": sites[site]["method"], "callsite": site, "actor_id": actor,
+                "core_use": None, "arguments": arguments, "result": None, "exception": None}
+
+    def returned(entry, parameter_ref=None, *, config=False):
+        event = copy.deepcopy(entry)
+        event.update(event="return", arguments=None,
+                     result={"actor_id": entry["actor_id"], "parameter_object_ref": parameter_ref,
+                             "snapshot_ref": None, "capture_id": None,
+                             "resolved_config_path": "/synthetic/g0.json" if config else None,
+                             "source_bytes_sha256": config_digest if config else None,
+                             "document_sha256": document_digest if config else None})
+        return event
+
+    estimator = entered("estimator", "estimator.AttitudeEstimator", None, "synthetic/estimator-actor",
+                        {"kind": "constructor", "mode": "default_loader",
+                         "parameter_object_ref": None, "module_sha256": source_digest})
+    loader = entered("loader", "estimator.load_estimator_parameters", "estimator", "synthetic/loader-actor",
+                     {"kind": "loader", "supplied_args": []})
+    load = entered("load-config", "validate_config.load_config", "loader", "synthetic/validator-actor",
+                   {"kind": "config", "actual_argument_kind": "path",
+                    "path_argument": "/synthetic/g0.json", "source_artifact_ref": config_locator,
+                    "source_bytes_sha256": config_digest, "document_sha256": None})
+    validate = entered("validate-config", "validate_config.validate_config", "loader", "synthetic/validator-actor",
+                       {"kind": "config", "actual_argument_kind": "document", "path_argument": None,
+                        "source_artifact_ref": config_locator, "source_bytes_sha256": config_digest,
+                        "document_sha256": document_digest})
+    parameters = entered("parameters", "estimator.EstimatorParameters", "loader", "synthetic/parameters-actor",
+                         {"kind": "constructor", "mode": "parameter_fields", "module_sha256": source_digest,
+                          "parameter_object_ref": parameter_ids["fields"]})
+    events = [estimator, loader, load, returned(load, config=True), validate,
+              returned(validate, config=True), parameters, returned(parameters, parameter_ids["constructed"]),
+              returned(loader, parameter_ids["loader"]), returned(estimator, parameter_ids["estimator"])]
+    for index, event in enumerate(events):
+        event["observation_index"] = index
+    raw = {"parameter_objects": parameter_records, "lifecycle_observations": events}
+    contexts = {pid: {"path": "$/synthetic/" + pid, "snapshots": {}, "ops": {}} for pid in checks._ORDER}
+    return raw, authority, contexts
+
+
+def _synthetic_default_loader_inputs(raw, authority):
+    # Use the real approved-value registry, not a stub that bypasses the binding.
+    parameters = checks._parameter_objects(raw, authority)
+    calls = {event["call_id"]: event for event in raw["lifecycle_observations"] if event["event"] == "enter"}
+    terminals = {event["call_id"]: event for event in raw["lifecycle_observations"] if event["event"] == "return"}
+    return calls["synthetic/estimator"], terminals["synthetic/estimator"]["result"], calls, terminals, parameters
+
+
+@pytest.mark.parametrize("same_capture", [False, True])
+def test_synthetic_default_loader_parameter_capture_id_is_not_object_identity(same_capture):
+    raw, authority, _ = _synthetic_default_loader_fixture()
+    if same_capture:
+        raw["lifecycle_observations"][-1]["result"]["parameter_object_ref"] = "synthetic/parameter/loader"
+    arguments = _synthetic_default_loader_inputs(raw, authority)
+    # This checks the value-binding rule only; sharing a reference does not
+    # establish an actual repeated capture or Python object-identity observation.
+    checks._default_loader_parameter_binding(*arguments, "$/synthetic/constructor")
+
+
+def test_synthetic_distinct_default_loader_captures_reach_existing_lifecycle_count_gate():
+    raw, authority, contexts = _synthetic_default_loader_fixture()
+    parameters = checks._parameter_objects(raw, authority)
+    # The fragment has a valid local binding, but deliberately lacks the other
+    # seven profiles/components. The unchanged global count gate must still fail.
+    with pytest.raises(checks._Reject) as failure:
+        checks._lifecycle(raw, authority, contexts, parameters)
+    assert failure.value.reason == "lifecycle_observation_missing"
+    assert failure.value.path == "$/lifecycle/plant:constructor"
+    assert failure.value.incomplete
+
+
+@pytest.mark.parametrize(("alteration", "suffix"), [
+    ("missing_loader", ""), ("duplicate_loader", ""), ("wrong_parent", ""),
+    ("wrong_profile", "/loader"), ("wrong_operation", "/loader"),
+    ("wrong_callsite", "/loader"), ("wrong_owner", "/loader"),
+    ("missing_terminal", "/loader_return"), ("exception_terminal", "/loader_return"),
+    ("terminal_actor", "/loader_return"),
+    ("loader_missing_ref", "/loader_parameter_object_ref"),
+    ("loader_unknown_ref", "/loader_parameter_object_ref"),
+    ("constructor_missing_ref", "/constructor_parameter_object_ref"),
+    ("constructor_unknown_ref", "/constructor_parameter_object_ref"),
+    ("loader_wrong_kind", "/loader_capture"), ("constructor_wrong_kind", "/constructor_capture"),
+    ("loader_wrong_capture_kind", "/loader_capture"), ("constructor_wrong_capture_kind", "/constructor_capture"),
+    ("loader_bad_digest", "/loader_capture"), ("constructor_bad_digest", "/constructor_capture"),
+    ("changed_values", "/values"),
+])
+def test_synthetic_default_loader_binding_rejects_single_fault(alteration, suffix):
+    raw, authority, _ = _synthetic_default_loader_fixture()
+    enter, result, calls, terminals, parameters = _synthetic_default_loader_inputs(raw, authority)
+    loader = calls["synthetic/loader"]
+    loader_return = terminals["synthetic/loader"]
+    if alteration == "missing_loader":
+        del calls["synthetic/loader"]
+    elif alteration == "duplicate_loader":
+        duplicate = copy.deepcopy(loader)
+        duplicate["call_id"] = "synthetic/duplicate-loader"
+        calls[duplicate["call_id"]] = duplicate
+    elif alteration == "wrong_parent":
+        loader["parent_call_id"] = "synthetic/other-constructor"
+    elif alteration == "wrong_profile":
+        loader["profile_id"] = "L1"
+    elif alteration == "wrong_operation":
+        loader["operation_id"] = "synthetic/other-operation"
+    elif alteration == "wrong_callsite":
+        loader["callsite"] = "synthetic/other-loader"
+    elif alteration == "wrong_owner":
+        loader["owner"] = "controller_loader"
+    elif alteration == "missing_terminal":
+        del terminals["synthetic/loader"]
+    elif alteration == "exception_terminal":
+        loader_return["event"] = "exception"
+    elif alteration == "terminal_actor":
+        loader_return["actor_id"] = "synthetic/other-actor"
+    elif alteration in {"loader_missing_ref", "loader_unknown_ref"}:
+        loader_return["result"]["parameter_object_ref"] = None if alteration.endswith("missing_ref") else "unknown"
+    elif alteration in {"constructor_missing_ref", "constructor_unknown_ref"}:
+        result["parameter_object_ref"] = None if alteration.endswith("missing_ref") else "unknown"
+    elif alteration.endswith("wrong_kind"):
+        label = alteration.split("_", 1)[0]
+        identifier = "synthetic/parameter/" + ("estimator" if label == "constructor" else "loader")
+        parameters[identifier]["kind"] = "controller"
+    elif alteration.endswith("wrong_capture_kind"):
+        label = alteration.split("_", 1)[0]
+        identifier = "synthetic/parameter/" + ("estimator" if label == "constructor" else "loader")
+        parameters[identifier]["capture_kind"] = "constructor_fields"
+    elif alteration.endswith("bad_digest"):
+        label = alteration.split("_", 1)[0]
+        identifier = "synthetic/parameter/" + ("estimator" if label == "constructor" else "loader")
+        parameters[identifier]["values_sha256"] = "0" * 64
+    else:
+        # Isolate local exact-value comparison after registry admission. The
+        # separate test below proves changed approved values also fail upstream.
+        capture = parameters["synthetic/parameter/estimator"]
+        capture["values"]["sample_period_s"] = 2.0.hex()
+        capture["values_sha256"] = hashlib.sha256(_json(capture["values"])).hexdigest()
+    with pytest.raises(checks._Reject) as failure:
+        checks._default_loader_parameter_binding(enter, result, calls, terminals, parameters,
+                                                  "$/synthetic/constructor")
+    assert failure.value.reason == "constructor_binding_mismatch"
+    assert failure.value.path == "$/synthetic/constructor/default_loader" + suffix
+
+
+@pytest.mark.parametrize(("alteration", "field"), [("changed_value", "values"), ("bad_digest", "values_sha256")])
+def test_synthetic_default_loader_registry_keeps_external_approved_value_gate(alteration, field):
+    raw, authority, _ = _synthetic_default_loader_fixture()
+    capture = raw["parameter_objects"][-1]
+    if alteration == "changed_value":
+        capture["values"]["sample_period_s"] = 2.0.hex()
+        capture["values_sha256"] = hashlib.sha256(_json(capture["values"])).hexdigest()
+    else:
+        capture["values_sha256"] = "0" * 64
+    with pytest.raises(checks._Reject) as failure:
+        checks._parameter_objects(raw, authority)
+    assert failure.value.reason == "constructor_binding_mismatch"
+    assert failure.value.path == "$/parameter_objects/synthetic/parameter/estimator/" + field
+
+
+@pytest.mark.parametrize(("alteration", "reason", "path"), [
+    ("module_source", "constructor_binding_mismatch", "0/arguments/module_sha256"),
+    ("loader_parent", "lifecycle_pairing_mismatch", "1/parent_call_id"),
+    ("loader_callsite", "lifecycle_observation_missing", "1/callsite"),
+    ("loader_profile", "lifecycle_pairing_mismatch", "8/profile_id"),
+    ("loader_operation", "lifecycle_pairing_mismatch", "8/operation_id"),
+    ("config_bytes", "constructor_binding_mismatch", "2"),
+    ("config_path", "constructor_binding_mismatch", "2/arguments/path_argument"),
+    ("config_document", "constructor_binding_mismatch", "4/arguments/document_sha256"),
+    ("config_locator", "authority_missing", "2"),
+])
+def test_synthetic_default_loader_lifecycle_keeps_parent_and_source_guards(alteration, reason, path):
+    raw, authority, contexts = _synthetic_default_loader_fixture()
+    events = raw["lifecycle_observations"]
+    if alteration == "module_source":
+        events[0]["arguments"]["module_sha256"] = "0" * 64
+    elif alteration == "loader_parent":
+        events[1]["parent_call_id"] = "synthetic/other-constructor"
+    elif alteration == "loader_callsite":
+        events[1]["callsite"] = "synthetic/other-loader"
+    elif alteration == "loader_profile":
+        events[1]["profile_id"] = "L1"
+    elif alteration == "loader_operation":
+        events[1]["operation_id"] = "synthetic/other-operation"
+    elif alteration == "config_bytes":
+        events[2]["arguments"]["source_bytes_sha256"] = "0" * 64
+    elif alteration == "config_path":
+        events[2]["arguments"]["path_argument"] = "/synthetic/unapproved.json"
+    elif alteration == "config_document":
+        events[4]["arguments"]["document_sha256"] = "0" * 64
+    else:
+        events[2]["arguments"]["source_artifact_ref"] = "synthetic/missing-source.json"
+    parameters = checks._parameter_objects(raw, authority)
+    with pytest.raises(checks._Reject) as failure:
+        checks._lifecycle(raw, authority, contexts, parameters)
+    assert failure.value.reason == reason
+    assert failure.value.path == "$/lifecycle_observations/" + path
