@@ -3045,8 +3045,8 @@ class IntegrationSession:
                             expected_reason="truth_dependency_forbidden",
                             original_legal_id=sample.envelope_id,
                             source_truth_id=truth.envelope_id,
-                            source_field="omega_b_rad_s",
-                            target_field="gyro_rad_s",
+                            source_field="sensor_truth.omega_b_rad_s",
+                            target_field="imu.gyro_rad_s",
                             derivation_site=(
                                 "integration_session.phase4."
                                 "derive_imu_gyro_from_evaluator_truth"
@@ -3227,8 +3227,8 @@ class IntegrationSession:
                             expected_reason="truth_dependency_forbidden",
                             original_legal_id=estimate.envelope_id,
                             source_truth_id=truth.envelope_id,
-                            source_field="q_nb",
-                            target_field="q_nb",
+                            source_field="sensor_truth.q_nb",
+                            target_field="estimate.q_nb",
                             derivation_site=(
                                 "integration_session.phase5."
                                 "derive_estimate_q_from_evaluator_truth"
