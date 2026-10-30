@@ -600,6 +600,221 @@ def _build_package_sources(stage: str) -> tuple[str, str, str, str]:
     return script, directory_guard, environment_guard, process_checker
 
 
+def _build_facts_source(build_type: str) -> str:
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    stage = f"{build_type.lower()}_build_facts"
+    title = build_type
+    start = workflow.index(f"Materialize {stage} run body part 1 of 3")
+    end = workflow.index(
+        f"Assemble {title} build facts from the prebuild source closure", start
+    )
+    materializers = workflow[start:end]
+    payloads = re.findall(r'payload_b64 = b"([A-Za-z0-9+/=]+)"', materializers)
+    descriptors = re.findall(
+        r'"([0-9]+)" \\\n\s+"([0-9a-f]{64})" <<\'PY\'', materializers
+    )
+    assert len(payloads) == len(descriptors) == 3
+    parts = []
+    for encoded, (expected_length, expected_digest) in zip(
+        payloads, descriptors, strict=True
+    ):
+        part = base64.b64decode(encoded, validate=True)
+        assert len(part) == int(expected_length)
+        assert len(part) <= 13_000
+        assert hashlib.sha256(part).hexdigest() == expected_digest
+        parts.append(part)
+    package = b"".join(parts)
+    executor = workflow[end:]
+    identity = re.search(
+        rf'"{stage}" \\\n\s+"([0-9]+)" \\\n\s+"([0-9a-f]{{64}})" \\',
+        executor,
+    )
+    assert identity is not None
+    assert len(package) == int(identity.group(1))
+    assert hashlib.sha256(package).hexdigest() == identity.group(2)
+    script = package.decode("utf-8", errors="strict")
+    marker = (
+        f'> "$G3A_EVIDENCE_ROOT/logs/{build_type.lower()}-build-facts.log" '
+        "2>&1 <<'PY'\n"
+    )
+    assert script.count(marker) == 1
+    begin = script.index(marker) + len(marker)
+    assert script.count("\nPY\nrc=$?", begin) == 1
+    return script[begin:script.index("\nPY\nrc=$?", begin)]
+
+
+def _build_facts_contract_functions(build_type: str) -> dict[str, object]:
+    return _actual_embedded_functions(
+        _build_facts_source(build_type),
+        {"expected_stage_contract", "validate_stage_contract"},
+    )
+
+
+@pytest.mark.parametrize(
+    ("build_type", "stage", "isolated", "python_cap"),
+    [
+        ("Debug", "debug-configure", True, 16),
+        ("Debug", "debug-build", True, 4),
+        ("Release", "release-configure", False, 8),
+        ("Release", "release-build", True, 4),
+    ],
+)
+def test_actual_build_facts_consumer_accepts_exact_four_stage_grid(
+    tmp_path, build_type, stage, isolated, python_cap
+):
+    functions = _build_facts_contract_functions(build_type)
+    expected = functions["expected_stage_contract"]
+    validate = functions["validate_stage_contract"]
+    venv = Path("/fixture/g3a-venv")
+    evidence_root = tmp_path / "evidence"
+    pycache_prefix = str(evidence_root / "pycache")
+    influence_variables = "fixture-influence-variables"
+    caps, environment = expected(
+        build_type, stage, venv, evidence_root, pycache_prefix,
+        influence_variables,
+    )
+    assert caps["python"] == python_cap
+    assert environment["PATH"] == (
+        f"/usr/bin:/bin:{venv}/bin"
+        if isolated else f"{venv}/bin:/usr/bin:/bin"
+    )
+    assert ("HOME" in environment) is isolated
+    assert ("PYTHONUSERBASE" in environment) is isolated
+    if isolated:
+        assert environment["HOME"] == str(evidence_root / f"{stage}-home")
+        assert environment["PYTHONUSERBASE"] == str(
+            evidence_root / f"{stage}-python-user-base"
+        )
+    assert validate(
+        build_type, stage, venv, evidence_root, pycache_prefix,
+        influence_variables, dict(environment), dict(caps),
+    ) == (caps, environment)
+
+
+@pytest.mark.parametrize(
+    ("fixture", "message"),
+    [
+        ("wrong_home", "command environment receipt mismatch"),
+        ("missing_python_user_base", "command environment receipt mismatch"),
+        ("wrong_path", "command environment receipt mismatch"),
+        ("wrong_cap", "process cap receipt mismatch"),
+    ],
+)
+def test_actual_build_facts_consumer_rejects_environment_and_cap_drift(
+    tmp_path, fixture, message
+):
+    functions = _build_facts_contract_functions("Debug")
+    expected = functions["expected_stage_contract"]
+    validate = functions["validate_stage_contract"]
+    venv = Path("/fixture/g3a-venv")
+    evidence_root = tmp_path / "evidence"
+    pycache_prefix = str(evidence_root / "pycache")
+    influence_variables = "fixture-influence-variables"
+    caps, environment = expected(
+        "Debug", "debug-configure", venv, evidence_root, pycache_prefix,
+        influence_variables,
+    )
+    environment = dict(environment)
+    caps = dict(caps)
+    if fixture == "wrong_home":
+        environment["HOME"] = str(tmp_path / "outside-evidence-root")
+    elif fixture == "missing_python_user_base":
+        del environment["PYTHONUSERBASE"]
+    elif fixture == "wrong_path":
+        environment["PATH"] = f"{venv}/bin:/usr/bin:/bin"
+    else:
+        caps["python"] = 8
+    with pytest.raises(RuntimeError, match=message):
+        validate(
+            "Debug", "debug-configure", venv, evidence_root,
+            pycache_prefix, influence_variables, environment, caps,
+        )
+
+
+@pytest.mark.parametrize("build_type", ["Debug", "Release"])
+def test_build_facts_caps_have_one_source_for_three_downstream_consumers(build_type):
+    source = _build_facts_source(build_type)
+    process_argv = source.index("stage_timeout, cap_text, timeout_digest")
+    authorization = source.index('f"cap.family_exec.{family}": str(maximum)')
+    receipt = source.index('put(f"cap.family_exec.{family}", maximum)')
+    assert source.index(
+        'cap_text = ",".join(f"{key}={value}" for key, value in caps.items())'
+    ) < process_argv < authorization < receipt
+    assert source.count("caps.items()") == 4
+
+
+def test_finalizer_step_lists_are_ordered_and_cardinality_bound_to_51():
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    outcome_block = workflow[
+        workflow.index("G3A_ALL_STEP_OUTCOMES:"):
+        workflow.index("G3A_ALL_STEP_CONCLUSIONS:")
+    ]
+    conclusion_block = workflow[
+        workflow.index("G3A_ALL_STEP_CONCLUSIONS:"):
+        workflow.index("shell: bash", workflow.index("G3A_ALL_STEP_CONCLUSIONS:"))
+    ]
+    outcomes = re.findall(
+        r"^\s+([a-z0-9_]+)=\$\{\{ steps\.\1\.outcome \}\};?$",
+        outcome_block,
+        flags=re.MULTILINE,
+    )
+    conclusions = re.findall(
+        r"^\s+([a-z0-9_]+)=\$\{\{ steps\.\1\.conclusion \}\};?$",
+        conclusion_block,
+        flags=re.MULTILINE,
+    )
+    assert outcomes == conclusions
+    assert len(outcomes) == 51
+    assert outcomes[-1] == "compare_build_types"
+    cardinality = re.search(
+        r'outcome_entries\[@\]\}" -ne ([0-9]+).*'
+        r'conclusion_entries\[@\]\}" -ne ([0-9]+)',
+        workflow,
+    )
+    assert cardinality is not None
+    assert cardinality.groups() == ("51", "51")
+
+
+def test_predut_required_step_maps_match_41_actual_steps_in_workflow_order():
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    gate_start = workflow.index("- name: Admit the complete pre-DUT candidate basis")
+    gate_end = workflow.index(
+        "- name: Run the exact selected integration regression once", gate_start
+    )
+    gate = workflow[gate_start:gate_end]
+    outcome_start = gate.index("G3A_REQUIRED_STEP_OUTCOMES:")
+    conclusion_start = gate.index("G3A_REQUIRED_STEP_CONCLUSIONS:")
+    shell_start = gate.index("shell: bash", conclusion_start)
+    outcomes = re.findall(
+        r"^\s+([a-z0-9_]+)=\$\{\{ steps\.\1\.outcome \}\};?$",
+        gate[outcome_start:conclusion_start],
+        flags=re.MULTILINE,
+    )
+    conclusions = re.findall(
+        r"^\s+([a-z0-9_]+)=\$\{\{ steps\.\1\.conclusion \}\};?$",
+        gate[conclusion_start:shell_start],
+        flags=re.MULTILINE,
+    )
+    actual_ids = re.findall(r"^\s+id:\s+([a-z0-9_]+)\s*$", workflow[:gate_start], re.MULTILINE)
+    required = set(outcomes)
+    assert outcomes == conclusions == actual_ids
+    assert len(outcomes) == len(required) == len(actual_ids) == 41
+    assert outcomes.count("package_debug_configure_part_4") == 1
+    assert all(actual_ids.count(step_id) == 1 for step_id in outcomes)
+    cardinality = re.search(r"len\(outcomes\) != ([0-9]+)", gate)
+    assert cardinality is not None
+    assert cardinality.group(1) == "41"
+
+
 @pytest.mark.parametrize(
     ("stage", "profile_key"),
     [
