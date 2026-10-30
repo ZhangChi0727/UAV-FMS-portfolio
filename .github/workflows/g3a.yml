@@ -21,6 +21,8 @@ env:
   G3A_CATCH_COMMIT: b5373dadca40b7edc8570cf9470b9b1cb1934d40
   G3A_DEBUG_RUN_ID: "ci-${{ github.run_id }}-${{ github.run_attempt }}-debug"
   G3A_RELEASE_RUN_ID: "ci-${{ github.run_id }}-${{ github.run_attempt }}-release"
+  G3A_STARTUP_FIXTURES_ZLIB_BASE64: "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"
+  G3A_STARTUP_PRODUCTION_ZLIB_BASE64: "eJzlfetz27by6Hf/FSg+3EgNJT/ipI16dWYUR0nVOJaPJKdJXQ+HoiCJNUWqJGVb9fH//ptdvPmynOTce2euJhPzASwWwGKxu9hdzpN4RVx3vsk2CXNdEqzWcZIRL4rizMuCOEr39uSzNJOXUy9lr47lnZ/eyMully7DYCpvg3hvDg3w2zCYtleevwwilmxlS2++TPonw7d9d3zx7t3gc3/skP7nSf9sPBieGc/Gw4vRiS4kG/grjSN5Hae8sbWXAQ6ygXMvW8oi6zgN7tbGg4TJqzTzVPfSbSovs/iaRcE/qtg/0Ls9P/TSlIzYX8zPGqNNlAUr1k+SOGl29gghZMbmxHWDKMhct5GycO4QP56xDkmzxCFh7HtZnIi7Gcu8IMQb0iWUChDwSzdrljSabQVqTu8BzkPnXsB46Nzz+g+0qauxcN6Gcg6/FGXFHS9PuoiRQkbisbcHuCe8Z7vjTFr/ImdxxDjuiRekTA5PaTNN3k669BqJd9sh023GUoSSZokAwrJNEkmKaqdL7+jlKyjdbC/Z3SxYsDRrCDi3SZAx1wvDxnzWIUGUOSQHViN3E7Bb0iUrtoqTLdwgTHx1uwxChgX0HADojEWkS+K0je005jMHC+kRD+aq3P/ukgNdW4/GcIwE0qDpEugIIRlzJrCCP5cCVOeKdy5it+48CFkDCLeD9Gx2zyFhsAoy7Db5D3aUdPFPruPBnJckQUqiOOMlvWhGQhbhGJB/CVAKK0EHtHfyb/d08HEwcfufT/r9t/231IGZQpSa/FJCafJOwZv22ktYlLVX17MAysJN2p0kG+YQdhekmRtf4y2vMp/xUY7XLELIDtwN3d9Hw7PTL+Q//O5k1O9N5E3/88mpenE67H/unzjkID4+OBBYJMHKS7ZiQPBRlmzt2ZWEg4OqZyRO2/N0G/mN+Yw/ZHc+W2ekj3+COCJeShjMqQanm8MXvFdB5IWh0aaFgGjJD+MUCEs3X9YalnJzbYqplU0HqTHlBTK0nooqbW82c6M4Y41CnTlNmR9HMy/ZdiQZclw799l2zRoGRsCmIm/FXPehc288l5zJxlESoEFruExEEU75wN1dJPLGjRduWIfEUyBIJGx8brGKBpRvzzartSjvkCCasSjrHjkkjZPMvWZbTn9N8pzQPyPabLMIGFSDbrJ562cq+Ik/X7j+kvnXBncCkl0zP2MzdxmvOF8sWW+zwM8ukUmmWXLF8bNmPAwilpIuEFt7xqzG2+k6DDIs0LBo7iIKoOBbLI58pIT45GI9effePR+eDk6+uKP+b/2TCa5W6s8XvLNBtBCrl88bbylh6SbMOjn8SZfcP3AyjhNEnQQR74JuOJjjdMLTdpolwbph7GHw8+MoC6KNpr5rtoXdaO0lfFPA2SJdDmLtJVkAJN+gXYNDBnNdg/zQJbRLc3z28f4DfOqQhK2TBlyLvguUSBf+l11oh/Et7L4mAlAoiORYVbb+9uL8dHDSm/TdD30LiTlicX/NtuZ+zcFdXrMtjDeOhURCrhxepL1gWYMGkR9uZqyVbtOMrVppkLHW2vOvvQVLoaNUoY7DNPfClBlDtcMw1bZQitMNS9Igjihv8kX78LB9+NPTGlUg9gyaMtuAVUebJE5Iw1qJhf1MjCevcAUYWeWbT0KLt2qyGQ5+b++kdzY8A/FHyZ+/kBsPBKJn4/7k4nwyHJ6O3Ytx3307GE8uJoPT8bNfCIu8acjETseimyCJI+zfjZc45BnISeGzJul25bWuAn1zXd6a6zaeubMgzTZZEKbu0vOvnzWRk6fLYNVo/kL3TgeT/qh3OoY1jPjTarxop/atg/Wf0aoS9Nku9anoETYmLh3yjOIlByGfivL5HmLNwkOJXe4Fh1hS+oEz+ZDdBb4Xuijip42M3WXI1JGNZ5t1yC7DIM0upQrQnsDFIJrHVyBzwRsshOImMMurMnbPoSNvS7OGgrVgEUu8jMnWg7g9zpIgWgyGiEmznTBvZvAosRM0BrijoWqGG4FDbPy4GlKzPZxPfnUnww/9M4vU19myLQGV7A4gO7KIo5+CoPjquBzyqC80NS4uljbh+vEmysSiiuJk5YXBP7gkLq/UXoMlgdnyNq3dBh+1QQCBdaL6P56MBmfvC5IRLw0MNVogowgiItdGiZi02zC1wyBjiRdSx4Kvmbrdt7a3XrNo1mho1B2FxKUJ4crYk1iY5gS5RyBaqFhMi4+iYwDgi4BPyMJbGwtAwEk7pIr+cYngSy3kpGzlRVngwzTyySuZxsJw27MpZkcvk7P+76eDs75B5P2ztx97ow/9UZPTSjAnXrQVo5BmXpJdHiDPP4Sdgj9m0Uw9tJCSOJdsCY/NP5gSYBEKMoYR1ATsb5I0hp3goEjPsk3dJNSV0wmTcMmrd8w+HV5dabpQ4HX3DnnDVaCuLGKAUmL/cke933k/xw7hT/gdcCybQeLbpqj2vncORQzywecShoYqK/TGE9IFGxIK6A24WHtJymS9VTxjXcrumE+bILejBOJ6WZYE003G0u47kGOEfL7OlgX5vETb1Xrt4cHR1zEsAG3xqzgJFqDRcQleyULeLUxDehtky8aU/pmAbqEbnMYzkC4T7/ay0zriU8XCknrVtcQE2yxBl5CITOmff/4ZUSA0eFne55Ph2WRwdtGbgI0t3+P1cpvitKOUr8UxxK4e7seL08kA1utTgCYKKCxYObz2aNImCj/AHsoL2ANn4oTo9M/eDs7eF7BKvFvXT2yJUyIir4UkPqXkz6yqjf7H88kXdzhy35z2zj4Y0G3QDQHPSzKJuRAduVhb9Roarmj5bAgmmf7JxaT35rTvDj6eD0cT7LNJwAcCD1swYXcZ6fJGpR7qpX4Q0K9XPauZZo3mWdyairwHRSI9lqrgD12LaT2djafs7w2LfGaz8dyuKDdESxaCt6juwI1mik/aSpbp2vNZ2+QvCft7EyRshq2D6H7okKMXDjk65np4jNYgL1TvXzjk2CEvHfKTQ352yGuHHP7kkMPXDjk6cMjRkWNg2yKHWpsH28idA12GBciizQolUl7Ukrdgg/WXXuL5GeMrI4gILggEpF8FuLfktP/dh0HCsbV+xJOr3ebQSIaw8NZf2V5uC7eaE520m/xPbvQBhe/WvL04Ewb2EL1LcjI0N0lzkY63Uebd7bI6e+PiHqdaKVmcUTxjSnuBgrdeeN0A9GzNAMt9g2IAoBGG6Bjs8jO2zpYIuYMj0RtPcJMPIsP24i+DcJaggV7hCKK5iy9chIkwDLlaiEGH5DlZeXeNBm8IKzQFRQfhDOZfQm/CwcXc24RZV1iWA4kfjgWIGK++uuMISO8VSkgC0DWykOZ+vfHkadM9D1g4g7HmJwzIUNF6Kw2tUg/OH8ckrJ1upo2EXrbc9tVzgNmiwoCnTWZcSAvWjwlpFs0nDPfCLpp922HszVJ9NINDE6WZF4ZoPMWyl1Q8olw4UvsDnHHgq8hnDVmNK+155oRW58l2zfc2sK5haWlU8rCSwSFgkJDvmoMGqybI2OqSrljmzbzMo1eXFF7RqyYnKXgNFCWxebC0+g9sK7R5hYpDPsGgimsck9/GwzNjI67T8t8Mh5PxZNQ7d0f989PeSf8tyCejPsoHg7NPvdMBJ4hg7fLBBEFn48MxcLn+zzv+v8g91IGqKcs26yyOQ7Q63i4ZC+nDd8FkGsdZmiXeWhJowvw4mZWY5OFAIjWN1vj8ysETapA1rSMDSzuQJYonJhLz8aQ3mlycu7oHF2dvhhdniK7CsS0BlfFxZKszyZv89AbNOiyx7D0lJwH8TC3wM35aYZuAiiKZA2fw7UeJYtQ/GY7eur2PbwbvL4YXY+gHH9q2n95Um314L4DJHb08ODjY8XxQgk7iW6FB6YNCAVHaKOJbaxKVZcE4f9BCX4ekjL8mXbgUVnJYZEl8C2uMQ7dEGNQF41vkmS+kfJ/Et2AXiBNC/7w7OEBFhD8r39Jrxi+Jb3NMArgUwsqjAS/zx04wtscHr40tZOfhhYNSF8QD6mC7l52fDwxbAYwb6WrPhzY8gAvEw5J8EGs+BCkfogRZljH0Tx0WXdWFNgWKxk4c36aX8AjmMom5GmtPNxi1G3Bry8ekSxpU2XZb64T5bAaSfBv2UofkrcH70omivd5STTGqzwKsQdsxHMgDgmieL4wW0lrZYaseln9fDEb9t67kI+c9FAf0bixpRwqZpUMkJsZUDBt0H6q32/zPPtBPnFTOMdA8XPxX0QRdGrgx6XKmzGdVmzKR3mHWuO9Qe5OEqTdn7vTVsVgLRU8PBNhsS1+PZjuRyniXNkuVVj03l4do8JtTDq57LzB4oDBUUOAICxiuC7y55o7D9G5w2nc/DsYfe5OTX/FsT4zTPfQczvf2BmeT/ujcfdt/17s4BfPXPQ3SOPQyNqMdcugQGsUunK6Ju1kcZS53SYB9DPDFNwWrKSHqxK2jj9scQkNvE/lLlriZlyxYBm/l2RctBQOz4SZxnCtK6Dph8+DOTViIZw2PQ1pvEhYG0/Ia4sgliDKWSKnQX3rRwt69+V7Nzct6YcXTlCU3SDxQtGEPa9Mq096sZ6DECuBqG1MwfugSu35xN+PvR/1JH+SU06KZjHcjYRlL2qq7zb293sm/LwbjAZZHfm2cvfnzBe2Qe8o8f0k75NXLly9eOYSyKEsClgoC8BaLhC08JAgs8SBOwoCn1dd+lat+9Oro8PhY1tcSlQHl6OD1T4cvjyw4xzkwx4evj18cKDjxbcQSDkNXkS/9TZrFq+AfOf1moVdQSlCB5/+9CbjuK0hBKB2PEcJ1EM3UCTmeCYfgtufCc60+YakgIvc03a7CILrmPIxruCUCKuyuo/67izEs7i8fTwfchGdg2cZmci2A8o8XcOKdsMUm9BJaD/1seDbqv7847Y3qGkAfLFAxiuSEnQaOZQwB+iKixHj/oPc1VPAc6bDQaOCcc18aaBspoOmQBk7RVslnasaaZWscfw1NHxqeJhmTfwZzjgegwKfYAsq90brAFYwOYY12wtah57MG1W24WJ429bsS3LeyVCX+eQT49o4eKSCBSTePblcPBlrd5VKQQqvRSdWBS0T+qsSTbieRbm7RxD0CexBSswVfUaJBB6BYuEBGm5Si/wDdRPAMfAdK6LL/afC2f3bSdwdnJ8OP56f9CZqMTQSgNi1rauVFwZylYq8SraHbjhfu3hS7CbjAlgdX0uKM+QFsd9+pxTw4zpeQuQmOhNquOAAFVSPHiYos7F4sxI5kkoogOX12lOyfNsU6NfQBbkk+3E1l06qnwFiYj7nrGjLhp/FV5QZzMZ4MPw7+4Dve+ag/7p9NuLaODAx9Ykwm38YeUmGesDzvcv52Art5cIeO5iBWN/QpcgFBoYCB05EpNE5fHQupTzvPXNL3L3qGVPZ5cjHqj90/Tgdv3De9cf/VMb1CA1UAgoHhbopqjmVtAuduFCtX64SlaYM3b5hAbMMSABBGJZAphYrJp/Kn1/LRPciaNJjRK1NFhYIPomTeB9J0KG9QMWRkxqJ4FUTo/iaMUz+9Jpso+HvDiJfFK2k6lZa6+Dblg77yMpYEqE0BglX0wL1Z+BOnWEbaVpQBha6pMpPHhsd04oHiZFBEEt8KLzGKm1SeOAxXwLTboA6QWYc2i76ZenHIHubg3lO+W/DFBsZDsFOhAkA70tu8+YCevrIbOD1reoUsZdQ/7/cmLgQluAd3P/3sngwvzibu4cHRS5rv4ZTeUfIjHC2/LDmaFWXydAusXLbYLCVL8+D6B25DoBFFK4XsQHuzxsAAqb9gmSW9Ui9qKWpOxSJxP/Ym/dGgdypXfH80Go46SLDPgtmzq4cO8MssyKTGDI6cSYwW2DkN5/dguULu0zg8aD60/MR88qL50Mq8qfHodfOhNU3NB0fNB2pNxLWYCBB4UcRSTcqx8OnVd+ueBJ5bOd7trqQEDFHC6ChcBYHtSUTOJ7+W0QL1fj+8nb747WDw/vU/w+2boy+fB4vzcS+6OPh08enTm4vJweuPF4evP10cfJqP+uHk07tPF+OLu8lv/6SLP35/ufyyugv/OOm9hvqnq0+b2SrcTo+ON38cfTr48OsfSz+4Xfx2dHfz5ehd+tv2enE+OdD3Fow3y+nq34vPh6/X089vbvxoNP+8XUSfj0Zr/8XocPY+TP3D1/GX38+S37bXmy+/j64/vziLvd8P4g+TFLx0ZVd/7Z18KO3rYPsmmB69PvBfjLZfPvcW3vt3f3m3sVV3+LEP/pT78TrbX8ZpxmZgXvY9f8n2z7fZMo72ha67f/fqeH8aRFTYhzeRK/hk2kiZF7o6VkL4aOecs4Mo05xM1SixBZdw5Hr6UsBcaTAR1LX2trDNoLaNlktRTkRJkH0ieX0riNabLBUrQyzBnerxsiCzFpqsj8IQ3jWFBneuJWRl7QO19lJu+ubSBV4e5A+fxW6oD59tAcFgZNKhXyCHKwzCeOy9zYyf4KYHYrBIOI1RBdLNfB7cAb21gZDkjsZ3My7x0zbsYnwozeFEUunaE7pP5vQee9U5eDF7aBls5p43JTidNcQCkj3HNaByCBmhQRozHBqH2wjMoDAvZDOXj5pZHMV8EWWR87ZXNYD3erdSotEvcAeSyF8Kjqm2qspygo3mrezfxstFa7kdS3bdRUmVm+DA+KaEModQNB+IR9f4RNmtOoqOHPLjjxL2Q3ECrBnl8rAYU916szAphVAgYeGQqOQVTf5abI8dww3OGGqrDjqZqVrcBqWDW3Qth5hMuA4GHP51jLPd3VrmptFcwAb81CkcD6FRcsBUyAHyvetNUxZlQhW/pysv85c4QcCS9IQoYjJPDM1+3lcfGnTUIJxPft3FfiB/tWcNGirsjQ/6aLJuvKSdzVRJuQWAv8IG3SCax3gAnZqMrQjN8/+mnSqzWy3BoLIHNFPQKuuqcfso7dj23tJqKeuUL/xNdB3Ft5HUGBF45x7+N0NnxJEoDzUtOfmEXzA3NoMuob2Tk/75RGqKeByAtTBk1owWqYihy2MqMTSYkW7wXl49OGQRZ+ReN/VAmwQDlnWsoKZesWU+75JD641hC9eQahzGzc7/UOz8N3RxE0nA4ZZ4PsyDEnXkT8gAdb3IY2ScGKFAIb2ZS/h2GZeuXLVUtgmrSlxaPF34HcX+ZgVSFewUqb9kK881jlqmB63FC6+FZ3GbdUvKXcBg9m8OSw5G5NC5XEPn2oToGmgPfISAo+IFWqr53ENnxWUJWC33oCHGnXtBCNIv7ZADy6AvrsQhutyulBBpbVWy801HHB9YatH9d+nLg4ye/y3eJJEXVgbMgyjEJXhTnX2KSAo/DHmHWiL6ne8LqbjDk0pxncWZF4rrvzhufFhwPwYAl1cODC78M0RCFOCE3GaaT1sCCIpsoaZr3vD3D3XGk5XZTIzejpY/+2j2USuetMhA+Cz6g5vyIhcN9Rg3yb+65NUxSoPFQX0uqAfbRtcSpLinOED4cRgyP4uTtqB+VzRhcCEd4C3G3ZH9LYn0FkXy1MO7IxlRbhsr6xr3CbbaQdMsBnlDhZJZUEHgCgmeIQHOyEFCt6P/1dowo/8dIvDoyMXlkNCbMp6oIc9EcBWi9KDyOBh+V/kIa6574vJLWBqHN2jKUg5K3DrkRTO0ZpEu4gZGWtQwvGmK3giYLcCycoFqpqo1H/eKkWsKCP2eYueAD8FfMM/w048OMJ75BngR8iAPdKYO8CfwlIljN4yjBRUM/1Eyk8Dt2vpgWfTRj1erOMJuCiNfDHzU7mDTMNnFpiviN/Ur3mRpMBPH+BXdkkeQ4NwhO1Xir6YiiwCWeoousfFqHUewM4JbrOyROP6+gThG3icM304xYCUXBC5Bi4t9DTInMwBfx5MsziPxbLTBaxWO3uBde+wOxqdnHxpG1XaaueAtjZZ5sFKrgm8Ho9KCVaKQTNwBIimsRoGgxr5D7jlypmA6ZfM4YVYHFBXs5bS9hjqoLvSIg9GdAQGvKAzI02er+qj/vrQ6OJ1EsoYd3V59mv2VNCo0a5TadVN1h2eaK4E3iz7dLwABD07VuzT4h5Wfue6KdIxCHsa+KsOvDf9rOmAcuufB1eqXvCI/yYZDyFWQ2V2X3UIBhjwnh+Rf5MXR13UdTfEuaFJsVuHcI9HC5min2LyB3ZP27SC0o+ty3UOZDGSN/EyLs/j/eofzrg6dR1D7GiJ5ahv1lKOhSfKRLjwatXnoLUCsRVly9NYSOblkSf5DFiyDiINGnDqEDt2z4bvh6enwd+qQAwOSKccqDufwFsydyJvxbDBmJp7yZDhrFsn0CHNknKZABj8+GsrQBwxUD9CM3TjGeAVR7OSHz7hfgZLrysAuGwWrAf5INaBvsQF9yxvQ9+UNKN6l2/ihm2/2sf2ILtGzRgLgDm8zufEYvhvy5y830bVhoNeTs/KCCILju8Il53lOXed5sVS5ImYIms8ZyqogZq+CqCH81FTNnOuMGAvYnhFCETDOd8K86/ImlVCOd0XgumstLpOXlJOHubT9VxyIErn58uYQ3FZDkljAIhh8ouhF3SG5qDtOLeq2klhy4Iu0otwPhKndauErCWm2wYQJOULaIQlWYcHb9q1CPqxSNlCZF+vJubHEGBoYVabIUmNTQkiydk22rHzGLKW7fW3KrFLUi5mz9JTqknnFvDy/27dKSBLyU7Z/Q/WwTFISD2lKgfBpsi8RQds9Yq+r5qQQ08iY20H54rfOKHaXZjMviLg4u5NzSdFNRfiaWLbq3AmzWaAhFqYjY68r43oUqckAI7lnYzlwmURKTV2XOqRhOi4W1tuuw2H4FJo6qA4cMvpftkylpaRkoc4CbxHFKU8hUp+LTq8safHga8uCbq0u6425vqxxlNuJRiXHeGwOUFZMpdecU45TEReBg7lEddfsIeHAnncJ/YVCyrpfxC6lypsBGEbSzZ3dO1VCTvMoAi1P03gTzdgMjy4Dllr2JzsbqJF/sov2mnIJtcTgNAsSVAS2FUJ43p5Vkm8P/QfjtP02SPpwyMrjxjrlPgkQPQPbSoqiqkhfCWSJyXygR5bNg58ZQ9Bm4bUBXhINP+PN792mjVwyYHRsEn2rZuk1y1ImU/0qpQZ+xgGBiWCOj++u5xYcXdWxQD0exPbatnVdwT8FKOHeynXHxg2LblwvWQgSlJ69xiMMTzXuC7ZRW6lQ8aIFk7lNdHY1HrCqWqnNBynA8UkG/KWZVPalWW1alf2TVcz+1lTjY8AlXG1JRghqeJp69LgHvBqqurnj0b+tNXpltSAjwSaDXaGdYSCiaUoWmMC0oWJnNF+aA5NnPqzplQxyglAQGMZ9QqdBtM9xUe6EslQpHDTDCpS+MQAoH3LFcVRxVUQ3JNPhij+V/Zt7PsZ/WNFi6TZto1bdlg+t8DH9WjzLTV5FbJmuVvI+D8I4B22LfWjlrQF/BwGJ9+iWcNl5cdXMr/768LTKYLQckLrINJh4Tl/bFAOzXV5aUxOGDujZ4RbR2wRs+oWG6iPakM5MBwecN3EUMl8Ulp2k1fUWrtrgjOMgAQu3IL3ucmXQb0c54M4DUNS1E49oih816I7xRUGFzKeM7wB2r9Sm36BhMMXIP1xH4GiJUf528s+So4Iae7568qg5P2/4tmvWW/MrylYfJeYOQ+Zyptv3CpQUEcUb1U31sNAjUVIdDNknE7LGI+cShWL1AWWiAxJ/A2cptmGGp5wgxwvram07jkpQYVf8FTCzJfc0ApKOk4wJeaeNAdSWsGQ2X7WDgFuKqq5TeVH0w8olH5At55OslMtGqlOqHv0KOSknH2kchGhSG/8jAtCLQlEBDOTEVgP7Q5dcVjunXZUneBn3cwleSnqP6Y512yJgFt3INJWISeWz+vQJLZlVI2DdyBXSyule+R+IxuWkAUPTgr0Fgh3rYFyzbTf0VtOZxyF1DIBG51EvqCJia3hUpkmYRF4Xj6YfpcXySK1vp0eBg6Ai00lQvDGeSz5ldujy4AqmJ2vM4zCMb11x/qiSLJaxMA2thDnt1n9afk5Y0WV9wC2PRx852zaCd/MNWyFcFsv9v9itKI5crQE/0jk7dri8f9I1FHZluXHtC2KXiUhkgqKCeKIr7xP6sT/pve1NetSRgKRL2E7agVIQ+JI3oBUUA+GoW4sND4K0cJGh67sgY6KiQBUQ4SmxqhPgWyYzNYoym785rP+dtP47ZiNSiNRkXDRz+ds9sWK3aQfDIVAttsYXg6WtnP3YwwbtUIccFkwgIgj9np5BQiyH0E9CkXjgQfRsK+MIxRwUbX/4vDZDvpmOixfnsYGyTfAmAt8GI2uVFMHM4hK15jdPgBTGIBAoR9x6bdZlsFHEntMOKkm9Nh2OzjAHHup1KNU5sxtYvTw6Pvr5511WYB5iy4ZYshJD5q68NarANd76YmhLvGPr/fHlAPB1becWU9zIUWhAzIC/SdBjyMyjgYEHdsgUYmz57gPfBUUdqLAj6ZgTJTzXKrV8JQnwqqRbWqjjncdrlaDHtc8iVE+aFZCs4mIs0Y030z4rUmqtAIMjacGRYwuA8NqEpF8WQYEaa0ESem0zZxewtNwyQEUbA1SRNpjmQ1n+N+vzEeY5qyx0qYlURxhdfXPKOBf0TS8xch5og2LFV3L4+1KTnq5r2fSetFdy6gjWLZGKD+PNStYo/IwEjwor460KTpIEpM+tMB4O900MOm/AntuGAwhwNW5cUuqQH3NffHPIj8VPxT3WE/X7sfhNOTPRPg/Mj+F8XoQl8v1IxyXalpUwmO5bZhKp/OeMDjmNGb6mQp7LyENoFJ+g8QXsLDK3Am5Ym5Ql+kGt0oSQOFBIMC9Gd3dbfi5zz+OZK8yGZQY1njGjgKbpFCyGD0oWypV6AFgAijakokel/AkB610QsrM4ewcWEJSvKprIf59odwdNG7tHHDUfd9j8OnBaibAAom2sBmCFJ2i98jPPZQC51+vmQaY+e1Q12N1XVE2RGYDGE0vBVi7On4y6sB3yncJALOcIBQHlRtCG6663+Mx19aFsJU3ykkVa9Jf54LadabCU/oqUJtt9xBpaLNf5HnNrjtJXTbBWfLkjtYvQ6O6TbU2UI8EISWyHeTcd3V4dk5bB14r0MauxoGIBp364BKaPDVXhhwegXYWqYxy0dvN8+omgSw278ofnAdhx3EP4hmWPhFNvWSt1u+IQCgbB3H7XLmx4bSuRWMnsiAUo4D9mzKoAsgt/V63tyI135PPfAraW338L4Nr94Gv3BIMEHt0aHt0ejIkrYRw1zMPAohTaLouplsNU2AqtkWmB44ltLhRx7Q6GdPpLHsEpwMIaKYj6NYLoPlTgSrUq9SRFPUs2kHWlBbXxs38VGrqKCC3RijpGjg5qHME+ortR9IKwisKTpjoMdas1RBuQN1vB93Nn6FYIw3lZ6PE9RnPlMaoZUNRCDU1WzkzBBVC9EEkxK1vdxQaUb9VQ0kuV9ye0WZsdOdesqdOXK/sPVw97e5BsDb+2M3wz7o8+odfEWLnyPeYwYp94VxiPSwy5HPgTEkHnrU/lNL8n4i/D4IY1gIsKLyIvWWCIdE1uwGCO3+nAXAOtlsoOb6SywTN/raBjr7jSiYp/V7ei6ug8GFhAfSsh3mTrDVwIeQPTL/MobYjxNsMt7OQAjUew0Hkq+B1v0SAw3rJjNedINJqFTghfGG6oEG1wZiId4brSM4sHEuI7lagxF2ctnxv5cFQWyVxRHuzP2a8sY1RTCYfwq57meCmAYKQJGWqwIVt4/tbVHwVXCMoMCKRLUO4onhnkUp2YlnZrdisdAlWpUuuPCaPp2G5iKqB/dyOQYKYSaqt6GCusQ4X+l4yDkXvR7FypHlX62YNdP4vxrXY62eOSwxQxhdaqq5zCArVZmctwzkxARhNGygzTB7JkBSsvIom9XLwamOzOblkujKnfvzmqEOGsI22+XlCo4X5m8Kei3jqJZxsf7VJpvEl8pjf5fJJP/qUz+JLb+Wj49uIE/fLGv/YwmVQFePD7Qqib1FsAKvcQWaBkAyuGAHRI77Y8DG9nZYtKV3ORN0Bsoiq8QSRHeDq8PFrW85KtH34//ijpRqdIgqB1vmtUkilnc/XUIXZySSQgdaVpLYlYRGIQVao4rAuO1EG0cIPViosHrmSw1TCDKAWfPCAgQW30hGcLJK0Bab0hrfEvKEoT2Pd1zhQyC1L8sHI1aFt8lUN5aT3nxzim7KrLmc8rCJSUy7caRvFtHSRuHhEukvM4ccW56DqJfZamSEDAwZDVyM0674rKFedKEqXCHdDFrzUrd1E3SCEswgV+zpNOc8NMFZSCnK77nHt1Zef3UiFDPMkE0nLTSmTD6beYbw1+hS0ckNwrwLbECQu4fJPLklMlMpSDtwQbC/y9qRzKtEq7cNLKH7V3HTxsNB88FAeqTKxRHSkNv/M2i6X5WTa8d1U0DM+DAc8gd4wMtrT3RvrLPYTVPPCvCsIlflBQxDTx2nVBTTLekJfExOw6WbOszgNkhAFcRMvY+mN56Aykf5DOv20Rycf7o0N7qGP3u7h7u2gXQOdu+c0w8SEDtBfkvhWW2zP0KlCfYjG5qAwCK9XDLFnFUE9wpeUSPZRCb7O7DL83vaNIWDhDfALNVhhNzGxbXwG0sFNxGNZ3AWs7Lhd1acd5dBVfLC21aZXLiEL6q9x+c9SCJqWS3ttzmmc9O4Cs75AFvsAQdgBfMhwmSJsR7wCvagJL4yGNIPd5kAhRV0Q96Mx5kGSEB1Opxzq4ii9i9YLf6kUoPj/w/WRog/Gr+J4geoo0TbGrMhkcMvokBZ6pRsZMFKcelsOCvTyBRCQYf3KJM8Fdx/DK/DqquV52WZIYngNAhN9XbrrLBRxDsJ6zBD/a29H2rZrUa0/gEvQ7Ce0gOz5dXP8/rqx8Z11lR1VFLyHFtLivDhgLbTOO8Ni1HrYx15+ZrLjkh9t7rQlILN88DymYLIoSIUfWEtoEsBKRsExYWgObSDMg4U59ILJiWeVSySPzYvC2yq+tPApDcUEZ0Gxgb4U1G88faJWQV/57RPTbkfwMBErEROOoRm1mmuxsQ6MgO+vh08lOGSmfTGo5BCv1g9Jt4omnwnUbx1eBqt9rSpSN/+eWSO7zQP8/LpFK662iUUnlBsiWmPBHhfPvT87fRMBPJ9kysi2OFeTBNSVelcMlry0XE8/wbA68AmZm4FX2SjPoeD6kYAQtewvqio8RuI3m5eHV4wk/eIad+sVYmVsHchPxtitz6hTz6fAaNXl0zEwfFppPy6CzF0BOYf4WtV3XBaca1xXqLrhObNO2lyxu4GOhXB+eCy2LS9pa1k/gG2/mN40KdnsF6wgCn4vfv8LBhTTpZqMYFmEcEsLn1IVObnypEA8hjWo83Jo31hGZ3/NfHwLyGW/Bv7R/B6EZmyjdrEEdZzPwGEGlRJveUaWAMdvb29v7H4oFJ1g="
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PIP_NO_CACHE_DIR: "1"
   PIP_ONLY_BINARY: ":all:"
@@ -270,6 +272,31 @@ jobs:
           fi
           exit "$rc"
 
+      - name: Capture the pre-third-party Python bootstrap baseline
+        id: capture_python_bootstrap_baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          program="$G3A_EVIDENCE_ROOT/bootstrap/python-startup-production.py"
+          baseline_root="$G3A_EVIDENCE_ROOT/bootstrap/python-startup-baseline"
+          materializer='import base64,hashlib,os,sys,zlib; expected="51563d826f56b6379773964455c600d0fdb61ea78eb7856cdfb3cad5ab70bb30"; source=zlib.decompress(base64.b64decode(os.environ["G3A_STARTUP_PRODUCTION_ZLIB_BASE64"],validate=True)); assert len(source)==39444 and hashlib.sha256(source).hexdigest()==expected; os.environ["G3A_EXECUTING_PRODUCTION_SHA256"]=expected; path=sys.argv[1]; fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC,0o400); output=os.fdopen(fd,"wb"); assert output.write(source)==len(source); output.flush(); os.fsync(output.fileno()); output.close(); sys.argv=[path]+sys.argv[2:]; exec(compile(source,path,"exec"),{"__name__":"__main__","__file__":path})'
+          command=(
+            /usr/bin/timeout --signal=TERM --kill-after=10s 30s
+            "$G3A_VENV/bin/python" -I -B -S -c "$materializer"
+            "$program" --baseline "$G3A_VENV" "$G3A_EVIDENCE_ROOT"
+            "$G3A_EVIDENCE_ROOT/bootstrap/setup-python-executable.txt" "$baseline_root"
+          )
+          printf '%q ' "${command[@]}" > "$G3A_EVIDENCE_ROOT/commands/python-bootstrap-baseline.command.txt"
+          printf '\n' >> "$G3A_EVIDENCE_ROOT/commands/python-bootstrap-baseline.command.txt"
+          printf '%s\n' 'PYTHON=-I -B -S' 'MODE=baseline-before-third-party-install' \
+            > "$G3A_EVIDENCE_ROOT/commands/python-bootstrap-baseline.environment.txt"
+          set +e
+          "${command[@]}" > "$G3A_EVIDENCE_ROOT/logs/python-bootstrap-baseline.log" 2>&1
+          rc=$?
+          set -e
+          printf '%s\n' "$rc" > "$G3A_EVIDENCE_ROOT/commands/python-bootstrap-baseline.exit-code.txt"
+          exit "$rc"
+
       - name: Install exact direct pins without cache or source distributions
         id: install_dependencies
         shell: bash
@@ -298,12 +325,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          runner='import base64,hashlib,os,sys,zlib; expected="51563d826f56b6379773964455c600d0fdb61ea78eb7856cdfb3cad5ab70bb30"; source=zlib.decompress(base64.b64decode(os.environ["G3A_STARTUP_PRODUCTION_ZLIB_BASE64"],validate=True)); assert len(source)==39444 and hashlib.sha256(source).hexdigest()==expected; os.environ["G3A_EXECUTING_PRODUCTION_SHA256"]=expected; path=sys.argv[1]; sys.argv=[path]+sys.argv[2:]; exec(compile(source,path,"exec"),{"__name__":"__main__","__file__":path})'
           command=(
-            /usr/bin/timeout --signal=TERM --kill-after=10s 120s
-            "$G3A_VENV/bin/python" -I -B -S -
-            "$G3A_VENV"
+            /usr/bin/timeout --signal=TERM --kill-after=10s 30s
+            "$G3A_VENV/bin/python" -I -B -S -c "$runner"
+            "$G3A_EVIDENCE_ROOT/bootstrap/python-startup-production.py"
+            --admit "$G3A_VENV" "$G3A_EVIDENCE_ROOT"
+            "$G3A_EVIDENCE_ROOT/bootstrap/setup-python-executable.txt"
+            "$G3A_EVIDENCE_ROOT/bootstrap/python-startup-admission"
+            "$G3A_EVIDENCE_ROOT/bootstrap/python-startup-baseline/observation-manifest.json"
             "$G3A_EVIDENCE_ROOT/bootstrap/pip-report.json"
             "$G3A_EVIDENCE_ROOT/bootstrap/startup-admission.json"
+            "$G3A_EVIDENCE_ROOT/bootstrap/python-startup-admission/fixture-seal.json"
             "$PYTHONPYCACHEPREFIX"
           )
           printf '%q ' "${command[@]}" \
@@ -311,186 +344,7 @@ jobs:
           printf '\n' >> "$G3A_EVIDENCE_ROOT/commands/startup-admission.command.txt"
           set +e
           "${command[@]}" \
-            > "$G3A_EVIDENCE_ROOT/logs/startup-admission.log" 2>&1 <<'PY'
-          from __future__ import annotations
-
-          import base64
-          import csv
-          import hashlib
-          import importlib.machinery
-          import io
-          import json
-          from pathlib import Path
-          import sys
-
-          venv_argument, report_argument, output_argument, pycache_argument = sys.argv[1:]
-          venv = Path(venv_argument).resolve(strict=True)
-          report_path = Path(report_argument).resolve(strict=True)
-          output = Path(output_argument)
-          pycache_root = Path(pycache_argument).resolve(strict=False)
-
-          if not (sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode):
-              raise RuntimeError("startup admission did not use -I -B -S")
-          if Path(sys.executable).resolve(strict=True) != (venv / "bin/python").resolve(strict=True):
-              raise RuntimeError("no-site interpreter is not the selected venv launcher")
-          if sys.prefix != sys.base_prefix:
-              raise RuntimeError("Python 3.11 no-site prefix behavior changed unexpectedly")
-
-          pyvenv = venv / "pyvenv.cfg"
-          raw_config = pyvenv.read_bytes()
-          config: dict[str, str] = {}
-          for raw_line in raw_config.decode("utf-8").splitlines():
-              if not raw_line.strip():
-                  continue
-              key, separator, value = raw_line.partition("=")
-              if separator != "=":
-                  raise RuntimeError(f"malformed pyvenv.cfg line: {raw_line!r}")
-              config[key.strip().lower()] = value.strip()
-          if config.get("include-system-site-packages", "").lower() != "false":
-              raise RuntimeError("venv must exclude system site-packages")
-          if config.get("version") != "3.11.17":
-              raise RuntimeError("venv was not created from CPython 3.11.17")
-
-          base_prefix = Path(sys.base_prefix).resolve(strict=True)
-          home = Path(config["home"]).resolve(strict=True)
-          if home.parent != base_prefix:
-              raise RuntimeError("pyvenv.cfg home is outside the selected CPython base")
-          stdlib = base_prefix / "lib/python3.11"
-          base_site = stdlib / "site.py"
-          purelib = venv / "lib/python3.11/site-packages"
-          if not purelib.resolve(strict=True).is_relative_to(venv):
-              raise RuntimeError("venv site-packages escaped the selected venv")
-
-          startup_suffixes = tuple(dict.fromkeys(
-              importlib.machinery.SOURCE_SUFFIXES
-              + importlib.machinery.BYTECODE_SUFFIXES
-              + importlib.machinery.EXTENSION_SUFFIXES
-          ))
-          for startup_root in (stdlib, purelib):
-              for module_name in ("sitecustomize", "usercustomize"):
-                  package_directory = startup_root / module_name
-                  if package_directory.exists():
-                      raise RuntimeError(
-                          f"unapproved customize package directory: {package_directory}"
-                      )
-                  for suffix in startup_suffixes:
-                      candidate = startup_root / f"{module_name}{suffix}"
-                      if candidate.exists():
-                          raise RuntimeError(
-                              f"unapproved customize startup module: {candidate}"
-                          )
-                  cache_directory = startup_root / "__pycache__"
-                  if cache_directory.is_dir():
-                      cached = sorted(cache_directory.glob(f"{module_name}.*.pyc"))
-                      if cached:
-                          raise RuntimeError(
-                              "unapproved cached customize startup module: "
-                              + ", ".join(str(candidate) for candidate in cached)
-                          )
-
-          pth_files = sorted(purelib.glob("*.pth"))
-          if [candidate.name for candidate in pth_files] != ["distutils-precedence.pth"]:
-              raise RuntimeError(
-                  "installed .pth set is not the single admitted bootstrap file: "
-                  + ", ".join(candidate.name for candidate in pth_files)
-              )
-          pth = pth_files[0]
-          accepted_pth = (
-              "import os; var = 'SETUPTOOLS_USE_DISTUTILS'; "
-              "enabled = os.environ.get(var, 'local') == 'local'; "
-              "enabled and __import__('_distutils_hack').add_shim();\n"
-          ).encode("utf-8")
-          if pth.read_bytes() != accepted_pth:
-              raise RuntimeError("distutils-precedence.pth content is not admitted")
-
-          report = json.loads(report_path.read_text(encoding="utf-8"))
-          installed_names = {
-              str(item.get("metadata", {}).get("name", "")).lower().replace("_", "-")
-              for item in report.get("install", [])
-          }
-          if {"pip", "setuptools", "wheel"} & installed_names:
-              raise RuntimeError("wheel install replaced a trusted bootstrap distribution")
-
-          setuptools_records = sorted(purelib.glob("setuptools-*.dist-info/RECORD"))
-          if len(setuptools_records) != 1:
-              raise RuntimeError("setuptools bootstrap RECORD is missing or ambiguous")
-          record_path = setuptools_records[0]
-          rows = {
-              row[0]: row
-              for row in csv.reader(io.StringIO(record_path.read_text(encoding="utf-8")))
-              if row
-          }
-
-          def record_verified(relative: str) -> Path:
-              candidate = (purelib / relative).resolve(strict=True)
-              if not candidate.is_relative_to(purelib.resolve(strict=True)):
-                  raise RuntimeError(f"startup record escaped site-packages: {relative}")
-              row = rows.get(relative)
-              if row is None or len(row) != 3 or not row[1].startswith("sha256="):
-                  raise RuntimeError(f"startup file lacks a hashed RECORD row: {relative}")
-              raw = candidate.read_bytes()
-              encoded = base64.urlsafe_b64encode(hashlib.sha256(raw).digest()).rstrip(b"=").decode()
-              if row[1] != f"sha256={encoded}" or row[2] != str(len(raw)):
-                  raise RuntimeError(f"startup file does not match setuptools RECORD: {relative}")
-              return candidate
-
-          record_verified("distutils-precedence.pth")
-          distutils_hack = record_verified("_distutils_hack/__init__.py")
-
-          def describe(path: Path, provenance: str, predicate: str) -> dict[str, object]:
-              resolved = path.resolve(strict=True)
-              raw = resolved.read_bytes()
-              return {
-                  "path": str(resolved),
-                  "bytes": len(raw),
-                  "sha256": hashlib.sha256(raw).hexdigest(),
-                  "provenance": provenance,
-                  "admission_predicate": predicate,
-              }
-
-          admitted = [
-              describe(
-                  base_site,
-                  "pinned setup-python CPython 3.11.17 base stdlib",
-                  "exact base-prefix site.py under trusted CPython bootstrap",
-              ),
-              describe(
-                  pth,
-                  "venv/ensurepip setuptools bootstrap RECORD",
-                  "exact one-line distutils-precedence.pth content and RECORD hash/size",
-              ),
-              describe(
-                  distutils_hack,
-                  "venv/ensurepip setuptools bootstrap RECORD",
-                  "sole imported package source named by admitted .pth and RECORD hash/size",
-              ),
-          ]
-          document = {
-              "schema_version": "b0-g3a-python-startup-admission/v1",
-              "status": "accepted_prior_to_normal_site_startup",
-              "inspection_mode": "CPython -I -B -S; site initialization disabled",
-              "trusted_bootstrap_assumptions": [
-                  "pinned actions/setup-python CPython 3.11.17 and base stdlib",
-                  "venv/ensurepip bootstrap including its setuptools distribution",
-              ],
-              "not_trusted_by_assumption": "startup code introduced by installed project wheels",
-              "base_prefix": str(base_prefix),
-              "venv_prefix": str(venv),
-              "pyvenv_cfg_sha256": hashlib.sha256(raw_config).hexdigest(),
-              "pycache_prefix_for_normal_processes": str(pycache_root),
-              "package_local_bytecode_is_not_loadable": True,
-              "admitted_files": admitted,
-              "rejected_filename_classes": [
-                  "additional .pth",
-                  "sitecustomize/usercustomize source modules",
-                  "sitecustomize/usercustomize legacy and __pycache__ bytecode",
-                  "sitecustomize/usercustomize ABI extension modules",
-                  "sitecustomize/usercustomize package directories",
-              ],
-          }
-          output.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-          print(json.dumps({"status": document["status"], "file_count": len(admitted)}))
-          PY
+            > "$G3A_EVIDENCE_ROOT/logs/startup-admission.log" 2>&1
           rc=$?
           set -e
           printf '%s\n' "$rc" > "$G3A_EVIDENCE_ROOT/commands/startup-admission.exit-code.txt"
@@ -578,6 +432,11 @@ jobs:
           purelib = Path(sysconfig.get_path("purelib")).resolve(strict=True)
           catch_root = catch_argument.resolve(strict=True)
           startup = json.loads(startup_argument.read_text(encoding="utf-8"))
+          startup_decision = json.loads(
+              (startup_argument.parent / "python-startup-admission/decision.json").read_text(
+                  encoding="utf-8"
+              )
+          )
           records: list[dict[str, object]] = []
           seen: set[Path] = set()
 
@@ -613,7 +472,9 @@ jobs:
           python_invocation = Path(sys.executable)
           add("python_binary", python_invocation)
           add("python_configuration", Path(sys.prefix) / "pyvenv.cfg")
-          if startup.get("status") != "accepted_prior_to_normal_site_startup":
+          if startup.get("status") != "observations_complete_pending_immutable_decision":
+              raise RuntimeError("Python startup observations were not completed")
+          if startup_decision.get("status") != "accepted" or startup_decision.get("mode") != "--admit":
               raise RuntimeError("Python startup did not pass prior no-site admission")
           if Path(startup["venv_prefix"]).resolve(strict=True) != Path(sys.prefix).resolve(strict=True):
               raise RuntimeError("normal Python prefix differs from admitted venv")
@@ -2454,6 +2315,7 @@ jobs:
             setup_python=${{ steps.setup_python.outcome }};
             retain_python_provenance=${{ steps.retain_python_provenance.outcome }};
             create_venv=${{ steps.create_venv.outcome }};
+            capture_python_bootstrap_baseline=${{ steps.capture_python_bootstrap_baseline.outcome }};
             install_dependencies=${{ steps.install_dependencies.outcome }};
             admit_python_startup=${{ steps.admit_python_startup.outcome }};
             checkout_catch2=${{ steps.checkout_catch2.outcome }};
@@ -2494,6 +2356,7 @@ jobs:
             setup_python=${{ steps.setup_python.conclusion }};
             retain_python_provenance=${{ steps.retain_python_provenance.conclusion }};
             create_venv=${{ steps.create_venv.conclusion }};
+            capture_python_bootstrap_baseline=${{ steps.capture_python_bootstrap_baseline.conclusion }};
             install_dependencies=${{ steps.install_dependencies.conclusion }};
             admit_python_startup=${{ steps.admit_python_startup.conclusion }};
             checkout_catch2=${{ steps.checkout_catch2.conclusion }};
@@ -2591,7 +2454,7 @@ jobs:
 
           outcomes = step_map("G3A_REQUIRED_STEP_OUTCOMES")
           conclusions = step_map("G3A_REQUIRED_STEP_CONCLUSIONS")
-          if outcomes.keys() != conclusions.keys() or len(outcomes) != 39:
+          if outcomes.keys() != conclusions.keys() or len(outcomes) != 40:
               raise RuntimeError("pre-DUT required-step set mismatch")
           for step_id in sorted(outcomes):
               if outcomes[step_id] != "success" or conclusions[step_id] != "success":
@@ -3135,6 +2998,7 @@ jobs:
             setup_python=${{ steps.setup_python.outcome }};
             retain_python_provenance=${{ steps.retain_python_provenance.outcome }};
             create_venv=${{ steps.create_venv.outcome }};
+            capture_python_bootstrap_baseline=${{ steps.capture_python_bootstrap_baseline.outcome }};
             install_dependencies=${{ steps.install_dependencies.outcome }};
             admit_python_startup=${{ steps.admit_python_startup.outcome }};
             checkout_catch2=${{ steps.checkout_catch2.outcome }};
@@ -3185,6 +3049,7 @@ jobs:
             setup_python=${{ steps.setup_python.conclusion }};
             retain_python_provenance=${{ steps.retain_python_provenance.conclusion }};
             create_venv=${{ steps.create_venv.conclusion }};
+            capture_python_bootstrap_baseline=${{ steps.capture_python_bootstrap_baseline.conclusion }};
             install_dependencies=${{ steps.install_dependencies.conclusion }};
             admit_python_startup=${{ steps.admit_python_startup.conclusion }};
             checkout_catch2=${{ steps.checkout_catch2.conclusion }};
@@ -3241,7 +3106,7 @@ jobs:
           first_failed=''
           IFS=';' read -ra outcome_entries <<< "$G3A_ALL_STEP_OUTCOMES"
           IFS=';' read -ra conclusion_entries <<< "$G3A_ALL_STEP_CONCLUSIONS"
-          if [ "${#outcome_entries[@]}" -ne 49 ] || [ "${#conclusion_entries[@]}" -ne 49 ]; then
+          if [ "${#outcome_entries[@]}" -ne 50 ] || [ "${#conclusion_entries[@]}" -ne 50 ]; then
             printf 'unexpected step cardinality\n' >&2
             exit 65
           fi
@@ -3262,7 +3127,8 @@ jobs:
             fi
           done
           expected_exit_files=(
-            workflow-fetch setup-python-provenance create-venv bootstrap startup-admission catch2-clean
+            workflow-fetch setup-python-provenance create-venv bootstrap python-bootstrap-baseline
+            startup-admission catch2-clean
             environment-facts debug-prebuild debug-configure debug-configure.allowlist-check
             debug-configure.process-check debug-build debug-build.allowlist-check
             debug-build.process-check debug-build-facts debug-preflight release-prebuild

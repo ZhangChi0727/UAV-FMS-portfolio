@@ -502,10 +502,12 @@ def _environment(raw: bytes, policy: dict[str, Any], roots: dict[str, Path]) -> 
     _require(document.get("package_versions") == packages, "declared_package_versions_mismatch")
     # importlib.metadata reads installed distribution metadata, not the packages.
     from importlib import metadata
+
     actual_packages = {}
     for name, version in packages.items():
         dist = metadata.distribution(name)
-        normal_name = lambda value: re.sub(r"[-_.]+", "-", value).lower()
+        def normal_name(value):
+            return re.sub(r"[-_.]+", "-", value).lower()
         _require(normal_name(dist.metadata.get("Name", "")) == normal_name(name)
                  and dist.version == version, "installed_package_mismatch", name)
         metadata_paths = [Path(dist.locate_file(item)).resolve(strict=True) for item in (dist.files or ())
