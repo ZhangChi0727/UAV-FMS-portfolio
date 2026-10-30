@@ -10,11 +10,59 @@ import base64
 import builtins
 import hashlib
 import json
-from pathlib import Path
+import os
+import re
+import subprocess
+import sys
+import zlib
 
 import pytest
 
 from binding_checks import g3a_authority as authority
+
+
+def test_workflow_exact_startup_fixture_mode(tmp_path):
+    """Invoke the exact workflow payload; do not maintain a second startup parser."""
+    repository = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    workflow_path = os.path.join(repository, ".github", "workflows", "g3a.yml")
+    with open(workflow_path, encoding="utf-8", newline="") as source:
+        workflow = source.read()
+    production_blob = re.findall(
+        r'^  G3A_STARTUP_PRODUCTION_ZLIB_BASE64: "([A-Za-z0-9+/=]+)"$',
+        workflow,
+        flags=re.MULTILINE,
+    )
+    assert len(production_blob) == 1
+    payload = zlib.decompress(base64.b64decode(production_blob[0], validate=True))
+    assert len(payload) == 39444
+    assert hashlib.sha256(payload).hexdigest() == (
+        "51563d826f56b6379773964455c600d0fdb61ea78eb7856cdfb3cad5ab70bb30"
+    )
+    fixture_blob = re.findall(
+        r'^  G3A_STARTUP_FIXTURES_ZLIB_BASE64: "([A-Za-z0-9+/=]+)"$',
+        workflow,
+        flags=re.MULTILINE,
+    )
+    assert len(fixture_blob) == 1
+    seal = tmp_path / "startup-fixture-seal.json"
+    environment = dict(os.environ)
+    environment["G3A_STARTUP_FIXTURES_ZLIB_BASE64"] = fixture_blob[0]
+    completed = subprocess.run(
+        [sys.executable, "-I", "-B", "-S", "-", "--fixture-mode", str(seal)],
+        input=payload,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        env=environment,
+        timeout=30,
+    )
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", errors="replace")
+    result = json.loads(completed.stdout)
+    assert result == {"fixture_atoms": 79, "passed": 7, "rejected": 72}
+    sealed = json.loads(seal.read_bytes())
+    assert sealed["schema_version"] == "b0-g3a-startup-fixture-seal/v1"
+    assert sealed["fixture_atoms"] == 79
+    assert sealed["materialization_failures"] == 0
 
 
 def _json(value):

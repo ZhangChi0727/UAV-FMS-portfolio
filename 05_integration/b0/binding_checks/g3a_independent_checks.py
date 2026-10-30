@@ -1913,11 +1913,11 @@ def make_data_diagnostics(raw_bytes: bytes, authority: dict) -> tuple[dict, ...]
     """Make 13 isolated bytes/envelopes; deliberately does not run the checker."""
     raw, _ = _preflight(raw_bytes, authority)
     contexts = _contexts(raw)
-    s, l = contexts["S"], contexts["L1"]
+    s, l1_context = contexts["S"], contexts["L1"]
     e = _boundary_operation(s, 2, "estimator", "process")
     imu = _boundary_operation(s, 2, "imu", "sample")
     a = _boundary_operation(s, 2, "actuator", "step_base")
-    le = _boundary_operation(l, 1002, "estimator", "process")
+    le = _boundary_operation(l1_context, 1002, "estimator", "process")
     profile_indices = {item["profile_id"]: index for index, item in enumerate(raw["profiles"])}
 
     def wire_index(context: dict[str, Any], reference: str) -> int:
@@ -1931,7 +1931,7 @@ def make_data_diagnostics(raw_bytes: bytes, authority: dict) -> tuple[dict, ...]
     ei = next(index for index, op in enumerate(s["boundaries"][2]["operations"]) if op["operation_id"] == e["operation_id"])
     mi = wire_index(s, imu["outputs"]["raw_imu"])
     ai = wire_index(s, a["outputs"]["feedback"])
-    oldi = wire_index(l, le["inputs"]["adapted_imu"])
+    oldi = wire_index(l1_context, le["inputs"]["adapted_imu"])
     specifications = (
         ("missing_due", "missing_due"), ("duplicate_due", "duplicate_due"),
         ("phase_order", "phase_order"), ("old_epoch", "stale_epoch"),
