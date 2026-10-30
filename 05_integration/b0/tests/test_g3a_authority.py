@@ -34,9 +34,9 @@ def test_workflow_exact_startup_fixture_mode(tmp_path):
     )
     assert len(production_blob) == 1
     payload = zlib.decompress(base64.b64decode(production_blob[0], validate=True))
-    assert len(payload) == 39444
+    assert len(payload) == 39456
     assert hashlib.sha256(payload).hexdigest() == (
-        "51563d826f56b6379773964455c600d0fdb61ea78eb7856cdfb3cad5ab70bb30"
+        "0c15f02d71f4ca86372c6211cfdf8c1084beba25ae41ced97b65b53f132dd218"
     )
     fixture_blob = re.findall(
         r'^  G3A_STARTUP_FIXTURES_ZLIB_BASE64: "([A-Za-z0-9+/=]+)"$',
@@ -63,6 +63,117 @@ def test_workflow_exact_startup_fixture_mode(tmp_path):
     assert sealed["schema_version"] == "b0-g3a-startup-fixture-seal/v1"
     assert sealed["fixture_atoms"] == 79
     assert sealed["materialization_failures"] == 0
+
+
+def _startup_production_namespace():
+    repository = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    workflow_path = os.path.join(repository, ".github", "workflows", "g3a.yml")
+    with open(workflow_path, encoding="utf-8", newline="") as source:
+        workflow = source.read()
+    production_blob = re.findall(
+        r'^  G3A_STARTUP_PRODUCTION_ZLIB_BASE64: "([A-Za-z0-9+/=]+)"$',
+        workflow,
+        flags=re.MULTILINE,
+    )
+    assert len(production_blob) == 1
+    payload = zlib.decompress(base64.b64decode(production_blob[0], validate=True))
+    assert len(payload) == 39456
+    assert hashlib.sha256(payload).hexdigest() == (
+        "0c15f02d71f4ca86372c6211cfdf8c1084beba25ae41ced97b65b53f132dd218"
+    )
+    namespace = {"__name__": "g3a_startup_scan_test", "__file__": "<workflow-production>"}
+    exec(compile(payload, "<workflow-production>", "exec"), namespace)
+    return namespace
+
+
+class _ScanJournal:
+    def __init__(self):
+        self.records = []
+
+    def add(self, value):
+        self.records.append(value)
+
+
+def test_startup_live_scan_accepts_53_ordinary_cache_entries(tmp_path):
+    production = _startup_production_namespace()
+    root = tmp_path / "stdlib"
+    cache = root / "__pycache__"
+    cache.mkdir(parents=True)
+    for index in range(53):
+        (cache / f"module_{index:04d}.cpython-311.pyc").write_bytes(b"")
+    journal = _ScanJournal()
+
+    production["scan_customization_root"](root, 0, journal)
+
+    assert journal.records == [{
+        "label": "customization.0.pycache",
+        "status": "enumerated",
+        "entries": 53,
+        "entry_limit": 4096,
+    }]
+
+
+def test_startup_live_scan_rejects_late_sitecustomize_cache_entry(tmp_path):
+    production = _startup_production_namespace()
+    root = tmp_path / "stdlib"
+    cache = root / "__pycache__"
+    cache.mkdir(parents=True)
+    for index in range(52):
+        (cache / f"module_{index:04d}.cpython-311.pyc").write_bytes(b"")
+    dangerous = cache / "sitecustomize.cpython-311.pyc"
+    dangerous.write_bytes(b"synthetic-not-executed")
+    journal = _ScanJournal()
+
+    with pytest.raises(production["Reject"]) as caught:
+        production["scan_customization_root"](root, 0, journal)
+
+    assert caught.value.code == "CUSTOMIZATION_PRESENT_OR_REFUSED"
+    assert caught.value.locator == "customization.entry"
+    assert journal.records[-1] == {
+        "label": "customization.0.sitecustomize.cpython-311.pyc",
+        "status": "refused",
+        "kind": "regular",
+    }
+
+
+def test_startup_live_scan_rejects_directory_cap_plus_one(tmp_path):
+    production = _startup_production_namespace()
+    root = tmp_path / "stdlib"
+    cache = root / "__pycache__"
+    cache.mkdir(parents=True)
+    for index in range(4097):
+        (cache / f"module_{index:04d}.cpython-311.pyc").write_bytes(b"")
+    journal = _ScanJournal()
+
+    with pytest.raises(production["Reject"]) as caught:
+        production["scan_customization_root"](root, 0, journal)
+
+    assert caught.value.code == "ACQ_LIMIT_EXCEEDED"
+    assert caught.value.locator == "acquisition.entry_count"
+    assert journal.records[-1] == {
+        "label": "customization.0.pycache",
+        "status": "count_exceeded",
+        "entries": 4097,
+    }
+
+
+def test_startup_live_scan_rejects_unsafe_cache(tmp_path):
+    production = _startup_production_namespace()
+    root = tmp_path / "stdlib"
+    root.mkdir()
+    (root / "__pycache__").write_bytes(b"synthetic-nondirectory")
+    journal = _ScanJournal()
+
+    with pytest.raises(production["Reject"]) as caught:
+        production["scan_customization_root"](root, 0, journal)
+
+    assert caught.value.code == "CUSTOMIZATION_PRESENT_OR_REFUSED"
+    assert caught.value.locator == "customization.entry"
+    assert journal.records == [{
+        "label": "customization.0.__pycache__",
+        "status": "refused",
+        "reason": "unsafe_cache",
+    }]
 
 
 def _json(value):
