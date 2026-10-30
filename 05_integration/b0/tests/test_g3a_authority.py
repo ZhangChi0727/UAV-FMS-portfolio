@@ -431,6 +431,432 @@ def test_gcc_subtool_policy_and_workflow_digest_keep_the_finite_gate():
     assert bound == [hashlib.sha256(policy_raw).hexdigest()]
 
 
+def _debug_configure_package(workflow: str) -> str:
+    start = workflow.index("Materialize debug_configure run body part 1 of 4")
+    end = workflow.index(
+        "Configure Debug from the explicit disconnected Catch2 source", start
+    )
+    materializers = workflow[start:end]
+    payloads = re.findall(r'payload_b64 = b"([A-Za-z0-9+/=]+)"', materializers)
+    descriptors = re.findall(
+        r'"([0-9]+)" \\\n\s+"([0-9a-f]{64})" <<\'PY\'', materializers
+    )
+    assert len(payloads) == len(descriptors) == 4
+    parts = []
+    for encoded, (expected_length, expected_digest) in zip(
+        payloads, descriptors, strict=True
+    ):
+        part = base64.b64decode(encoded, validate=True)
+        assert len(part) == int(expected_length)
+        assert len(part) <= 10_000
+        assert hashlib.sha256(part).hexdigest() == expected_digest
+        parts.append(part)
+    package = b"".join(parts)
+    executor = workflow[end:]
+    identity = re.search(
+        r'"debug_configure" \\\n\s+"([0-9]+)" \\\n\s+"([0-9a-f]{64})" \\',
+        executor,
+    )
+    assert identity is not None
+    assert len(package) == int(identity.group(1))
+    assert hashlib.sha256(package).hexdigest() == identity.group(2)
+    assert _debug_configure_executor_materializer_ids(workflow) == [
+        "package_debug_configure_part_1",
+        "package_debug_configure_part_2",
+        "package_debug_configure_part_3",
+        "package_debug_configure_part_4",
+    ]
+    return package.decode("utf-8", errors="strict")
+
+
+def _debug_configure_executor_materializer_ids(workflow: str) -> list[str]:
+    start = workflow.index(
+        "Configure Debug from the explicit disconnected Catch2 source"
+    )
+    end = workflow.index("Materialize debug_build run body part 1 of 3", start)
+    executor = workflow[start:end]
+    assert '"debug_configure" \\' in executor
+    stops = re.findall(
+        r'"materializer_step_ids": \[f"package_\{step_id\}_part_\{number\}" '
+        r"for number in range\(1, ([0-9]+)\)\]",
+        executor,
+    )
+    assert stops == ["5"]
+    return [f"package_debug_configure_part_{number}" for number in range(1, 5)]
+
+
+def test_debug_configure_derivation_rejects_missing_fourth_materializer_id():
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    start = workflow.index(
+        "Configure Debug from the explicit disconnected Catch2 source"
+    )
+    end = workflow.index("Materialize debug_build run body part 1 of 3", start)
+    executor = workflow[start:end]
+    assert executor.count("range(1, 5)") == 1
+    mutated_executor = executor.replace("range(1, 5)", "range(1, 4)", 1)
+    mutated = workflow[:start] + mutated_executor + workflow[end:]
+    with pytest.raises(AssertionError):
+        _debug_configure_package(mutated)
+
+
+def _debug_configure_sources() -> tuple[str, str, str, str]:
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    script = _debug_configure_package(workflow)
+
+    def heredoc(start_marker: str, end_marker: str) -> str:
+        assert script.count(start_marker) == 1
+        start = script.index(start_marker) + len(start_marker)
+        assert script.count(end_marker, start) == 1
+        return script[start:script.index(end_marker, start)]
+
+    directory_guard = heredoc(
+        '"${directory_guard_command[@]}" <<\'PY\'\n',
+        "\nPY\nroot_command=(",
+    )
+    environment_guard = heredoc(
+        'debug-configure-allowlist-check.log" 2>&1 <<\'PY\'\n',
+        "\nPY\nallowlist_check_rc=$?",
+    )
+    process_checker = heredoc(
+        'debug-configure-process-check.log" 2>&1 <<\'PY\'\n',
+        "\nPY\nprocess_check_rc=$?",
+    )
+    return script, directory_guard, environment_guard, process_checker
+
+
+def _actual_embedded_functions(source: str, names: set[str]) -> dict[str, object]:
+    tree = ast.parse(source)
+    selected = [
+        node
+        for node in tree.body
+        if isinstance(node, (ast.Import, ast.ImportFrom))
+        or isinstance(node, ast.FunctionDef) and node.name in names
+    ]
+    found = {node.name for node in selected if isinstance(node, ast.FunctionDef)}
+    assert found == names
+    namespace: dict[str, object] = {}
+    module = ast.fix_missing_locations(ast.Module(body=selected, type_ignores=[]))
+    exec(compile(module, "<actual-debug-configure-guard>", "exec"), namespace)
+    return namespace
+
+
+def _debug_configure_policy() -> dict[str, object]:
+    repository = Path(__file__).resolve().parents[3]
+    return json.loads(
+        (repository / "05_integration" / "b0" / "configs" /
+         "g3a_authority_policy.v1.json").read_bytes()
+    )["environment"]["debug_configure_execution_profile"]
+
+
+def test_debug_configure_profile_and_generated_consumer_are_exactly_bound():
+    script, directory_guard, environment_guard, process_checker = (
+        _debug_configure_sources()
+    )
+    profile = _debug_configure_policy()
+    assert profile["scope"] == "debug_configure_only"
+    assert profile["environment"] == {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/debug-configure-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/debug-configure-python-user-base",
+        "ambient_policy": (
+            "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values"
+        ),
+        "isolated_directory_policy": (
+            "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+        ),
+    }
+    assert profile["absolute_tool_entrypoints"] == {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace",
+    }
+    assert profile["tracee_task_cap"] == 256
+    assert profile["family_exec_caps"] == {
+        "cmake": 32,
+        "ninja": 16,
+        "python": 16,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 8,
+    }
+    assert 'admitted_path="/usr/bin:/bin:$G3A_VENV/bin"' in script
+    assert 'admitted_path="$G3A_VENV/bin:/usr/bin:/bin"' not in script
+    assert '  "$G3A_VENV/bin/cmake"' in script
+    assert '-DPython3_EXECUTABLE="$G3A_VENV/bin/python"' in script
+    assert '-DCMAKE_MAKE_PROGRAM="$G3A_VENV/bin/ninja"' in script
+    assert '-DCMAKE_CXX_COMPILER=/usr/bin/c++' in script
+    assert "/usr/bin/timeout --signal=TERM --kill-after=10s 120s" in script
+    assert "/usr/bin/strace -ff -q -s 4096 -e trace=process,connect" in script
+    assert "printf 'cap.tracee_tasks=256\\n'" in script
+    assert "printf 'cap.family_exec.python=16\\n'" in script
+    assert "cap.family_exec.python=8" not in script
+    expected_caps = (
+        "cmake=32,ninja=16,python=16,compiler=16,compiler_subtools=64,"
+        "binutils=64,shell=32,platform=8"
+    )
+    assert script.count(expected_caps) == 1
+    assert "def prepare_isolated_directories" in directory_guard
+    assert "def validate_launch_environment" in environment_guard
+    assert 'errors.append("one or more network connect attempts were traced")' in (
+        process_checker
+    )
+    assert 'errors.append("unknown or unparsed process event present")' in (
+        process_checker
+    )
+
+
+def _directory_guard_function():
+    _, directory_guard, _, _ = _debug_configure_sources()
+    return _actual_embedded_functions(
+        directory_guard, {"prepare_isolated_directories"}
+    )["prepare_isolated_directories"]
+
+
+def _isolated_candidates(root: Path) -> list[str]:
+    return [
+        str(root / "debug-configure-home"),
+        str(root / "debug-configure-python-user-base"),
+    ]
+
+
+def test_actual_directory_guard_creates_two_fresh_empty_ordinary_directories(tmp_path):
+    prepare = _directory_guard_function()
+    candidates = _isolated_candidates(tmp_path)
+    prepare(str(tmp_path), candidates)
+    for text in candidates:
+        path = Path(text)
+        assert path.is_dir() and not path.is_symlink()
+        assert list(path.iterdir()) == []
+        assert path.resolve(strict=True).parent == tmp_path.resolve(strict=True)
+
+
+@pytest.mark.parametrize("fixture", ["preexisting", "nonempty", "symlink", "escape"])
+def test_actual_directory_guard_rejects_filesystem_counterexamples(tmp_path, fixture):
+    prepare = _directory_guard_function()
+    candidates = _isolated_candidates(tmp_path)
+    first = Path(candidates[0])
+    expected = {
+        "preexisting": "isolated_directory_preexisting",
+        "nonempty": "isolated_directory_nonempty",
+        "symlink": "isolated_directory_symlink",
+        "escape": "isolated_directory_escape_or_name_mismatch",
+    }[fixture]
+    if fixture == "preexisting":
+        first.mkdir()
+    elif fixture == "nonempty":
+        first.mkdir()
+        (first / "unexpected").write_text("fixture", encoding="utf-8")
+    elif fixture == "symlink":
+        target = tmp_path / "symlink-target"
+        target.mkdir()
+        first.symlink_to(target, target_is_directory=True)
+    else:
+        candidates[0] = str(tmp_path.parent / "escaped-home")
+    with pytest.raises(RuntimeError, match=expected):
+        prepare(str(tmp_path), candidates)
+
+
+def _valid_launch_environment(root: Path, executable: str) -> dict[str, str]:
+    return {
+        "PATH": "/usr/bin:/bin:" + str(Path(executable).parent),
+        "HOME": str(root / "debug-configure-home"),
+        "PYTHONUSERBASE": str(root / "debug-configure-python-user-base"),
+        "VIRTUAL_ENV": str(Path(executable).parent.parent),
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPYCACHEPREFIX": str(root / "pycache"),
+        "PYTHONHASHSEED": "0",
+        "LANG": "C",
+        "LC_ALL": "C",
+        "_": "/usr/bin/timeout",
+    }
+
+
+def test_actual_environment_guard_accepts_exact_map_and_rejects_pollution(tmp_path):
+    prepare = _directory_guard_function()
+    prepare(str(tmp_path), _isolated_candidates(tmp_path))
+    _, _, environment_guard, _ = _debug_configure_sources()
+    validate = _actual_embedded_functions(
+        environment_guard, {"validate_launch_environment"}
+    )["validate_launch_environment"]
+    executable = str(tmp_path / "venv" / "bin" / "python")
+    environment_path = tmp_path / "environment-facts.json"
+    environment = _valid_launch_environment(tmp_path, executable)
+    assert validate(environment, executable, environment_path) == environment
+    polluted = dict(environment, HTTP_PROXY="http://untrusted.invalid")
+    with pytest.raises(RuntimeError, match="exact admitted finite mapping"):
+        validate(polluted, executable, environment_path)
+
+
+def _write_nul(path: Path, values: list[str]) -> None:
+    path.write_bytes(b"\0".join(value.encode("utf-8") for value in values) + b"\0")
+
+
+def _run_actual_process_checker(
+    tmp_path: Path, *, python_exec_count: int, extra_events: list[str]
+) -> tuple[subprocess.CompletedProcess, dict[str, str]]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    _, _, _, checker = _debug_configure_sources()
+    timeout_path = Path("/usr/bin/timeout")
+    strace_path = Path("/usr/bin/strace")
+    timeout_digest = hashlib.sha256(timeout_path.resolve(strict=True).read_bytes()).hexdigest()
+    strace_digest = hashlib.sha256(strace_path.resolve(strict=True).read_bytes()).hexdigest()
+    trace_dir = tmp_path / "trace"
+    commands = tmp_path / "commands"
+    trace_dir.mkdir()
+    commands.mkdir()
+    stage = "debug-configure"
+    root_expected = "/fixture/cmake"
+    python_target = "/fixture/python"
+    digest = "1" * 64
+    allowlist = tmp_path / "allowlist.tsv"
+    allowlist.write_text(
+        "schema=b0-g3a-process-executable-allowlist/v1\n"
+        f"cmake\t{root_expected}\t{digest}\n"
+        f"python\t{python_target}\t{digest}\n"
+        f"supervisor\t{timeout_path}\t{timeout_digest}\n"
+        f"trace\t{strace_path}\t{strace_digest}\n",
+        encoding="utf-8",
+    )
+    receipt = commands / f"{stage}.process-receipt.txt"
+    authorization = commands / f"{stage}.authorization.txt"
+    authorization.write_text(
+        "wrapper_family_count.supervisor=1\n"
+        "wrapper_family_count.trace=1\n"
+        f"wrapper.supervisor.path={timeout_path}\n"
+        f"wrapper.supervisor.sha256={timeout_digest}\n"
+        f"wrapper.trace.path={strace_path}\n"
+        f"wrapper.trace.sha256={strace_digest}\n"
+        "trace.selector=process,connect\n"
+        "network_connect_policy=reject_and_retain_every_connect_record\n",
+        encoding="utf-8",
+    )
+    root_argv = [root_expected]
+    trace_argv = [
+        str(strace_path), "-ff", "-q", "-s", "4096", "-e", "trace=process,connect",
+        "-o", str(trace_dir / "trace"), "--", *root_argv,
+    ]
+    command_argv = [
+        str(timeout_path), "--signal=TERM", "--kill-after=10s", "120s", *trace_argv,
+    ]
+    _write_nul(commands / f"{stage}.root.argv.nul", root_argv)
+    _write_nul(commands / f"{stage}.wrapper-trace.argv.nul", trace_argv)
+    _write_nul(commands / f"{stage}.wrapper-supervisor.argv.nul", command_argv)
+    _write_nul(commands / f"{stage}.argv.nul", command_argv)
+    workspace = "/synthetic/workspace"
+    _write_nul(commands / f"{stage}.cwd.nul", [workspace])
+    (commands / f"{stage}.cwd.txt").write_text(workspace + "\n", encoding="utf-8")
+    events = [f'execve("{root_expected}", ["cmake"], 0x0) = 0']
+    events.extend(
+        f'execve("{python_target}", ["python"], 0x0) = 0'
+        for _ in range(python_exec_count)
+    )
+    events.extend(extra_events)
+    events.append("+++ exited with 0 +++")
+    (trace_dir / "trace.100").write_text("\n".join(events) + "\n", encoding="utf-8")
+    caps = (
+        "cmake=32,ninja=16,python=16,compiler=16,compiler_subtools=64,"
+        "binutils=64,shell=32,platform=8"
+    )
+    completed = subprocess.run(
+        [
+            sys.executable, "-I", "-B", "-", stage, "0", str(trace_dir),
+            str(allowlist), root_expected, str(receipt), str(authorization),
+            workspace, "256", "120s", caps, timeout_digest, strace_digest,
+        ],
+        input=checker.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        timeout=30,
+    )
+    rows = {}
+    if receipt.is_file():
+        for line in receipt.read_text(encoding="utf-8").splitlines():
+            key, value = line.split("=", 1)
+            assert key not in rows
+            rows[key] = value
+    return completed, rows
+
+
+def test_actual_process_checker_accepts_python_16_and_rejects_17(tmp_path):
+    accepted, accepted_rows = _run_actual_process_checker(
+        tmp_path / "accepted", python_exec_count=16, extra_events=[]
+    )
+    assert accepted.returncode == 0, accepted.stderr.decode(errors="replace")
+    assert accepted_rows["family_exec_count.python"] == "16"
+    assert accepted_rows["authorization_overrun_count"] == "0"
+    assert accepted_rows["gate_status"] == "complete_known_process_tree_zero_connect_receipt"
+    rejected, rejected_rows = _run_actual_process_checker(
+        tmp_path / "rejected", python_exec_count=17, extra_events=[]
+    )
+    assert rejected.returncode == 97
+    assert rejected_rows["family_exec_count.python"] == "17"
+    assert rejected_rows["authorization_overrun_count"] == "1"
+    assert "family exec cap exceeded:python" in "\n".join(
+        value for key, value in rejected_rows.items() if key.startswith("validation_error.")
+    )
+
+
+@pytest.mark.parametrize(
+    ("event", "oracle_key"),
+    [
+        (
+            'connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) '
+            '= -1 ENOENT (No such file or directory)',
+            "connect_failed_result_record_count",
+        ),
+        (
+            'connect(3, {sa_family=AF_INET, sin_port=htons(9)}, 16) '
+            '= -1 ECONNREFUSED (Connection refused)',
+            "connect_failed_result_record_count",
+        ),
+        (
+            'connect(3, {sa_family=AF_INET, sin_port=htons(9)}, 16) = 0',
+            "connect_success_result_record_count",
+        ),
+    ],
+)
+def test_actual_process_checker_rejects_every_connect_record(tmp_path, event, oracle_key):
+    completed, rows = _run_actual_process_checker(
+        tmp_path, python_exec_count=0, extra_events=[event]
+    )
+    assert completed.returncode == 97
+    assert rows["connect_trace_record_count"] == "1"
+    assert rows[oracle_key] == "1"
+    assert rows["network_connect_gate_status"] == "connect_attempt_present_stop_downstream"
+
+
+@pytest.mark.parametrize(
+    "event",
+    [
+        'execve("/unknown/tool", ["tool"], 0x0) = -1 ENOENT (No such file or directory)',
+        'execve("/fixture/python", ["python"], 0x0 <unfinished ...>',
+        '<... execve resumed> ) = 0',
+    ],
+)
+def test_actual_process_checker_rejects_unknown_failed_unfinished_and_resumed(
+    tmp_path, event
+):
+    completed, rows = _run_actual_process_checker(
+        tmp_path, python_exec_count=0, extra_events=[event]
+    )
+    assert completed.returncode == 97
+    assert int(rows["unknown_or_unparsed_process_event_count"]) >= 1
+    assert rows["gate_status"] == "incomplete_or_unknown_stop_downstream"
+
+
 def _parameter_fixture(tmp_path):
     raw = b'{"synthetic_metadata_fixture":true,"x":-0.0}\n'
     (tmp_path / "fixed.json").write_bytes(raw)

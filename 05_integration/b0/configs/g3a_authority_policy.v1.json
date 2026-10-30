@@ -642,7 +642,43 @@
       "CPython_standard_library_except_explicit_startup_records",
       "installed_native_build_tool_execution_under_recorded_command_policy"
     ],
-    "not_a_claim": "complete_supply_chain_or_all_file_IO_attestation"
+    "not_a_claim": "complete_supply_chain_or_all_file_IO_attestation",
+    "debug_configure_execution_profile": {
+      "scope": "debug_configure_only",
+      "profile_version": "b0-g3a-debug-configure-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/debug-configure-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/debug-configure-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 256,
+      "family_exec_caps": {
+        "cmake": 32,
+        "ninja": 16,
+        "python": 16,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 8
+      },
+      "bounded_change": "python_family_exec_cap_raised_from_8_to_16_for_debug_configure_only",
+      "unchanged_other_caps": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "all_safety_policies_unchanged_or_CI_acceptance"
+    }
   },
   "build": {
     "required_file_roles": [
