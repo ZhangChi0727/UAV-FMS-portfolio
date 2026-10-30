@@ -678,6 +678,80 @@
       "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
       "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
       "not_a_claim": "all_safety_policies_unchanged_or_CI_acceptance"
+    },
+    "debug_build_execution_profile": {
+      "scope": "debug_build_only",
+      "profile_version": "b0-g3a-debug-build-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/debug-build-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/debug-build-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 192,
+      "family_exec_caps": {
+        "cmake": 16,
+        "ninja": 8,
+        "python": 4,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 4
+      },
+      "bounded_change": "system_tools_first_PATH_and_fresh_isolated_HOME_and_PYTHONUSERBASE_for_debug_build_only",
+      "launch_environment_validation": "derive_expected_HOME_and_PYTHONUSERBASE_from_canonical_evidence_root_and_fixed_debug_build_names_then_require_ordinary_nonsymlink_empty_direct_children",
+      "unchanged_caps_timeout_parallel_target": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "runtime_success_CI_acceptance_or_relaxed_process_authority"
+    },
+    "release_build_execution_profile": {
+      "scope": "release_build_only",
+      "profile_version": "b0-g3a-release-build-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/release-build-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/release-build-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 192,
+      "family_exec_caps": {
+        "cmake": 16,
+        "ninja": 8,
+        "python": 4,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 4
+      },
+      "bounded_change": "system_tools_first_PATH_and_fresh_isolated_HOME_and_PYTHONUSERBASE_for_release_build_only",
+      "launch_environment_validation": "derive_expected_HOME_and_PYTHONUSERBASE_from_canonical_evidence_root_and_fixed_release_build_names_then_require_ordinary_nonsymlink_empty_direct_children",
+      "unchanged_caps_timeout_parallel_target": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "runtime_success_CI_acceptance_or_relaxed_process_authority"
     }
   },
   "build": {

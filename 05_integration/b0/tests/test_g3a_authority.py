@@ -546,6 +546,250 @@ def _actual_embedded_functions(source: str, names: set[str]) -> dict[str, object
     return namespace
 
 
+def _build_package_sources(stage: str) -> tuple[str, str, str, str]:
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    display = stage.replace("_", "-")
+    title = "Debug" if stage == "debug_build" else "Release"
+    start = workflow.index(f"Materialize {stage} run body part 1 of 3")
+    end = workflow.index(f"Build only the {title} production controller module", start)
+    materializers = workflow[start:end]
+    payloads = re.findall(r'payload_b64 = b"([A-Za-z0-9+/=]+)"', materializers)
+    descriptors = re.findall(
+        r'"([0-9]+)" \\\n\s+"([0-9a-f]{64})" <<\'PY\'', materializers
+    )
+    assert len(payloads) == len(descriptors) == 3
+    parts = []
+    for encoded, (expected_length, expected_digest) in zip(
+        payloads, descriptors, strict=True
+    ):
+        part = base64.b64decode(encoded, validate=True)
+        assert len(part) == int(expected_length)
+        assert len(part) <= 13_000
+        assert hashlib.sha256(part).hexdigest() == expected_digest
+        parts.append(part)
+    package = b"".join(parts)
+    executor = workflow[end:]
+    identity = re.search(
+        rf'"{stage}" \\\n\s+"([0-9]+)" \\\n\s+"([0-9a-f]{{64}})" \\', executor
+    )
+    assert identity is not None
+    assert len(package) == int(identity.group(1))
+    assert hashlib.sha256(package).hexdigest() == identity.group(2)
+    script = package.decode("utf-8", errors="strict")
+
+    def heredoc(start_marker: str, end_marker: str) -> str:
+        assert script.count(start_marker) == 1
+        begin = script.index(start_marker) + len(start_marker)
+        assert script.count(end_marker, begin) == 1
+        return script[begin:script.index(end_marker, begin)]
+
+    directory_guard = heredoc(
+        '"${directory_guard_command[@]}" <<\'PY\'\n', "\nPY\nroot_command=("
+    )
+    environment_guard = heredoc(
+        f'{display}-allowlist-check.log" 2>&1 <<\'PY\'\n',
+        "\nPY\nallowlist_check_rc=$?",
+    )
+    process_checker = heredoc(
+        f'{display}-process-check.log" 2>&1 <<\'PY\'\n',
+        "\nPY\nprocess_check_rc=$?",
+    )
+    return script, directory_guard, environment_guard, process_checker
+
+
+@pytest.mark.parametrize(
+    ("stage", "profile_key"),
+    [
+        ("debug_build", "debug_build_execution_profile"),
+        ("release_build", "release_build_execution_profile"),
+    ],
+)
+def test_build_profiles_and_generated_consumers_are_exactly_bound(stage, profile_key):
+    script, directory_guard, environment_guard, process_checker = (
+        _build_package_sources(stage)
+    )
+    repository = Path(__file__).resolve().parents[3]
+    policy = json.loads(
+        (repository / "05_integration" / "b0" / "configs" /
+         "g3a_authority_policy.v1.json").read_bytes()
+    )["environment"][profile_key]
+    display = stage.replace("_", "-")
+    assert policy["scope"] == f"{stage}_only"
+    assert policy["environment"] == {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": f"$G3A_EVIDENCE_ROOT/{display}-home",
+        "PYTHONUSERBASE": f"$G3A_EVIDENCE_ROOT/{display}-python-user-base",
+        "ambient_policy": (
+            "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values"
+        ),
+        "isolated_directory_policy": (
+            "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+        ),
+    }
+    assert policy["tracee_task_cap"] == 192
+    assert policy["family_exec_caps"] == {
+        "cmake": 16,
+        "ninja": 8,
+        "python": 4,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 4,
+    }
+    assert policy["launch_environment_validation"] == (
+        "derive_expected_HOME_and_PYTHONUSERBASE_from_canonical_evidence_root_and_"
+        f"fixed_{stage}_names_then_require_ordinary_nonsymlink_empty_direct_children"
+    )
+    assert 'admitted_path="/usr/bin:/bin:$G3A_VENV/bin"' in script
+    assert 'admitted_path="$G3A_VENV/bin:/usr/bin:/bin"' not in script
+    assert f'isolated_home="$G3A_EVIDENCE_ROOT/{display}-home"' in script
+    assert (
+        f'isolated_python_user_base="$G3A_EVIDENCE_ROOT/{display}-python-user-base"'
+        in script
+    )
+    assert 'export HOME="$isolated_home"' in script
+    assert 'export PYTHONUSERBASE="$isolated_python_user_base"' in script
+    assert "def validate_launch_environment" in environment_guard
+    assert f'evidence_root / "{display}-home"' in environment_guard
+    assert f'evidence_root / "{display}-python-user-base"' in environment_guard
+    assert "def prepare_isolated_directories" in directory_guard
+    assert 'errors.append("one or more network connect attempts were traced")' in (
+        process_checker
+    )
+    assert 'errors.append("unknown or unparsed process event present")' in (
+        process_checker
+    )
+
+
+def _build_environment_validator(stage: str):
+    _, _, environment_guard, _ = _build_package_sources(stage)
+    return _actual_embedded_functions(
+        environment_guard, {"validate_launch_environment"}
+    )["validate_launch_environment"]
+
+
+def _expected_build_environment(
+    evidence_root: Path, stage: str, executable: str
+) -> dict[str, str]:
+    display = stage.replace("_", "-")
+    return {
+        "PATH": "/usr/bin:/bin:" + str(Path(executable).parent),
+        "HOME": str(evidence_root / f"{display}-home"),
+        "PYTHONUSERBASE": str(evidence_root / f"{display}-python-user-base"),
+        "VIRTUAL_ENV": str(Path(executable).parent.parent),
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONPYCACHEPREFIX": str(evidence_root / "pycache"),
+        "PYTHONHASHSEED": "0",
+        "LANG": "C",
+        "LC_ALL": "C",
+        "_": "/usr/bin/timeout",
+    }
+
+
+@pytest.mark.parametrize("stage", ["debug_build", "release_build"])
+def test_actual_build_environment_validator_accepts_exact_safe_directories(
+    tmp_path, stage
+):
+    validate = _build_environment_validator(stage)
+    evidence_root = tmp_path / stage
+    evidence_root.mkdir()
+    display = stage.replace("_", "-")
+    (evidence_root / f"{display}-home").mkdir()
+    (evidence_root / f"{display}-python-user-base").mkdir()
+    executable = "/fixture/g3a-venv/bin/python"
+    environment = _expected_build_environment(evidence_root, stage, executable)
+    assert validate(
+        environment,
+        executable,
+        evidence_root / "environment-facts.json",
+    ) == environment
+
+
+@pytest.mark.parametrize("stage", ["debug_build", "release_build"])
+@pytest.mark.parametrize("target_name", ["HOME", "PYTHONUSERBASE"])
+@pytest.mark.parametrize("fixture", ["wrong_nonempty", "polluted", "symlink"])
+def test_actual_build_environment_validator_rejects_wrong_or_unsafe_directories(
+    tmp_path, stage, target_name, fixture
+):
+    validate = _build_environment_validator(stage)
+    evidence_root = tmp_path / stage
+    evidence_root.mkdir()
+    display = stage.replace("_", "-")
+    home = evidence_root / f"{display}-home"
+    python_user_base = evidence_root / f"{display}-python-user-base"
+    home.mkdir()
+    python_user_base.mkdir()
+    target_path = home if target_name == "HOME" else python_user_base
+    executable = "/fixture/g3a-venv/bin/python"
+    environment = _expected_build_environment(evidence_root, stage, executable)
+    expected = {
+        "wrong_nonempty": "launch_environment_not_exact_admitted_mapping",
+        "polluted": "isolated_launch_directory_not_empty",
+        "symlink": "isolated_launch_directory_not_ordinary",
+    }[fixture]
+    if fixture == "wrong_nonempty":
+        wrong = tmp_path / f"{stage}-wrong-{target_name.lower()}"
+        wrong.mkdir()
+        (wrong / "unexpected").write_text("fixture", encoding="utf-8")
+        environment[target_name] = str(wrong)
+    elif fixture == "polluted":
+        (target_path / "unexpected").write_text("fixture", encoding="utf-8")
+    else:
+        target_path.rmdir()
+        target = tmp_path / f"{stage}-{target_name.lower()}-symlink-target"
+        target.mkdir()
+        target_path.symlink_to(target, target_is_directory=True)
+    with pytest.raises(RuntimeError, match=expected):
+        validate(
+            environment,
+            executable,
+            evidence_root / "environment-facts.json",
+        )
+
+
+@pytest.mark.parametrize("stage", ["debug_build", "release_build"])
+@pytest.mark.parametrize("fixture", ["preexisting", "nonempty", "symlink", "escape"])
+def test_build_directory_guards_reject_filesystem_counterexamples(
+    tmp_path, stage, fixture
+):
+    _, directory_guard, _, _ = _build_package_sources(stage)
+    prepare = _actual_embedded_functions(
+        directory_guard, {"prepare_isolated_directories"}
+    )["prepare_isolated_directories"]
+    display = stage.replace("_", "-")
+    root = tmp_path / display
+    root.mkdir()
+    candidates = [
+        str(root / f"{display}-home"),
+        str(root / f"{display}-python-user-base"),
+    ]
+    first = Path(candidates[0])
+    expected = {
+        "preexisting": "isolated_directory_preexisting",
+        "nonempty": "isolated_directory_nonempty",
+        "symlink": "isolated_directory_symlink",
+        "escape": "isolated_directory_escape_or_name_mismatch",
+    }[fixture]
+    if fixture == "preexisting":
+        first.mkdir()
+    elif fixture == "nonempty":
+        first.mkdir()
+        (first / "unexpected").write_text("fixture", encoding="utf-8")
+    elif fixture == "symlink":
+        target = root / "symlink-target"
+        target.mkdir()
+        first.symlink_to(target, target_is_directory=True)
+    else:
+        candidates[0] = str(root.parent / "escaped-home")
+    with pytest.raises(RuntimeError, match=expected):
+        prepare(str(root), candidates)
+
+
 def _debug_configure_policy() -> dict[str, object]:
     repository = Path(__file__).resolve().parents[3]
     return json.loads(
@@ -842,6 +1086,8 @@ def test_actual_process_checker_rejects_every_connect_record(tmp_path, event, or
     "event",
     [
         'execve("/unknown/tool", ["tool"], 0x0) = -1 ENOENT (No such file or directory)',
+        'execve("/home/runner/work/_temp/g3a-venv/bin/as", ["as"], 0x0) '
+        '= -1 ENOENT (No such file or directory)',
         'execve("/fixture/python", ["python"], 0x0 <unfinished ...>',
         '<... execve resumed> ) = 0',
     ],
