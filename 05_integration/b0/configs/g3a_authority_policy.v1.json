@@ -537,7 +537,8 @@
       },
       "tool:compiler_subtools": {
         "allowed_roots": [
-          "/usr/lib/gcc/x86_64-linux-gnu"
+          "/usr/lib/gcc/x86_64-linux-gnu",
+          "/usr/libexec/gcc/x86_64-linux-gnu"
         ],
         "allowed_paths": [],
         "min_files": 2,

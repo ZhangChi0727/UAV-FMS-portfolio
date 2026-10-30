@@ -13,7 +13,7 @@ env:
   G3A_EVENT_HEAD: "${{ github.event.pull_request.head.sha || github.sha }}"
   G3A_EVENT_MERGE: "${{ github.event.pull_request.merge_commit_sha || github.sha }}"
   G3A_POLICY: "${{ github.workspace }}/05_integration/b0/configs/g3a_authority_policy.v1.json"
-  G3A_POLICY_SHA256: f5748630aa17724888d2c8b5472b282c42485aacc4021614e0d17764be42541d
+  G3A_POLICY_SHA256: 613df3eac1d0df598964298be3fabba38743880179b9fb0e5e5c1c0ec0fb9570
   G3A_AUTHORITY_HELPER: "${{ github.workspace }}/05_integration/b0/binding_checks/g3a_authority.py"
   G3A_DEBUG_BUILD: "${{ github.workspace }}/build/b0-controller/debug"
   G3A_RELEASE_BUILD: "${{ github.workspace }}/build/b0-controller/release"
@@ -538,27 +538,132 @@ jobs:
           add("tool:ninja", ninja_invocation)
 
           compiler_invocation = Path("/usr/bin/c++")
+
+          def discover_gcc_subtools(
+              compiler_candidate: Path,
+              library_base: Path = Path("/usr/lib/gcc/x86_64-linux-gnu"),
+              libexec_base: Path = Path("/usr/libexec/gcc/x86_64-linux-gnu"),
+          ) -> dict[str, object]:
+              compiler_resolved = compiler_candidate.resolve(strict=True)
+              match = re.search(r"g\+\+-(\d+)$", compiler_resolved.name)
+              if match is None:
+                  raise RuntimeError(
+                      "resolved /usr/bin/c++ does not expose an explicit GCC major: "
+                      f"{compiler_resolved}"
+                  )
+              major = match.group(1)
+              roots = (library_base / major, libexec_base / major)
+              logical_names = (
+                  "cc1plus",
+                  "collect2",
+                  "liblto_plugin.so",
+                  "lto-wrapper",
+                  "lto1",
+              )
+              candidates: list[dict[str, object]] = []
+              selected_by_resolved: dict[str, dict[str, object]] = {}
+              for root in roots:
+                  for logical_name in logical_names:
+                      candidate = root / logical_name
+                      exists = candidate.exists()
+                      is_file = candidate.is_file()
+                      observation: dict[str, object] = {
+                          "logical_name": logical_name,
+                          "input_path": str(candidate.absolute()),
+                          "exists": exists,
+                          "is_file": is_file,
+                          "resolved_path": None,
+                          "bytes": None,
+                          "sha256": None,
+                      }
+                      if is_file:
+                          resolved = candidate.resolve(strict=True)
+                          raw = resolved.read_bytes()
+                          resolved_path = str(resolved)
+                          digest = hashlib.sha256(raw).hexdigest()
+                          observation.update({
+                              "resolved_path": resolved_path,
+                              "bytes": len(raw),
+                              "sha256": digest,
+                          })
+                          selected = selected_by_resolved.setdefault(
+                              resolved_path,
+                              {
+                                  "resolved_path": resolved_path,
+                                  "logical_names": [],
+                                  "input_paths": [],
+                                  "bytes": len(raw),
+                                  "sha256": digest,
+                              },
+                          )
+                          if selected["bytes"] != len(raw) or selected["sha256"] != digest:
+                              raise RuntimeError(
+                                  f"GCC subtool alias bytes changed during discovery: {resolved}"
+                              )
+                          selected["logical_names"].append(logical_name)
+                          selected["input_paths"].append(str(candidate.absolute()))
+                      candidates.append(observation)
+              return {
+                  "status": "observed_not_admitted",
+                  "compiler_invocation": str(compiler_candidate.absolute()),
+                  "compiler_resolved": str(compiler_resolved),
+                  "gcc_major": major,
+                  "roots": [str(root.absolute()) for root in roots],
+                  "candidates": candidates,
+                  "selected_files": list(selected_by_resolved.values()),
+              }
+
+          def admit_gcc_subtools(discovery: dict[str, object]) -> list[dict[str, object]]:
+              selected_files = list(discovery["selected_files"])
+              required_paths: dict[str, set[str]] = {"cc1plus": set(), "collect2": set()}
+              for selected in selected_files:
+                  resolved_path = str(selected["resolved_path"])
+                  for logical_name in selected["logical_names"]:
+                      if logical_name in required_paths:
+                          required_paths[logical_name].add(resolved_path)
+              required_targets = {
+                  name: sorted(paths)
+                  for name, paths in required_paths.items()
+              }
+              invalid = {
+                  name: paths
+                  for name, paths in required_targets.items()
+                  if len(paths) != 1
+              }
+              if invalid:
+                  raise RuntimeError(
+                      "required GCC executable helper missing or ambiguous: "
+                      f"{invalid}; compiler={discovery['compiler_resolved']}; "
+                      f"roots={discovery['roots']}"
+                  )
+              if required_targets["cc1plus"][0] == required_targets["collect2"][0]:
+                  raise RuntimeError(
+                      "required GCC executable helpers resolve to the same file: "
+                      f"{required_targets['cc1plus'][0]}"
+                  )
+              return selected_files
+
+          compiler_discovery = discover_gcc_subtools(compiler_invocation)
+          print(json.dumps(compiler_discovery, sort_keys=True), flush=True)
+          admitted_compiler_files = admit_gcc_subtools(compiler_discovery)
           compiler = compiler_invocation.resolve(strict=True)
           add("tool:compiler", compiler)
-          match = re.search(r"-(\d+)$", compiler.name)
-          gcc_parent = Path("/usr/lib/gcc/x86_64-linux-gnu")
-          if match is None:
-              versions = sorted(
-                  (item for item in gcc_parent.iterdir() if item.name.isdigit()),
-                  key=lambda item: int(item.name),
-              )
-              if not versions:
-                  raise RuntimeError("no GCC subtool directory")
-              gcc_root = versions[-1]
-          else:
-              gcc_root = gcc_parent / match.group(1)
           compiler_subtools: list[Path] = []
-          for name in ("cc1plus", "collect2", "liblto_plugin.so", "lto-wrapper", "lto1"):
-              candidate = gcc_root / name
-              if candidate.is_file():
-                  add("tool:compiler_subtools", candidate)
-                  if name != "liblto_plugin.so":
-                      compiler_subtools.append(candidate)
+          for selected in admitted_compiler_files:
+              candidate = Path(selected["input_paths"][0])
+              record = add("tool:compiler_subtools", candidate)
+              if (
+                  record["bytes"] != selected["bytes"]
+                  or record["sha256"] != selected["sha256"]
+              ):
+                  raise RuntimeError(
+                      f"GCC subtool bytes changed after discovery: {candidate}"
+                  )
+              if any(
+                  logical_name != "liblto_plugin.so"
+                  for logical_name in selected["logical_names"]
+              ):
+                  compiler_subtools.append(candidate)
 
           binutils: list[Path] = []
           for name in ("ar", "as", "ld", "nm", "objcopy", "ranlib", "strip"):
