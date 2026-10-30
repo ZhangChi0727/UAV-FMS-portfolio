@@ -6,14 +6,17 @@ These tests do not qualify the actual G3-A environment or real lifecycle.
 
 from __future__ import annotations
 
+import ast
 import base64
 import builtins
 import hashlib
 import json
 import os
+from pathlib import Path
 import re
 import subprocess
 import sys
+import textwrap
 import zlib
 
 import pytest
@@ -84,6 +87,31 @@ def _startup_production_namespace():
     namespace = {"__name__": "g3a_startup_scan_test", "__file__": "<workflow-production>"}
     exec(compile(payload, "<workflow-production>", "exec"), namespace)
     return namespace
+
+
+def _gcc_discovery_functions():
+    """Extract only the production GCC discovery/admission functions from the workflow."""
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    step = workflow.index("Assemble current CI environment facts without importing the DUT")
+    start = workflow.index("          from __future__ import annotations", step)
+    end = workflow.index("\n          PY\n", start)
+    production = textwrap.dedent(workflow[start:end])
+    parsed = ast.parse(production, filename="<g3a-environment-facts>")
+    wanted = {"discover_gcc_subtools", "admit_gcc_subtools"}
+    functions = [
+        node
+        for node in parsed.body
+        if isinstance(node, ast.FunctionDef) and node.name in wanted
+    ]
+    assert {node.name for node in functions} == wanted
+    isolated = ast.Module(body=functions, type_ignores=[])
+    ast.fix_missing_locations(isolated)
+    namespace = {"Path": Path, "hashlib": hashlib, "re": re}
+    exec(compile(isolated, "<g3a-gcc-discovery>", "exec"), namespace)
+    return namespace["discover_gcc_subtools"], namespace["admit_gcc_subtools"]
 
 
 class _ScanJournal:
@@ -183,6 +211,224 @@ def _json(value):
 
 def _sha(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+def _gcc_fixture(tmp_path, compiler_name="x86_64-linux-gnu-g++-13"):
+    compiler = tmp_path / compiler_name
+    compiler.write_bytes(b"fixture-compiler")
+    library_base = tmp_path / "usr-lib-gcc"
+    libexec_base = tmp_path / "usr-libexec-gcc"
+    (library_base / "13").mkdir(parents=True)
+    (libexec_base / "13").mkdir(parents=True)
+    return compiler, library_base, libexec_base
+
+
+def _write_gcc_fixture(root, name, raw):
+    path = root / "13" / name
+    path.write_bytes(raw)
+    return path
+
+
+def _selected_by_path(discovery):
+    return {item["resolved_path"]: item for item in discovery["selected_files"]}
+
+
+def test_gcc_subtool_discovery_accepts_legacy_single_root(tmp_path):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    cc1plus = _write_gcc_fixture(library_base, "cc1plus", b"legacy-cc1plus")
+    collect2 = _write_gcc_fixture(library_base, "collect2", b"legacy-collect2")
+    plugin = _write_gcc_fixture(library_base, "liblto_plugin.so", b"legacy-plugin")
+
+    discovery = discover(compiler, library_base, libexec_base)
+    admitted = admit(discovery)
+
+    assert discovery["status"] == "observed_not_admitted"
+    assert discovery["gcc_major"] == "13"
+    assert len(discovery["candidates"]) == 10
+    assert discovery["roots"] == [
+        str((library_base / "13").absolute()),
+        str((libexec_base / "13").absolute()),
+    ]
+    selected = _selected_by_path(discovery)
+    expected = {
+        str(cc1plus.resolve()): ("cc1plus", b"legacy-cc1plus"),
+        str(collect2.resolve()): ("collect2", b"legacy-collect2"),
+        str(plugin.resolve()): ("liblto_plugin.so", b"legacy-plugin"),
+    }
+    assert set(selected) == set(expected)
+    assert len(admitted) == 3
+    for path, (logical_name, raw) in expected.items():
+        assert selected[path]["logical_names"] == [logical_name]
+        assert selected[path]["bytes"] == len(raw)
+        assert selected[path]["sha256"] == _sha(raw)
+
+
+def test_gcc_subtool_discovery_accepts_split_libexec_layout(tmp_path):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    plugin = _write_gcc_fixture(library_base, "liblto_plugin.so", b"split-plugin")
+    cc1plus = _write_gcc_fixture(libexec_base, "cc1plus", b"split-cc1plus")
+    collect2 = _write_gcc_fixture(libexec_base, "collect2", b"split-collect2")
+    lto1 = _write_gcc_fixture(libexec_base, "lto1", b"split-lto1")
+
+    discovery = discover(compiler, library_base, libexec_base)
+    admit(discovery)
+    selected = _selected_by_path(discovery)
+
+    assert set(selected) == {
+        str(plugin.resolve()),
+        str(cc1plus.resolve()),
+        str(collect2.resolve()),
+        str(lto1.resolve()),
+    }
+    observed = {
+        (item["logical_name"], item["input_path"]): item
+        for item in discovery["candidates"]
+    }
+    assert observed[("cc1plus", str(cc1plus.absolute()))]["is_file"] is True
+    assert observed[("collect2", str(collect2.absolute()))]["sha256"] == _sha(
+        b"split-collect2"
+    )
+
+
+def test_gcc_subtool_discovery_deduplicates_resolved_aliases(tmp_path):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    _write_gcc_fixture(libexec_base, "cc1plus", b"alias-cc1plus")
+    _write_gcc_fixture(libexec_base, "collect2", b"alias-collect2")
+    plugin = _write_gcc_fixture(library_base, "liblto_plugin.so", b"alias-plugin")
+    plugin_alias = libexec_base / "13" / "liblto_plugin.so"
+    plugin_alias.symlink_to(plugin)
+
+    discovery = discover(compiler, library_base, libexec_base)
+    admit(discovery)
+    selected = _selected_by_path(discovery)
+    plugin_record = selected[str(plugin.resolve())]
+
+    assert len(selected) == 3
+    assert plugin_record["logical_names"] == [
+        "liblto_plugin.so",
+        "liblto_plugin.so",
+    ]
+    assert plugin_record["input_paths"] == [
+        str(plugin.absolute()),
+        str(plugin_alias.absolute()),
+    ]
+
+
+def test_gcc_subtool_admission_accepts_required_helpers_with_same_target_aliases(
+    tmp_path,
+):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    cc1plus = tmp_path / "cc1plus-real"
+    cc1plus.write_bytes(b"aliased-cc1plus")
+    collect2 = tmp_path / "collect2-real"
+    collect2.write_bytes(b"aliased-collect2")
+    plugin = tmp_path / "plugin-real"
+    plugin.write_bytes(b"aliased-plugin")
+    for root in (library_base, libexec_base):
+        (root / "13" / "cc1plus").symlink_to(cc1plus)
+        (root / "13" / "collect2").symlink_to(collect2)
+        (root / "13" / "liblto_plugin.so").symlink_to(plugin)
+
+    discovery = discover(compiler, library_base, libexec_base)
+    admitted = admit(discovery)
+    selected = _selected_by_path(discovery)
+
+    assert set(selected) == {
+        str(cc1plus.resolve()),
+        str(collect2.resolve()),
+        str(plugin.resolve()),
+    }
+    assert len(admitted) == 3
+    assert selected[str(cc1plus.resolve())]["logical_names"] == [
+        "cc1plus",
+        "cc1plus",
+    ]
+    assert selected[str(collect2.resolve())]["logical_names"] == [
+        "collect2",
+        "collect2",
+    ]
+
+
+def test_gcc_subtool_admission_refuses_one_role_with_distinct_resolved_targets(
+    tmp_path,
+):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    first = _write_gcc_fixture(library_base, "cc1plus", b"first-cc1plus")
+    second = _write_gcc_fixture(libexec_base, "cc1plus", b"second-cc1plus")
+    _write_gcc_fixture(libexec_base, "collect2", b"one-collect2")
+
+    discovery = discover(compiler, library_base, libexec_base)
+    with pytest.raises(RuntimeError, match="missing or ambiguous") as caught:
+        admit(discovery)
+
+    diagnostic = str(caught.value)
+    assert str(first.resolve()) in diagnostic
+    assert str(second.resolve()) in diagnostic
+
+
+@pytest.mark.parametrize("present", [(), ("cc1plus",), ("collect2",)])
+def test_gcc_subtool_admission_refuses_plugin_only_or_missing_required_helper(
+    tmp_path, present
+):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    _write_gcc_fixture(library_base, "liblto_plugin.so", b"required-plugin")
+    for name in present:
+        _write_gcc_fixture(libexec_base, name, f"required-{name}".encode("ascii"))
+
+    discovery = discover(compiler, library_base, libexec_base)
+    with pytest.raises(RuntimeError, match="required GCC executable helper missing"):
+        admit(discovery)
+
+
+def test_gcc_subtool_admission_refuses_required_helpers_with_one_resolved_file(tmp_path):
+    discover, admit = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path)
+    shared = tmp_path / "shared-helper"
+    shared.write_bytes(b"shared-required-helper")
+    (library_base / "13" / "cc1plus").symlink_to(shared)
+    (libexec_base / "13" / "collect2").symlink_to(shared)
+
+    discovery = discover(compiler, library_base, libexec_base)
+    with pytest.raises(RuntimeError, match="resolve to the same file"):
+        admit(discovery)
+
+
+def test_gcc_subtool_discovery_refuses_compiler_without_explicit_major(tmp_path):
+    discover, _ = _gcc_discovery_functions()
+    compiler, library_base, libexec_base = _gcc_fixture(tmp_path, compiler_name="c++")
+
+    with pytest.raises(RuntimeError, match="does not expose an explicit GCC major"):
+        discover(compiler, library_base, libexec_base)
+
+
+def test_gcc_subtool_policy_and_workflow_digest_keep_the_finite_gate():
+    repository = Path(__file__).resolve().parents[3]
+    policy_path = repository / "05_integration" / "b0" / "configs" / (
+        "g3a_authority_policy.v1.json"
+    )
+    workflow_path = repository / ".github" / "workflows" / "g3a.yml"
+    policy_raw = policy_path.read_bytes()
+    policy = json.loads(policy_raw)
+    rule = policy["environment"]["file_role_rules"]["tool:compiler_subtools"]
+
+    assert rule == {
+        "allowed_roots": [
+            "/usr/lib/gcc/x86_64-linux-gnu",
+            "/usr/libexec/gcc/x86_64-linux-gnu",
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 12,
+    }
+    workflow = workflow_path.read_text(encoding="utf-8")
+    bound = re.findall(r"^  G3A_POLICY_SHA256: ([0-9a-f]{64})$", workflow, re.MULTILINE)
+    assert bound == [hashlib.sha256(policy_raw).hexdigest()]
 
 
 def _parameter_fixture(tmp_path):
