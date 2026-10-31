@@ -530,6 +530,92 @@ def _debug_configure_sources() -> tuple[str, str, str, str]:
     return script, directory_guard, environment_guard, process_checker
 
 
+def _release_configure_package(workflow: str) -> str:
+    start = workflow.index("Materialize release_configure run body part 1 of 4")
+    end = workflow.index(
+        "Configure Release from the explicit disconnected Catch2 source", start
+    )
+    materializers = workflow[start:end]
+    payloads = re.findall(r'payload_b64 = b"([A-Za-z0-9+/=]+)"', materializers)
+    descriptors = re.findall(
+        r'"([0-9]+)" \\\n\s+"([0-9a-f]{64})" <<\'PY\'', materializers
+    )
+    assert len(payloads) == len(descriptors) == 4
+    parts = []
+    for encoded, (expected_length, expected_digest) in zip(
+        payloads, descriptors, strict=True
+    ):
+        part = base64.b64decode(encoded, validate=True)
+        assert len(part) == int(expected_length)
+        assert len(part) <= 10_000
+        assert hashlib.sha256(part).hexdigest() == expected_digest
+        parts.append(part)
+    package = b"".join(parts)
+    executor = workflow[end:]
+    identity = re.search(
+        r'"release_configure" \\\n\s+"([0-9]+)" \\\n\s+"([0-9a-f]{64})" \\', executor
+    )
+    assert identity is not None
+    assert len(package) == int(identity.group(1))
+    assert hashlib.sha256(package).hexdigest() == identity.group(2)
+    assert _release_configure_executor_materializer_ids(workflow) == [
+        f"package_release_configure_part_{number}" for number in range(1, 5)
+    ]
+    return package.decode("utf-8", errors="strict")
+
+
+def _release_configure_executor_materializer_ids(workflow: str) -> list[str]:
+    start = workflow.index(
+        "Configure Release from the explicit disconnected Catch2 source"
+    )
+    end = workflow.index("Materialize release_build run body part 1 of 3", start)
+    executor = workflow[start:end]
+    assert '"release_configure" \\' in executor
+    stops = re.findall(
+        r'"materializer_step_ids": \[f"package_\{step_id\}_part_\{number\}" '
+        r"for number in range\(1, ([0-9]+)\)\]", executor
+    )
+    assert stops == ["5"]
+    return [f"package_release_configure_part_{number}" for number in range(1, 5)]
+
+
+def test_release_configure_derivation_rejects_missing_fourth_materializer_id():
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    start = workflow.index(
+        "Configure Release from the explicit disconnected Catch2 source"
+    )
+    end = workflow.index("Materialize release_build run body part 1 of 3", start)
+    executor = workflow[start:end]
+    assert executor.count("range(1, 5)") == 1
+    mutated = workflow[:start] + executor.replace("range(1, 5)", "range(1, 4)", 1) + workflow[end:]
+    with pytest.raises(AssertionError):
+        _release_configure_package(mutated)
+
+
+def _release_configure_sources() -> tuple[str, str, str, str]:
+    repository = Path(__file__).resolve().parents[3]
+    workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
+        encoding="utf-8"
+    )
+    script = _release_configure_package(workflow)
+
+    def heredoc(start_marker: str, end_marker: str) -> str:
+        assert script.count(start_marker) == 1
+        start = script.index(start_marker) + len(start_marker)
+        assert script.count(end_marker, start) == 1
+        return script[start:script.index(end_marker, start)]
+
+    return (
+        script,
+        heredoc('"${directory_guard_command[@]}" <<\'PY\'\n', "\nPY\nroot_command=("),
+        heredoc('release-configure-allowlist-check.log" 2>&1 <<\'PY\'\n', "\nPY\nallowlist_check_rc=$?"),
+        heredoc('release-configure-process-check.log" 2>&1 <<\'PY\'\n', "\nPY\nprocess_check_rc=$?"),
+    )
+
+
 def _actual_embedded_functions(source: str, names: set[str]) -> dict[str, object]:
     tree = ast.parse(source)
     selected = [
@@ -658,7 +744,7 @@ def _build_facts_contract_functions(build_type: str) -> dict[str, object]:
     [
         ("Debug", "debug-configure", True, 16),
         ("Debug", "debug-build", True, 4),
-        ("Release", "release-configure", False, 8),
+        ("Release", "release-configure", True, 16),
         ("Release", "release-build", True, 4),
     ],
 )
@@ -703,10 +789,11 @@ def test_actual_build_facts_consumer_accepts_exact_four_stage_grid(
         ("wrong_cap", "process cap receipt mismatch"),
     ],
 )
+@pytest.mark.parametrize("build_type", ["Debug", "Release"])
 def test_actual_build_facts_consumer_rejects_environment_and_cap_drift(
-    tmp_path, fixture, message
+    tmp_path, fixture, message, build_type
 ):
-    functions = _build_facts_contract_functions("Debug")
+    functions = _build_facts_contract_functions(build_type)
     expected = functions["expected_stage_contract"]
     validate = functions["validate_stage_contract"]
     venv = Path("/fixture/g3a-venv")
@@ -714,8 +801,8 @@ def test_actual_build_facts_consumer_rejects_environment_and_cap_drift(
     pycache_prefix = str(evidence_root / "pycache")
     influence_variables = "fixture-influence-variables"
     caps, environment = expected(
-        "Debug", "debug-configure", venv, evidence_root, pycache_prefix,
-        influence_variables,
+        build_type, f"{build_type.lower()}-configure", venv, evidence_root,
+        pycache_prefix, influence_variables,
     )
     environment = dict(environment)
     caps = dict(caps)
@@ -729,7 +816,7 @@ def test_actual_build_facts_consumer_rejects_environment_and_cap_drift(
         caps["python"] = 8
     with pytest.raises(RuntimeError, match=message):
         validate(
-            "Debug", "debug-configure", venv, evidence_root,
+            build_type, f"{build_type.lower()}-configure", venv, evidence_root,
             pycache_prefix, influence_variables, environment, caps,
         )
 
@@ -746,7 +833,7 @@ def test_build_facts_caps_have_one_source_for_three_downstream_consumers(build_t
     assert source.count("caps.items()") == 4
 
 
-def test_finalizer_step_lists_are_ordered_and_cardinality_bound_to_51():
+def test_finalizer_step_lists_are_ordered_and_cardinality_bound_to_52():
     repository = Path(__file__).resolve().parents[3]
     workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
         encoding="utf-8"
@@ -770,7 +857,7 @@ def test_finalizer_step_lists_are_ordered_and_cardinality_bound_to_51():
         flags=re.MULTILINE,
     )
     assert outcomes == conclusions
-    assert len(outcomes) == 51
+    assert len(outcomes) == 52
     assert outcomes[-1] == "compare_build_types"
     cardinality = re.search(
         r'outcome_entries\[@\]\}" -ne ([0-9]+).*'
@@ -778,10 +865,10 @@ def test_finalizer_step_lists_are_ordered_and_cardinality_bound_to_51():
         workflow,
     )
     assert cardinality is not None
-    assert cardinality.groups() == ("51", "51")
+    assert cardinality.groups() == ("52", "52")
 
 
-def test_predut_required_step_maps_match_41_actual_steps_in_workflow_order():
+def test_predut_required_step_maps_match_42_actual_steps_in_workflow_order():
     repository = Path(__file__).resolve().parents[3]
     workflow = (repository / ".github" / "workflows" / "g3a.yml").read_text(
         encoding="utf-8"
@@ -807,12 +894,13 @@ def test_predut_required_step_maps_match_41_actual_steps_in_workflow_order():
     actual_ids = re.findall(r"^\s+id:\s+([a-z0-9_]+)\s*$", workflow[:gate_start], re.MULTILINE)
     required = set(outcomes)
     assert outcomes == conclusions == actual_ids
-    assert len(outcomes) == len(required) == len(actual_ids) == 41
+    assert len(outcomes) == len(required) == len(actual_ids) == 42
     assert outcomes.count("package_debug_configure_part_4") == 1
+    assert outcomes.count("package_release_configure_part_4") == 1
     assert all(actual_ids.count(step_id) == 1 for step_id in outcomes)
     cardinality = re.search(r"len\(outcomes\) != ([0-9]+)", gate)
     assert cardinality is not None
-    assert cardinality.group(1) == "41"
+    assert cardinality.group(1) == "42"
 
 
 @pytest.mark.parametrize(
@@ -1075,6 +1163,51 @@ def test_debug_configure_profile_and_generated_consumer_are_exactly_bound():
     )
 
 
+def test_release_configure_profile_and_generated_consumer_are_exactly_bound():
+    script, directory_guard, environment_guard, process_checker = (
+        _release_configure_sources()
+    )
+    repository = Path(__file__).resolve().parents[3]
+    profiles = json.loads(
+        (repository / "05_integration" / "b0" / "configs" /
+         "g3a_authority_policy.v1.json").read_bytes()
+    )["environment"]
+    profile = profiles["release_configure_execution_profile"]
+    assert profile["scope"] == "release_configure_only"
+    assert profile["environment"] == {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/release-configure-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/release-configure-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root",
+    }
+    assert profile["tracee_task_cap"] == 256
+    assert profile["family_exec_caps"] == {
+        "cmake": 32, "ninja": 16, "python": 16, "compiler": 16,
+        "compiler_subtools": 64, "binutils": 64, "shell": 32, "platform": 8,
+    }
+    assert 'admitted_path="/usr/bin:/bin:$G3A_VENV/bin"' in script
+    assert 'admitted_path="$G3A_VENV/bin:/usr/bin:/bin"' not in script
+    assert 'mkdir -p "$G3A_RELEASE_BUILD"' in script
+    assert '-DCMAKE_BUILD_TYPE=Release' in script
+    assert "/usr/bin/timeout --signal=TERM --kill-after=10s 120s" in script
+    assert "printf 'cap.family_exec.python=16\\n'" in script
+    assert "cap.family_exec.python=8" not in script
+    assert "def prepare_isolated_directories" in directory_guard
+    assert "def validate_launch_environment" in environment_guard
+    assert 'errors.append("one or more network connect attempts were traced")' in process_checker
+    assert 'errors.append("unknown or unparsed process event present")' in process_checker
+    assert profiles["debug_configure_execution_profile"]["family_exec_caps"]["python"] == 16
+    assert profiles["debug_build_execution_profile"]["family_exec_caps"]["python"] == 4
+    assert profiles["release_build_execution_profile"]["family_exec_caps"]["python"] == 4
+    assert profile["network_connect_policy"] == (
+        "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts"
+    )
+    assert profile["unknown_process_policy"] == (
+        "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events"
+    )
+
+
 def _directory_guard_function():
     _, directory_guard, _, _ = _debug_configure_sources()
     return _actual_embedded_functions(
@@ -1158,15 +1291,93 @@ def test_actual_environment_guard_accepts_exact_map_and_rejects_pollution(tmp_pa
         validate(polluted, executable, environment_path)
 
 
+def _release_directory_guard_function():
+    _, source, _, _ = _release_configure_sources()
+    return _actual_embedded_functions(
+        source, {"prepare_isolated_directories"}
+    )["prepare_isolated_directories"]
+
+
+def _release_isolated_candidates(root: Path) -> list[str]:
+    return [str(root / "release-configure-home"),
+            str(root / "release-configure-python-user-base")]
+
+
+@pytest.mark.parametrize("fixture", ["fresh", "preexisting", "nonempty", "symlink", "escape"])
+def test_release_directory_guard_enforces_fresh_ordinary_direct_children(tmp_path, fixture):
+    prepare = _release_directory_guard_function()
+    candidates = _release_isolated_candidates(tmp_path)
+    first = Path(candidates[0])
+    if fixture == "preexisting":
+        first.mkdir()
+    elif fixture == "nonempty":
+        first.mkdir()
+        (first / "unexpected").write_text("fixture", encoding="utf-8")
+    elif fixture == "symlink":
+        target = tmp_path / "target"
+        target.mkdir()
+        first.symlink_to(target, target_is_directory=True)
+    elif fixture == "escape":
+        candidates[0] = str(tmp_path.parent / "escaped-home")
+    if fixture != "fresh":
+        expected = {
+            "preexisting": "preexisting", "nonempty": "nonempty",
+            "symlink": "symlink", "escape": "escape_or_name_mismatch",
+        }[fixture]
+        with pytest.raises(RuntimeError, match=expected):
+            prepare(str(tmp_path), candidates)
+        return
+    prepare(str(tmp_path), candidates)
+    for text in candidates:
+        path = Path(text)
+        assert path.is_dir() and not path.is_symlink() and list(path.iterdir()) == []
+        assert path.resolve(strict=True).parent == tmp_path.resolve(strict=True)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["missing_home", "wrong_path", "wrong_home", "wrong_python_user_base", "pollution"],
+)
+def test_release_environment_guard_rejects_missing_wrong_or_ambient_values(
+    tmp_path, mutation
+):
+    prepare = _release_directory_guard_function()
+    prepare(str(tmp_path), _release_isolated_candidates(tmp_path))
+    _, _, source, _ = _release_configure_sources()
+    validate = _actual_embedded_functions(
+        source, {"validate_launch_environment"}
+    )["validate_launch_environment"]
+    executable = str(tmp_path / "venv" / "bin" / "python")
+    environment = _valid_launch_environment(tmp_path, executable)
+    environment["HOME"] = str(tmp_path / "release-configure-home")
+    environment["PYTHONUSERBASE"] = str(tmp_path / "release-configure-python-user-base")
+    assert validate(environment, executable, tmp_path / "facts.json") == environment
+    invalid = dict(environment)
+    if mutation == "missing_home":
+        invalid.pop("HOME")
+    elif mutation == "wrong_path":
+        invalid["PATH"] = str(Path(executable).parent) + ":/usr/bin:/bin"
+    elif mutation == "wrong_home":
+        invalid["HOME"] = str(tmp_path / "wrong-home")
+    elif mutation == "wrong_python_user_base":
+        invalid["PYTHONUSERBASE"] = str(tmp_path / "wrong-base")
+    else:
+        invalid["HTTP_PROXY"] = "http://untrusted.invalid"
+    with pytest.raises(RuntimeError, match="exact admitted finite mapping"):
+        validate(invalid, executable, tmp_path / "facts.json")
+
+
 def _write_nul(path: Path, values: list[str]) -> None:
     path.write_bytes(b"\0".join(value.encode("utf-8") for value in values) + b"\0")
 
 
 def _run_actual_process_checker(
-    tmp_path: Path, *, python_exec_count: int, extra_events: list[str]
+    tmp_path: Path, *, python_exec_count: int, extra_events: list[str],
+    configure: str = "debug",
 ) -> tuple[subprocess.CompletedProcess, dict[str, str]]:
     tmp_path.mkdir(parents=True, exist_ok=True)
-    _, _, _, checker = _debug_configure_sources()
+    sources = _debug_configure_sources if configure == "debug" else _release_configure_sources
+    _, _, _, checker = sources()
     timeout_path = Path("/usr/bin/timeout")
     strace_path = Path("/usr/bin/strace")
     timeout_digest = hashlib.sha256(timeout_path.resolve(strict=True).read_bytes()).hexdigest()
@@ -1175,7 +1386,7 @@ def _run_actual_process_checker(
     commands = tmp_path / "commands"
     trace_dir.mkdir()
     commands.mkdir()
-    stage = "debug-configure"
+    stage = f"{configure}-configure"
     root_expected = "/fixture/cmake"
     python_target = "/fixture/python"
     digest = "1" * 64
@@ -1312,6 +1523,61 @@ def test_actual_process_checker_rejects_unknown_failed_unfinished_and_resumed(
 ):
     completed, rows = _run_actual_process_checker(
         tmp_path, python_exec_count=0, extra_events=[event]
+    )
+    assert completed.returncode == 97
+    assert int(rows["unknown_or_unparsed_process_event_count"]) >= 1
+    assert rows["gate_status"] == "incomplete_or_unknown_stop_downstream"
+
+
+def test_actual_release_process_checker_accepts_python_16_and_rejects_17(tmp_path):
+    accepted, rows = _run_actual_process_checker(
+        tmp_path / "accepted", python_exec_count=16, extra_events=[],
+        configure="release",
+    )
+    assert accepted.returncode == 0
+    assert rows["stage"] == "release-configure"
+    assert rows["cap.family_exec.python"] == rows["family_exec_count.python"] == "16"
+    rejected, rows = _run_actual_process_checker(
+        tmp_path / "rejected", python_exec_count=17, extra_events=[],
+        configure="release",
+    )
+    assert rejected.returncode == 97
+    assert rows["authorization_overrun_count"] == "1"
+
+
+@pytest.mark.parametrize(
+    "event",
+    [
+        'connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) '
+        '= -1 ENOENT (No such file or directory)',
+        'connect(3, {sa_family=AF_INET, sin_port=htons(9)}, 16) '
+        '= -1 ECONNREFUSED (Connection refused)',
+        'connect(3, {sa_family=AF_INET6, sin6_port=htons(9)}, 28) = 0',
+    ],
+)
+def test_actual_release_process_checker_rejects_every_connect_record(tmp_path, event):
+    completed, rows = _run_actual_process_checker(
+        tmp_path, python_exec_count=0, extra_events=[event], configure="release"
+    )
+    assert completed.returncode == 97
+    assert rows["connect_trace_record_count"] == "1"
+    assert rows["network_connect_gate_status"] == "connect_attempt_present_stop_downstream"
+
+
+@pytest.mark.parametrize(
+    "event",
+    [
+        'execve("/unknown/tool", ["tool"], 0x0) = 0',
+        'execve("/unknown/tool", ["tool"], 0x0) = -1 ENOENT (No such file or directory)',
+        'execve("/fixture/python", ["python"], 0x0 <unfinished ...>',
+        '<... execve resumed> ) = 0',
+    ],
+)
+def test_actual_release_process_checker_rejects_unknown_and_partial_events(
+    tmp_path, event
+):
+    completed, rows = _run_actual_process_checker(
+        tmp_path, python_exec_count=0, extra_events=[event], configure="release"
     )
     assert completed.returncode == 97
     assert int(rows["unknown_or_unparsed_process_event_count"]) >= 1
