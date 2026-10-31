@@ -1,0 +1,1738 @@
+{
+  "policy_version": "b0-g3a-authority-policy/v1",
+  "work_order": {
+    "path": "docs/work_orders/B0_G3_A_evidence_closure_work_order.md",
+    "sha256": "07173ef2cc3d939da047edc9adfa028d9d38c480662cd828fb7d249b49dd9d82"
+  },
+  "source_paths": [
+    ".github/workflows/ci.yml",
+    ".github/workflows/g3a.yml",
+    "CMakeLists.txt",
+    "CMakePresets.json",
+    "requirements/b0-dev.txt",
+    "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "05_integration/b0/configs/b0_g0_contract.v1.json",
+    "05_integration/b0/schema/b0_g0_contract.schema.json",
+    "05_integration/b0/schema/b0_g0_contract.v2.schema.json",
+    "05_integration/b0/schema/b0_g3_integration_evidence.schema.json",
+    "05_integration/b0/configs/b0_g3_rate_kp_x_study.v1.json",
+    "05_integration/b0/validate_config.py",
+    "05_integration/b0/runner.py",
+    "05_integration/b0/scheduler.py",
+    "05_integration/b0/events.py",
+    "01_simulation/b0/__init__.py",
+    "01_simulation/b0/contract.py",
+    "01_simulation/b0/quaternion.py",
+    "01_simulation/b0/plant.py",
+    "01_simulation/b0/actuator.py",
+    "01_simulation/b0/imu.py",
+    "02_estimation/b0/estimator.py",
+    "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+    "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+    "03_control/b0/CMakeLists.txt",
+    "03_control/b0/include/b0_controller/controller.hpp",
+    "03_control/b0/src/controller.cpp",
+    "03_control/b0/python/controller_bindings.cpp",
+    "03_control/b0/python/controller.py",
+    "03_control/b0/configs/b0_g2_controller.v1.json",
+    "03_control/b0/configs/b0_g2_controller_approval.v1.json",
+    "docs/work_orders/B0_PR11_v2_G1_closeout.md",
+    "systems_engineering/reports/b0/g0_approval_decision.md",
+    "systems_engineering/reports/b0/g2a_validation_record.md",
+    "systems_engineering/reports/b0/g2b_validation_record.md",
+    "systems_engineering/reports/b0/g3_s0_integration_design.md",
+    "systems_engineering/reports/b0/g3_s0_verification_matrix.md",
+    "docs/work_orders/B0_G3_A_evidence_closure_work_order.md",
+    "05_integration/b0/integration_session.py",
+    "05_integration/b0/g3a_evidence_driver.py",
+    "05_integration/b0/configs/g3a_evidence_profiles.v1.json",
+    "05_integration/b0/configs/g3a_authority_policy.v1.json",
+    "05_integration/b0/binding_checks/check_g3a_runtime.py",
+    "05_integration/b0/binding_checks/check_g3_bind_smoke.py",
+    "05_integration/b0/binding_checks/compare_g3_bind_smoke.py",
+    "05_integration/b0/binding_checks/g3a_evidence_spec.md",
+    "05_integration/b0/binding_checks/g3a_evidence_schema.v1.json",
+    "05_integration/b0/binding_checks/g3a_independent_checks.py",
+    "05_integration/b0/binding_checks/g3a_authority.py",
+    "05_integration/b0/binding_checks/g3a_authority_spec.md",
+    "05_integration/b0/tests/test_g3a_session.py",
+    "05_integration/b0/tests/test_g3a_authority.py",
+    "05_integration/b0/tests/test_g3a_independent_checks.py",
+    "05_integration/b0/tests/test_config_validation.py",
+    "05_integration/b0/tests/test_g3_events.py",
+    "05_integration/b0/tests/test_g3_s0_assets.py",
+    "05_integration/b0/tests/test_g3_scheduler_runner.py"
+  ],
+  "fixed_files": {
+    "docs/work_orders/B0_G3_A_evidence_closure_work_order.md": "07173ef2cc3d939da047edc9adfa028d9d38c480662cd828fb7d249b49dd9d82",
+    "05_integration/b0/configs/b0_g0_contract.v2.json": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+    "02_estimation/b0/configs/b0_g2_estimator.v1.json": "a5435984a8cc9dee10257d5cdf240a0dc040d5404293af1c841e799fb8d95cb4",
+    "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json": "86f5f9a2be6540646e517ccbe5c40380f203fa45edec7c705b98fee5023173ae",
+    "03_control/b0/configs/b0_g2_controller.v1.json": "2b81eea545e3d7e4c694ad3b52547ec547242475bf4cb499c3e7a7263e3e3be6",
+    "03_control/b0/configs/b0_g2_controller_approval.v1.json": "2d4e4fdd47b812062eaf000c04ff47d0ff015059907e7541de3724ab9c3891e4"
+  },
+  "config_approval_paths": [
+    "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+    "02_estimation/b0/configs/b0_g2_estimator_approval.v1.json",
+    "03_control/b0/configs/b0_g2_controller.v1.json",
+    "03_control/b0/configs/b0_g2_controller_approval.v1.json"
+  ],
+  "parameter_bindings": [
+    {
+      "component": "g1",
+      "field": "inertia_kg_m2",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/plant_contract/inertia_kg_m2",
+      "encoding": "float64_tree",
+      "unit": "kg*m2"
+    },
+    {
+      "component": "g1",
+      "field": "actuator_time_constant_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/actuator_contract/time_constant_s",
+      "encoding": "float64_tree",
+      "unit": "s"
+    },
+    {
+      "component": "g1",
+      "field": "actuator_limits_Nm",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/actuator_contract/limits_Nm",
+      "encoding": "float64_tree",
+      "unit": "Nm"
+    },
+    {
+      "component": "g1",
+      "field": "gravity_n_m_s2",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/imu_contract/gravity_ned_m_s2",
+      "encoding": "float64_tree",
+      "unit": "m/s2"
+    },
+    {
+      "component": "g1",
+      "field": "gyro_noise_std_rad_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/imu_contract/gyro/noise_std_rad_s",
+      "encoding": "float64_tree",
+      "unit": "rad/s"
+    },
+    {
+      "component": "g1",
+      "field": "gyro_bias_rad_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/imu_contract/gyro/bias_rad_s",
+      "encoding": "float64_tree",
+      "unit": "rad/s"
+    },
+    {
+      "component": "g1",
+      "field": "accelerometer_noise_std_m_s2",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/imu_contract/accelerometer/noise_std_m_s2",
+      "encoding": "float64_tree",
+      "unit": "m/s2"
+    },
+    {
+      "component": "g1",
+      "field": "accelerometer_bias_m_s2",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/imu_contract/accelerometer/bias_m_s2",
+      "encoding": "float64_tree",
+      "unit": "m/s2"
+    },
+    {
+      "component": "g1",
+      "field": "base_period_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/timing/base_period_s",
+      "encoding": "float64_tree",
+      "unit": "s"
+    },
+    {
+      "component": "g1",
+      "field": "imu_period_ticks",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/timing/schedules/imu_every_ticks",
+      "encoding": "exact_json",
+      "unit": "tick"
+    },
+    {
+      "component": "g1",
+      "field": "config_path",
+      "literal": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "encoding": "source_relative_path",
+      "unit": "path",
+      "source_locator": "05_integration/b0/configs/b0_g0_contract.v2.json"
+    },
+    {
+      "component": "estimator",
+      "field": "sample_period_s",
+      "literal": 0.005,
+      "encoding": "float64_tree",
+      "unit": "s",
+      "source_locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/timing/base_period_s * #/timing/schedules/imu_every_ticks; fixed approved inputs 0.0025 * 2"
+    },
+    {
+      "component": "estimator",
+      "field": "gravity_m_s2",
+      "literal": 9.80665,
+      "encoding": "float64_tree",
+      "unit": "m/s2",
+      "source_locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/imu_contract/gravity_ned_m_s2; norm([0,0,9.80665])"
+    },
+    {
+      "component": "estimator",
+      "field": "unit_norm_tolerance",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/conventions/quaternion/unit_norm_tolerance",
+      "encoding": "float64_tree",
+      "unit": "1"
+    },
+    {
+      "component": "estimator",
+      "field": "correction_gain_per_s",
+      "source_path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+      "json_pointer": "/implementation_choices/complementary_correction_gain_per_s",
+      "encoding": "float64_tree",
+      "unit": "1/s"
+    },
+    {
+      "component": "estimator",
+      "field": "accelerometer_gate_deviation_m_s2",
+      "source_path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+      "json_pointer": "/implementation_choices/accelerometer_norm_gate/maximum_absolute_deviation_m_s2",
+      "encoding": "float64_tree",
+      "unit": "m/s2"
+    },
+    {
+      "component": "estimator",
+      "field": "maximum_correction_step_rad",
+      "source_path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+      "json_pointer": "/implementation_choices/maximum_correction_step_rad",
+      "encoding": "float64_tree",
+      "unit": "rad"
+    },
+    {
+      "component": "estimator",
+      "field": "timestamp_tolerance_s",
+      "source_path": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+      "json_pointer": "/implementation_choices/test_tolerances/timestamp_abs_s",
+      "encoding": "float64_tree",
+      "unit": "s"
+    },
+    {
+      "component": "estimator",
+      "field": "config_path",
+      "literal": "02_estimation/b0/configs/b0_g2_estimator.v1.json",
+      "encoding": "source_relative_path",
+      "unit": "path",
+      "source_locator": "02_estimation/b0/configs/b0_g2_estimator.v1.json"
+    },
+    {
+      "component": "estimator",
+      "field": "g0_config_path",
+      "literal": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "encoding": "source_relative_path",
+      "unit": "path",
+      "source_locator": "05_integration/b0/configs/b0_g0_contract.v2.json"
+    },
+    {
+      "component": "controller",
+      "field": "attitude_kp",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/attitude_kp/initial",
+      "encoding": "float64_tree",
+      "unit": "1/s"
+    },
+    {
+      "component": "controller",
+      "field": "rate_kp",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/rate_pid/kp/initial",
+      "encoding": "float64_tree",
+      "unit": "Nm*s/rad"
+    },
+    {
+      "component": "controller",
+      "field": "rate_ki",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/rate_pid/ki/initial",
+      "encoding": "float64_tree",
+      "unit": "Nm/rad"
+    },
+    {
+      "component": "controller",
+      "field": "rate_kd",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/rate_pid/kd/initial",
+      "encoding": "float64_tree",
+      "unit": "Nm*s2/rad"
+    },
+    {
+      "component": "controller",
+      "field": "integral_limit_Nm",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/rate_pid/integrator_limit_Nm",
+      "encoding": "float64_tree",
+      "unit": "Nm"
+    },
+    {
+      "component": "controller",
+      "field": "rate_limit_rad_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/body_rate_target_limit_rad_s",
+      "encoding": "float64_tree",
+      "unit": "rad/s"
+    },
+    {
+      "component": "controller",
+      "field": "torque_limit_Nm",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/actuator_contract/limits_Nm",
+      "encoding": "float64_tree",
+      "unit": "Nm"
+    },
+    {
+      "component": "controller",
+      "field": "kaw_limit_per_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/actuator_contract/antiwindup/limit_feedback/gain_per_s",
+      "encoding": "float64_tree",
+      "unit": "1/s"
+    },
+    {
+      "component": "controller",
+      "field": "kaw_lag_per_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/actuator_contract/antiwindup/actuator_lag_feedback/gain_per_s",
+      "encoding": "float64_tree",
+      "unit": "1/s"
+    },
+    {
+      "component": "controller",
+      "field": "derivative_time_constant_s",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/controller_contract/rate_pid/derivative_filter/time_constant_s",
+      "encoding": "float64_tree",
+      "unit": "s"
+    },
+    {
+      "component": "controller",
+      "field": "quaternion_norm_tolerance",
+      "source_path": "05_integration/b0/configs/b0_g0_contract.v2.json",
+      "json_pointer": "/conventions/quaternion/unit_norm_tolerance",
+      "encoding": "float64_tree",
+      "unit": "1"
+    },
+    {
+      "component": "controller",
+      "field": "timestamp_tolerance_s",
+      "source_path": "03_control/b0/configs/b0_g2_controller.v1.json",
+      "json_pointer": "/numeric_policy/timestamp_absolute_tolerance_s",
+      "encoding": "float64_tree",
+      "unit": "s"
+    },
+    {
+      "component": "controller",
+      "field": "controller_period_s",
+      "literal": 0.005,
+      "encoding": "float64_tree",
+      "unit": "s",
+      "source_locator": "05_integration/b0/configs/b0_g0_contract.v2.json#/timing/base_period_s * #/timing/schedules/controller_every_ticks; fixed approved inputs 0.0025 * 2"
+    }
+  ],
+  "evidence_files": {
+    "profile": "05_integration/b0/configs/g3a_evidence_profiles.v1.json",
+    "spec": "05_integration/b0/binding_checks/g3a_evidence_spec.md",
+    "schema": "05_integration/b0/binding_checks/g3a_evidence_schema.v1.json",
+    "checker": "05_integration/b0/binding_checks/g3a_independent_checks.py"
+  },
+  "observer_paths": [
+    "05_integration/b0/integration_session.py",
+    "05_integration/b0/g3a_evidence_driver.py",
+    "05_integration/b0/binding_checks/check_g3a_runtime.py"
+  ],
+  "comparison_policy": {
+    "authority": "g3a_evidence_spec.md#9",
+    "copied_held_paired_rejection": "exact_canonical",
+    "recomputed_quaternion": {
+      "absolute": 1e-12,
+      "relative": 0,
+      "priority": "before_other_float_rules"
+    },
+    "recomputed_timestamp_s": {
+      "absolute": 1e-12,
+      "relative": 0
+    },
+    "recomputed_non_quaternion": {
+      "scope": "exhaustive_field_path_unit_whitelist_in_spec_section_9_only",
+      "absolute": 1e-12,
+      "relative": 1e-12
+    },
+    "unknown_path": "comparison_policy_missing",
+    "not_a_claim": [
+      "physical_accuracy",
+      "closed_loop_performance",
+      "parameter_acceptance"
+    ]
+  },
+  "conventions": {
+    "navigation_frame": "NED",
+    "body_frame": "FRD",
+    "quaternion": "scalar_first_Hamilton_q_nb_body_to_NED",
+    "time": "s",
+    "angular_rate": "rad/s",
+    "angular_acceleration": "rad/s2",
+    "torque": "Nm",
+    "torque_rate": "Nm/s",
+    "specific_force": "m/s2",
+    "inertia": "kg*m2"
+  },
+  "environment": {
+    "required_file_roles": [
+      "python_binary",
+      "python_configuration",
+      "python_startup",
+      "package_metadata:numpy",
+      "package_metadata:pybind11",
+      "package_metadata:cmake",
+      "package_metadata:ninja",
+      "package_metadata:pytest",
+      "numpy_runtime",
+      "tool:cmake",
+      "cmake_python_runtime",
+      "pybind_python_runtime",
+      "tool:ninja",
+      "tool:compiler",
+      "tool:compiler_subtools",
+      "tool:binutils",
+      "tool:shell",
+      "tool:timeout",
+      "tool:trace",
+      "tool:platform",
+      "python_headers",
+      "pybind_headers",
+      "pybind_cmake",
+      "cmake_modules",
+      "catch_source"
+    ],
+    "file_role_rules": {
+      "python_binary": {
+        "allowed_roots": [
+          "$PYTHON_BASE_PREFIX/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "python_configuration": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "python_startup": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages",
+          "$PYTHON_BASE_PREFIX/lib/python3.11"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 12
+      },
+      "package_metadata:numpy": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "package_metadata:pybind11": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "package_metadata:cmake": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "package_metadata:ninja": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "package_metadata:pytest": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "numpy_runtime": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/numpy",
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/numpy.libs"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 2500
+      },
+      "tool:cmake": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/bin",
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/cmake/data/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 2
+      },
+      "cmake_python_runtime": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/cmake"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 12
+      },
+      "pybind_python_runtime": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/pybind11"
+        ],
+        "allowed_paths": [],
+        "min_files": 4,
+        "max_files": 16
+      },
+      "tool:ninja": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "tool:compiler": {
+        "allowed_roots": [
+          "/usr/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "tool:compiler_subtools": {
+        "allowed_roots": [
+          "/usr/lib/gcc/x86_64-linux-gnu",
+          "/usr/libexec/gcc/x86_64-linux-gnu"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 12
+      },
+      "tool:binutils": {
+        "allowed_roots": [
+          "/usr/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 4,
+        "max_files": 12
+      },
+      "tool:shell": {
+        "allowed_roots": [
+          "/bin",
+          "/usr/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "tool:timeout": {
+        "allowed_roots": [
+          "/usr/bin"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "tool:trace": {
+        "allowed_roots": [],
+        "allowed_paths": [
+          "/usr/bin/strace"
+        ],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "tool:platform": {
+        "allowed_roots": [],
+        "allowed_paths": [
+          "/usr/bin/uname"
+        ],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "python_headers": {
+        "allowed_roots": [
+          "$PYTHON_INCLUDE"
+        ],
+        "allowed_paths": [],
+        "min_files": 2,
+        "max_files": 300
+      },
+      "pybind_headers": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/pybind11/include/pybind11"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 100
+      },
+      "pybind_cmake": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/pybind11/share/cmake/pybind11"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 30
+      },
+      "cmake_modules": {
+        "allowed_roots": [
+          "$PYTHON_PREFIX/lib/python3.11/site-packages/cmake/data/share"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 5000
+      },
+      "catch_source": {
+        "allowed_roots": [
+          "$BUILD_DIR/_deps/catch2-src",
+          "$SOURCE_ROOT/build/b0-controller/debug/_deps/catch2-src",
+          "/mnt/e/Project/uav-fms-portfolio/build/b0-controller/debug/_deps/catch2-src"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1200
+      }
+    },
+    "python_major": 3,
+    "python_minor": 11,
+    "package_versions": {
+      "numpy": "1.26.4",
+      "pybind11": "2.13.6",
+      "cmake": "3.30.5",
+      "ninja": "1.11.1.3",
+      "pytest": "8.3.5"
+    },
+    "trusted_platform_boundary": [
+      "OS/kernel/system_dynamic_loader_and_standard_system_libraries",
+      "CPython_standard_library_except_explicit_startup_records",
+      "installed_native_build_tool_execution_under_recorded_command_policy"
+    ],
+    "not_a_claim": "complete_supply_chain_or_all_file_IO_attestation",
+    "debug_configure_execution_profile": {
+      "scope": "debug_configure_only",
+      "profile_version": "b0-g3a-debug-configure-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/debug-configure-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/debug-configure-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 256,
+      "family_exec_caps": {
+        "cmake": 32,
+        "ninja": 16,
+        "python": 16,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 8
+      },
+      "bounded_change": "python_family_exec_cap_raised_from_8_to_16_for_debug_configure_only",
+      "unchanged_other_caps": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "all_safety_policies_unchanged_or_CI_acceptance"
+    },
+    "debug_build_execution_profile": {
+      "scope": "debug_build_only",
+      "profile_version": "b0-g3a-debug-build-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/debug-build-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/debug-build-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 192,
+      "family_exec_caps": {
+        "cmake": 16,
+        "ninja": 8,
+        "python": 4,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 4
+      },
+      "bounded_change": "system_tools_first_PATH_and_fresh_isolated_HOME_and_PYTHONUSERBASE_for_debug_build_only",
+      "launch_environment_validation": "derive_expected_HOME_and_PYTHONUSERBASE_from_canonical_evidence_root_and_fixed_debug_build_names_then_require_ordinary_nonsymlink_empty_direct_children",
+      "unchanged_caps_timeout_parallel_target": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "runtime_success_CI_acceptance_or_relaxed_process_authority"
+    },
+    "release_build_execution_profile": {
+      "scope": "release_build_only",
+      "profile_version": "b0-g3a-release-build-execution-profile/v1",
+      "environment": {
+        "PATH": "/usr/bin:/bin:$G3A_VENV/bin",
+        "HOME": "$G3A_EVIDENCE_ROOT/release-build-home",
+        "PYTHONUSERBASE": "$G3A_EVIDENCE_ROOT/release-build-python-user-base",
+        "ambient_policy": "deexport_all_functions_clear_all_inherited_exports_then_export_only_listed_values",
+        "isolated_directory_policy": "fresh_absent_before_create_ordinary_empty_direct_child_of_evidence_root"
+      },
+      "absolute_tool_entrypoints": {
+        "cmake": "$G3A_VENV/bin/cmake",
+        "python": "$G3A_VENV/bin/python",
+        "ninja": "$G3A_VENV/bin/ninja",
+        "compiler": "/usr/bin/c++",
+        "supervisor": "/usr/bin/timeout",
+        "trace": "/usr/bin/strace"
+      },
+      "tracee_task_cap": 192,
+      "family_exec_caps": {
+        "cmake": 16,
+        "ninja": 8,
+        "python": 4,
+        "compiler": 16,
+        "compiler_subtools": 64,
+        "binutils": 64,
+        "shell": 32,
+        "platform": 4
+      },
+      "bounded_change": "system_tools_first_PATH_and_fresh_isolated_HOME_and_PYTHONUSERBASE_for_release_build_only",
+      "launch_environment_validation": "derive_expected_HOME_and_PYTHONUSERBASE_from_canonical_evidence_root_and_fixed_release_build_names_then_require_ordinary_nonsymlink_empty_direct_children",
+      "unchanged_caps_timeout_parallel_target": true,
+      "network_connect_policy": "reject_and_retain_every_connect_record_including_failed_AF_UNIX_attempts",
+      "unknown_process_policy": "reject_unknown_failed_or_successful_exec_and_unfinished_or_resumed_unknown_events",
+      "receipt_semantics": "complete_known_process_tree_zero_connect_receipt_required",
+      "not_a_claim": "runtime_success_CI_acceptance_or_relaxed_process_authority"
+    }
+  },
+  "build": {
+    "required_file_roles": [
+      "cmake_cache",
+      "compile_commands",
+      "build_ninja",
+      "ninja_rules",
+      "execution_log",
+      "controller_module"
+    ],
+    "file_role_rules": {
+      "cmake_cache": {
+        "allowed_roots": [
+          "$BUILD_DIR"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "compile_commands": {
+        "allowed_roots": [
+          "$BUILD_DIR"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "build_ninja": {
+        "allowed_roots": [
+          "$BUILD_DIR"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "ninja_rules": {
+        "allowed_roots": [
+          "$BUILD_DIR/CMakeFiles"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      },
+      "execution_log": {
+        "allowed_roots": [
+          "$BUILD_DIR"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 12
+      },
+      "controller_module": {
+        "allowed_roots": [
+          "$BUILD_DIR"
+        ],
+        "allowed_paths": [],
+        "min_files": 1,
+        "max_files": 1
+      }
+    },
+    "required_cache_values": {
+      "BUILD_LEGACY_NAVIGATION": "OFF",
+      "BUILD_DEVELOPMENT_READINESS_SMOKE": "OFF",
+      "BUILD_B0_CONTROLLER": "ON",
+      "BUILD_TESTING": "ON",
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+      "FETCHCONTENT_FULLY_DISCONNECTED": "ON",
+      "FETCHCONTENT_UPDATES_DISCONNECTED": "ON"
+    }
+  },
+  "ci": {
+    "repository": "ZhangChi0727/UAV-FMS-portfolio",
+    "allowed_events": [
+      "pull_request",
+      "push"
+    ]
+  },
+  "execution_plan": {
+    "plan_version": "b0-g3a-execution-plan/v1",
+    "lifecycle_callsites": {
+      "g3a_evidence_driver.g0.load_config": {
+        "owner": "g0_validator",
+        "method": "load_config",
+        "parent_site": null
+      },
+      "g3a_evidence_driver.g0.validate_config": {
+        "owner": "g0_validator",
+        "method": "validate_config",
+        "parent_site": null
+      },
+      "validate_config.load_config": {
+        "owner": "g0_validator",
+        "method": "load_config",
+        "parent_site": [
+          "b0.contract.load_g1_parameters",
+          "estimator.load_estimator_parameters",
+          "controller.load_controller_parameters"
+        ]
+      },
+      "validate_config.validate_config": {
+        "owner": "g0_validator",
+        "method": "validate_config",
+        "parent_site": [
+          "b0.contract.load_g1_parameters",
+          "estimator.load_estimator_parameters",
+          "controller.load_controller_parameters"
+        ]
+      },
+      "b0.contract.load_g1_parameters": {
+        "owner": "g1_loader",
+        "method": "load_parameters",
+        "parent_site": null
+      },
+      "b0.contract.G1Parameters": {
+        "owner": "g1_parameters",
+        "method": "constructor",
+        "parent_site": [
+          "b0.contract.load_g1_parameters"
+        ]
+      },
+      "estimator.AttitudeEstimator": {
+        "owner": "estimator",
+        "method": "constructor",
+        "parent_site": null
+      },
+      "estimator.load_estimator_parameters": {
+        "owner": "estimator_loader",
+        "method": "load_parameters",
+        "parent_site": [
+          "estimator.AttitudeEstimator"
+        ]
+      },
+      "estimator.EstimatorParameters": {
+        "owner": "estimator_parameters",
+        "method": "constructor",
+        "parent_site": [
+          "estimator.load_estimator_parameters"
+        ]
+      },
+      "controller.ControllerAdapter": {
+        "owner": "controller",
+        "method": "constructor",
+        "parent_site": null
+      },
+      "controller.load_controller_parameters": {
+        "owner": "controller_loader",
+        "method": "load_parameters",
+        "parent_site": [
+          "controller.ControllerAdapter"
+        ]
+      },
+      "b0_controller.ControllerParameters": {
+        "owner": "controller_parameters",
+        "method": "constructor",
+        "parent_site": [
+          "controller.load_controller_parameters"
+        ]
+      },
+      "b0_controller.CascadedController": {
+        "owner": "controller_core",
+        "method": "constructor",
+        "parent_site": [
+          "controller.load_controller_parameters",
+          "controller.ControllerAdapter"
+        ]
+      },
+      "b0.Plant": {
+        "owner": "plant",
+        "method": "constructor",
+        "parent_site": null
+      },
+      "b0.Actuator": {
+        "owner": "actuator",
+        "method": "constructor",
+        "parent_site": null
+      },
+      "b0.IMU": {
+        "owner": "imu",
+        "method": "constructor",
+        "parent_site": null
+      },
+      "integration_session.capture_state.snapshotter": {
+        "owner": "observer",
+        "method": "capture_snapshot",
+        "parent_site": null
+      },
+      "integration_session.reset.controller": {
+        "owner": "controller",
+        "method": "reset",
+        "parent_site": null
+      },
+      "ControllerAdapter.reset.core.reset": {
+        "owner": "controller_core",
+        "method": "reset",
+        "parent_site": [
+          "integration_session.reset.controller",
+          "g3a_evidence_driver.replay.controller.reset"
+        ]
+      },
+      "integration_session.reset.actuator": {
+        "owner": "actuator",
+        "method": "reset",
+        "parent_site": null
+      },
+      "integration_session.reset.plant": {
+        "owner": "plant",
+        "method": "reset",
+        "parent_site": null
+      },
+      "integration_session.reset.imu": {
+        "owner": "imu",
+        "method": "reset",
+        "parent_site": null
+      },
+      "integration_session.reset.estimator": {
+        "owner": "estimator",
+        "method": "reset",
+        "parent_site": null
+      },
+      "g3a_evidence_driver.capture_replay_snapshot": {
+        "owner": "observer",
+        "method": "capture_snapshot",
+        "parent_site": null
+      },
+      "g3a_evidence_driver.replay.controller.reset": {
+        "owner": "controller",
+        "method": "reset",
+        "parent_site": null
+      },
+      "g3a_evidence_driver.replay.estimator.reset": {
+        "owner": "estimator",
+        "method": "reset",
+        "parent_site": null
+      }
+    },
+    "auxiliary_counts": {
+      "S": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 1,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 1,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 1,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 1,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 3,
+        "lifecycle:validate_config.load_config:return": 3,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 3,
+        "lifecycle:validate_config.validate_config:return": 3,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 1,
+        "lifecycle:b0.contract.load_g1_parameters:return": 1,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 1,
+        "lifecycle:b0.contract.G1Parameters:return": 1,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 1,
+        "lifecycle:estimator.load_estimator_parameters:return": 1,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 1,
+        "lifecycle:estimator.EstimatorParameters:return": 1,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 4,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 4,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 1,
+        "lifecycle:integration_session.reset.controller:return": 1,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 1,
+        "lifecycle:integration_session.reset.actuator:return": 1,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 1,
+        "lifecycle:integration_session.reset.plant:return": 1,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 1,
+        "lifecycle:integration_session.reset.imu:return": 1,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 1,
+        "lifecycle:integration_session.reset.estimator:return": 1,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 12,
+        "guard:actuator.consume.input_bundle:accepted": 12,
+        "guard:imu.consume.input_bundle:accepted": 6,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 6,
+        "guard:estimator.consume.input_bundle:accepted": 6,
+        "guard:controller.consume.input_bundle:accepted": 6,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 12
+      },
+      "L1": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 26,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 26,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 2,
+        "lifecycle:integration_session.reset.controller:return": 2,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 2,
+        "lifecycle:integration_session.reset.actuator:return": 2,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 2,
+        "lifecycle:integration_session.reset.plant:return": 2,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 2,
+        "lifecycle:integration_session.reset.imu:return": 2,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 2,
+        "lifecycle:integration_session.reset.estimator:return": 2,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 1199,
+        "guard:actuator.consume.input_bundle:accepted": 1199,
+        "guard:imu.consume.input_bundle:accepted": 599,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 599,
+        "guard:estimator.consume.input_bundle:accepted": 600,
+        "guard:controller.consume.input_bundle:accepted": 600,
+        "guard:actuator.consume.input_bundle:stale_epoch": 1,
+        "guard:estimator.consume.input_bundle:stale_epoch": 1,
+        "guard:controller.consume.input_bundle:stale_epoch": 3,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 1,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 1,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 1199
+      },
+      "L2": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 2,
+        "lifecycle:integration_session.reset.controller:return": 2,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 2,
+        "lifecycle:integration_session.reset.actuator:return": 2,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 2,
+        "lifecycle:integration_session.reset.plant:return": 2,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 2,
+        "lifecycle:integration_session.reset.imu:return": 2,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 2,
+        "lifecycle:integration_session.reset.estimator:return": 2,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 1199,
+        "guard:actuator.consume.input_bundle:accepted": 1199,
+        "guard:imu.consume.input_bundle:accepted": 599,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 599,
+        "guard:estimator.consume.input_bundle:accepted": 600,
+        "guard:controller.consume.input_bundle:accepted": 600,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 1199
+      },
+      "O1": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 2,
+        "lifecycle:integration_session.reset.controller:return": 2,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 2,
+        "lifecycle:integration_session.reset.actuator:return": 2,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 2,
+        "lifecycle:integration_session.reset.plant:return": 2,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 2,
+        "lifecycle:integration_session.reset.imu:return": 2,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 2,
+        "lifecycle:integration_session.reset.estimator:return": 2,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 12,
+        "guard:actuator.consume.input_bundle:accepted": 12,
+        "guard:imu.consume.input_bundle:accepted": 6,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 6,
+        "guard:estimator.consume.input_bundle:accepted": 6,
+        "guard:controller.consume.input_bundle:accepted": 6,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 1,
+        "operation:actuator:step": 12
+      },
+      "O2": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 12,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 2,
+        "lifecycle:integration_session.reset.controller:return": 2,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 2,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 2,
+        "lifecycle:integration_session.reset.actuator:return": 2,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 2,
+        "lifecycle:integration_session.reset.plant:return": 2,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 2,
+        "lifecycle:integration_session.reset.imu:return": 2,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 2,
+        "lifecycle:integration_session.reset.estimator:return": 2,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 12,
+        "guard:actuator.consume.input_bundle:accepted": 12,
+        "guard:imu.consume.input_bundle:accepted": 6,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 6,
+        "guard:estimator.consume.input_bundle:accepted": 6,
+        "guard:controller.consume.input_bundle:accepted": 6,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 1,
+        "operation:actuator:step": 12
+      },
+      "E": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 1,
+        "lifecycle:b0.Plant:return": 1,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 1,
+        "lifecycle:b0.Actuator:return": 1,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 1,
+        "lifecycle:b0.IMU:return": 1,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 4,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 4,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 1,
+        "lifecycle:integration_session.reset.controller:return": 1,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 1,
+        "lifecycle:integration_session.reset.actuator:return": 1,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 1,
+        "lifecycle:integration_session.reset.plant:return": 1,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 1,
+        "lifecycle:integration_session.reset.imu:return": 1,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 1,
+        "lifecycle:integration_session.reset.estimator:return": 1,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 38,
+        "guard:actuator.consume.input_bundle:accepted": 38,
+        "guard:imu.consume.input_bundle:accepted": 19,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 19,
+        "guard:estimator.consume.input_bundle:accepted": 19,
+        "guard:controller.consume.input_bundle:accepted": 19,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 38
+      },
+      "T1": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 0,
+        "lifecycle:b0.Plant:return": 0,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 0,
+        "lifecycle:b0.Actuator:return": 0,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 0,
+        "lifecycle:b0.IMU:return": 0,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 0,
+        "lifecycle:integration_session.reset.controller:return": 0,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 0,
+        "lifecycle:integration_session.reset.actuator:return": 0,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 0,
+        "lifecycle:integration_session.reset.plant:return": 0,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 0,
+        "lifecycle:integration_session.reset.imu:return": 0,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 0,
+        "lifecycle:integration_session.reset.estimator:return": 0,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 4,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 4,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 1,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 1,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 1,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 1,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 0,
+        "guard:actuator.consume.input_bundle:accepted": 0,
+        "guard:imu.consume.input_bundle:accepted": 0,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 0,
+        "guard:estimator.consume.input_bundle:accepted": 2,
+        "guard:controller.consume.input_bundle:accepted": 2,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 0
+      },
+      "T2": {
+        "lifecycle:g3a_evidence_driver.g0.load_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.load_config:exception": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:enter": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:return": 0,
+        "lifecycle:g3a_evidence_driver.g0.validate_config:exception": 0,
+        "lifecycle:validate_config.load_config:enter": 1,
+        "lifecycle:validate_config.load_config:return": 1,
+        "lifecycle:validate_config.load_config:exception": 0,
+        "lifecycle:validate_config.validate_config:enter": 1,
+        "lifecycle:validate_config.validate_config:return": 1,
+        "lifecycle:validate_config.validate_config:exception": 0,
+        "lifecycle:b0.contract.load_g1_parameters:enter": 0,
+        "lifecycle:b0.contract.load_g1_parameters:return": 0,
+        "lifecycle:b0.contract.load_g1_parameters:exception": 0,
+        "lifecycle:b0.contract.G1Parameters:enter": 0,
+        "lifecycle:b0.contract.G1Parameters:return": 0,
+        "lifecycle:b0.contract.G1Parameters:exception": 0,
+        "lifecycle:estimator.AttitudeEstimator:enter": 1,
+        "lifecycle:estimator.AttitudeEstimator:return": 1,
+        "lifecycle:estimator.AttitudeEstimator:exception": 0,
+        "lifecycle:estimator.load_estimator_parameters:enter": 0,
+        "lifecycle:estimator.load_estimator_parameters:return": 0,
+        "lifecycle:estimator.load_estimator_parameters:exception": 0,
+        "lifecycle:estimator.EstimatorParameters:enter": 0,
+        "lifecycle:estimator.EstimatorParameters:return": 0,
+        "lifecycle:estimator.EstimatorParameters:exception": 0,
+        "lifecycle:controller.ControllerAdapter:enter": 1,
+        "lifecycle:controller.ControllerAdapter:return": 1,
+        "lifecycle:controller.ControllerAdapter:exception": 0,
+        "lifecycle:controller.load_controller_parameters:enter": 1,
+        "lifecycle:controller.load_controller_parameters:return": 1,
+        "lifecycle:controller.load_controller_parameters:exception": 0,
+        "lifecycle:b0_controller.ControllerParameters:enter": 1,
+        "lifecycle:b0_controller.ControllerParameters:return": 1,
+        "lifecycle:b0_controller.ControllerParameters:exception": 0,
+        "lifecycle:b0_controller.CascadedController:enter": 2,
+        "lifecycle:b0_controller.CascadedController:return": 2,
+        "lifecycle:b0_controller.CascadedController:exception": 0,
+        "lifecycle:b0.Plant:enter": 0,
+        "lifecycle:b0.Plant:return": 0,
+        "lifecycle:b0.Plant:exception": 0,
+        "lifecycle:b0.Actuator:enter": 0,
+        "lifecycle:b0.Actuator:return": 0,
+        "lifecycle:b0.Actuator:exception": 0,
+        "lifecycle:b0.IMU:enter": 0,
+        "lifecycle:b0.IMU:return": 0,
+        "lifecycle:b0.IMU:exception": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:enter": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:return": 0,
+        "lifecycle:integration_session.capture_state.snapshotter:exception": 0,
+        "lifecycle:integration_session.reset.controller:enter": 0,
+        "lifecycle:integration_session.reset.controller:return": 0,
+        "lifecycle:integration_session.reset.controller:exception": 0,
+        "lifecycle:ControllerAdapter.reset.core.reset:enter": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:return": 1,
+        "lifecycle:ControllerAdapter.reset.core.reset:exception": 0,
+        "lifecycle:integration_session.reset.actuator:enter": 0,
+        "lifecycle:integration_session.reset.actuator:return": 0,
+        "lifecycle:integration_session.reset.actuator:exception": 0,
+        "lifecycle:integration_session.reset.plant:enter": 0,
+        "lifecycle:integration_session.reset.plant:return": 0,
+        "lifecycle:integration_session.reset.plant:exception": 0,
+        "lifecycle:integration_session.reset.imu:enter": 0,
+        "lifecycle:integration_session.reset.imu:return": 0,
+        "lifecycle:integration_session.reset.imu:exception": 0,
+        "lifecycle:integration_session.reset.estimator:enter": 0,
+        "lifecycle:integration_session.reset.estimator:return": 0,
+        "lifecycle:integration_session.reset.estimator:exception": 0,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:enter": 4,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:return": 4,
+        "lifecycle:g3a_evidence_driver.capture_replay_snapshot:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:enter": 1,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:return": 1,
+        "lifecycle:g3a_evidence_driver.replay.controller.reset:exception": 0,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:enter": 1,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:return": 1,
+        "lifecycle:g3a_evidence_driver.replay.estimator.reset:exception": 0,
+        "guard:plant.consume.input_bundle:accepted": 0,
+        "guard:actuator.consume.input_bundle:accepted": 0,
+        "guard:imu.consume.input_bundle:accepted": 0,
+        "guard:measurement_adapter.consume.input_bundle:accepted": 0,
+        "guard:estimator.consume.input_bundle:accepted": 2,
+        "guard:controller.consume.input_bundle:accepted": 2,
+        "guard:actuator.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:stale_epoch": 0,
+        "guard:controller.consume.input_bundle:stale_epoch": 0,
+        "guard:estimator.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:controller.consume.input_bundle:truth_dependency_forbidden": 0,
+        "guard:integration_session.advance.lifecycle_preflight:needs_reset": 0,
+        "operation:actuator:step": 0
+      }
+    }
+  }
+}
