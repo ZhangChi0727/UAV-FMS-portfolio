@@ -1,0 +1,1258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ZhangChi0727/UAV-FMS-portfolio/05_integration/b0/schema/b0_g3_integration_evidence.schema.json",
+  "title": "B0 G3 integration evidence draft",
+  "description": "S0 candidate envelope. JSON Schema checks structure; the G3 validator must additionally recompute schedule, criteria, outcomes, hashes and closure from retained raw artifacts.",
+  "x-b0-validation-role": "structural_envelope_requires_semantic_validator",
+  "x-b0-semantic-rules": [
+    "project each of the exact eight G0 scenarios once and bind its approved class, seed, duration, events and terminal class",
+    "project each of the exact thirteen G0 events once with approved owner, type, interval and parameters",
+    "project each of the exact thirty-seven G0 criteria once and bind scenario, event or axis, metric, reducer, window, operator, limit and unit",
+    "reject missing or duplicate identifiers even when duplicate object payloads differ",
+    "recompute schedule counts, stream counts, criterion values, criterion statuses and scenario outcomes from retained raw artifacts",
+    "reject missing, truncated, non-finite, wrong-frame, wrong-unit or falsely paired raw data",
+    "recompute replay and closure hashes and reject source, target, module, configuration or report identity mismatch",
+    "reconcile JUnit collected, passed, failed, skipped and xfailed totals with the retained report",
+    "allow raw test reports to retain nonzero failure skip and xfail counts without treating structural validity as acceptance",
+    "for each required production acceptance suite require collected greater than zero passed equals collected and failed skipped and xfailed equal zero",
+    "require artifact availability and expiry to support every verification claim",
+    "retain failed and inconclusive executions without allowing them to satisfy an accepted terminal claim",
+    "record every acceptance-seed exposure and prohibit acceptance-seed tuning or selection"
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "identity",
+    "authority",
+    "subject",
+    "closure",
+    "timebase",
+    "seed_exposure",
+    "scenario_runs",
+    "raw_artifacts",
+    "streams",
+    "criteria",
+    "integration_checks",
+    "replay",
+    "test_reports",
+    "provenance",
+    "claim_boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "b0-g3-integration-evidence/v1"
+    },
+    "identity": {
+      "$ref": "#/$defs/identity"
+    },
+    "authority": {
+      "$ref": "#/$defs/authority"
+    },
+    "subject": {
+      "$ref": "#/$defs/subject"
+    },
+    "closure": {
+      "$ref": "#/$defs/closure"
+    },
+    "timebase": {
+      "$ref": "#/$defs/timebase"
+    },
+    "seed_exposure": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/seed_exposure"
+      }
+    },
+    "scenario_runs": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/scenario_run"
+      }
+    },
+    "raw_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/raw_artifact"
+      }
+    },
+    "streams": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/stream"
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 37,
+      "maxItems": 37,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/criterion"
+      }
+    },
+    "integration_checks": {
+      "type": "array",
+      "minItems": 14,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/integration_check"
+      }
+    },
+    "replay": {
+      "$ref": "#/$defs/replay"
+    },
+    "test_reports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/test_report"
+      }
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "claim_boundary": {
+      "$ref": "#/$defs/claim_boundary"
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "git_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "nonempty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "run_id",
+        "source_commit",
+        "checkout_commit",
+        "target_commit",
+        "pull_request",
+        "ci_run_id",
+        "ci_job_id",
+        "artifact_id",
+        "started_at_utc",
+        "completed_at_utc",
+        "command",
+        "working_directory",
+        "exit_code"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "run_id": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "source_commit": {
+          "$ref": "#/$defs/git_sha"
+        },
+        "checkout_commit": {
+          "$ref": "#/$defs/git_sha"
+        },
+        "target_commit": {
+          "$ref": "#/$defs/git_sha"
+        },
+        "pull_request": {
+          "type": ["integer", "null"],
+          "minimum": 1
+        },
+        "ci_run_id": {
+          "type": ["string", "null"]
+        },
+        "ci_job_id": {
+          "type": ["string", "null"]
+        },
+        "artifact_id": {
+          "type": ["string", "null"]
+        },
+        "started_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "command": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "working_directory": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "exit_code": {
+          "type": "integer"
+        }
+      }
+    },
+    "file_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "g0_path",
+        "g0_git_blob",
+        "g0_raw_sha256",
+        "g0_canonical_lf_sha256",
+        "validator",
+        "validator_passed",
+        "g1_g2_files",
+        "g3_s0_approval_commit",
+        "g3_s0_design_sha256",
+        "g3_matrix_sha256"
+      ],
+      "properties": {
+        "g0_path": {
+          "const": "05_integration/b0/configs/b0_g0_contract.v2.json"
+        },
+        "g0_git_blob": {
+          "const": "1beff6e6a9a81d0ab92b2059a93207ffed9d291d"
+        },
+        "g0_raw_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "g0_canonical_lf_sha256": {
+          "const": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c"
+        },
+        "validator": {
+          "$ref": "#/$defs/file_identity"
+        },
+        "validator_passed": {
+          "const": true
+        },
+        "g1_g2_files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/file_identity"
+          }
+        },
+        "g3_s0_approval_commit": {
+          "$ref": "#/$defs/git_sha"
+        },
+        "g3_s0_design_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "g3_matrix_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "os",
+        "python_version",
+        "python_abi",
+        "build_type",
+        "controller_module_path",
+        "controller_module_sha256",
+        "compiler",
+        "dependencies"
+      ],
+      "properties": {
+        "os": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "python_version": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "python_abi": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "build_type": {
+          "enum": ["Debug", "Release"]
+        },
+        "controller_module_path": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "controller_module_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "compiler": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "dependencies": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "closure_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "source_sha256", "target_sha256"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "source_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "target_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "closure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "version", "files"],
+      "properties": {
+        "profile": {
+          "const": "b0-g3-integration"
+        },
+        "version": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/closure_entry"
+          }
+        }
+      }
+    },
+    "tick_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected", "observed"],
+      "properties": {
+        "expected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "timebase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_period_s",
+        "boundary_policy",
+        "due_rules",
+        "reset_only_ticks",
+        "phase_counts",
+        "missing_ticks",
+        "duplicate_ticks"
+      ],
+      "properties": {
+        "base_period_s": {
+          "const": 0.0025
+        },
+        "boundary_policy": {
+          "const": "N intervals retain boundaries 0..N; windows are half-open"
+        },
+        "due_rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["plant", "actuator", "imu", "estimator", "controller"],
+          "properties": {
+            "plant": {
+              "const": "every ordinary local tick >= 1"
+            },
+            "actuator": {
+              "const": "every ordinary local tick >= 1"
+            },
+            "imu": {
+              "const": "even ordinary local ticks >= 2"
+            },
+            "estimator": {
+              "const": "even ordinary local ticks >= 2"
+            },
+            "controller": {
+              "const": "even ordinary local ticks >= 2"
+            }
+          }
+        },
+        "reset_only_ticks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "phase_counts": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/tick_counts"
+          }
+        },
+        "missing_ticks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "duplicate_ticks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "start_tick", "end_tick", "parameters"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "type": {
+          "enum": [
+            "command_step",
+            "external_torque",
+            "imu_bias",
+            "specific_force_disturbance",
+            "invalid_input",
+            "reset"
+          ]
+        },
+        "start_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_tick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "parameters": {
+          "type": "object"
+        }
+      }
+    },
+    "scenario_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "scenario_class",
+        "seed",
+        "duration_intervals",
+        "initial_state",
+        "events",
+        "epochs",
+        "rng_policy",
+        "terminal_outcome",
+        "terminal_reason"
+      ],
+      "properties": {
+        "scenario_id": {
+          "enum": [
+            "stationary_zero_command",
+            "initial_attitude_offset",
+            "tri_axis_signed_steps",
+            "external_torque_disturbance",
+            "imu_noise_and_bias",
+            "saturation_withdrawal",
+            "acceleration_contamination",
+            "invalid_input_and_reset"
+          ]
+        },
+        "scenario_class": {
+          "enum": [
+            "in_envelope_performance",
+            "limitation_characterization",
+            "invalid_input"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_intervals": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "initial_state": {
+          "type": "object",
+          "minProperties": 1
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          }
+        },
+        "epochs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["epoch_id", "boundary_tick", "origin_s", "seed"],
+            "properties": {
+              "epoch_id": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "boundary_tick": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "origin_s": {
+                "type": "number"
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "rng_policy": {
+          "const": "scenario seed recreated at each all-component reset; public sample index retained"
+        },
+        "terminal_outcome": {
+          "enum": [
+            "performance_pass",
+            "performance_fail",
+            "limitation_characterized",
+            "invalid_input_rejected",
+            "execution_error_inconclusive"
+          ]
+        },
+        "terminal_reason": {
+          "$ref": "#/$defs/nonempty"
+        }
+      }
+    },
+    "seed_exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "seed",
+        "purpose",
+        "acceptance_seed",
+        "first_exposure",
+        "acceptance_seed_exposed",
+        "used_for_tuning_or_selection",
+        "source_commit",
+        "config_sha256",
+        "controller_module_sha256",
+        "started_at_utc",
+        "output_sha256"
+      ],
+      "properties": {
+        "scenario_id": {
+          "enum": [
+            "stationary_zero_command",
+            "initial_attitude_offset",
+            "tri_axis_signed_steps",
+            "external_torque_disturbance",
+            "imu_noise_and_bias",
+            "saturation_withdrawal",
+            "acceleration_contamination",
+            "invalid_input_and_reset"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "purpose": {
+          "enum": [
+            "reachability_diagnostic",
+            "acceptance_execution",
+            "replay",
+            "tuning"
+          ]
+        },
+        "acceptance_seed": {
+          "type": "boolean"
+        },
+        "first_exposure": {
+          "type": "boolean"
+        },
+        "acceptance_seed_exposed": {
+          "type": "boolean"
+        },
+        "used_for_tuning_or_selection": {
+          "type": "boolean"
+        },
+        "source_commit": {
+          "$ref": "#/$defs/git_sha"
+        },
+        "config_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "controller_module_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "started_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "output_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "acceptance_seed": {
+                "const": true
+              }
+            },
+            "required": ["acceptance_seed"]
+          },
+          "then": {
+            "properties": {
+              "acceptance_seed_exposed": {
+                "const": true
+              },
+              "used_for_tuning_or_selection": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "purpose": {
+                "const": "tuning"
+              }
+            },
+            "required": ["purpose"]
+          },
+          "then": {
+            "properties": {
+              "seed": {
+                "const": 2026100900
+              },
+              "acceptance_seed": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "purpose": {
+                "const": "reachability_diagnostic"
+              }
+            },
+            "required": ["purpose"]
+          },
+          "then": {
+            "properties": {
+              "scenario_id": {
+                "const": "saturation_withdrawal"
+              },
+              "seed": {
+                "const": 2026100906
+              },
+              "acceptance_seed": {
+                "const": true
+              },
+              "used_for_tuning_or_selection": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "raw_artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "path",
+        "media_type",
+        "size_bytes",
+        "sha256",
+        "record_count",
+        "first_tick",
+        "last_tick",
+        "complete"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "path": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "media_type": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "first_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      }
+    },
+    "stream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "frame",
+        "unit",
+        "dtype",
+        "update_source",
+        "expected_count",
+        "observed_count",
+        "first_timestamp_s",
+        "last_timestamp_s",
+        "raw_locator"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "frame": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "dtype": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "update_source": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "expected_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "first_timestamp_s": {
+          "type": "number"
+        },
+        "last_timestamp_s": {
+          "type": "number"
+        },
+        "raw_locator": {
+          "$ref": "#/$defs/nonempty"
+        }
+      }
+    },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_tick", "end_tick", "origin_tick", "dwell_ticks"],
+      "properties": {
+        "start_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_tick": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "origin_tick": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dwell_ticks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "result_value": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "number"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scenario_id",
+        "criterion_id",
+        "g0_json_pointer",
+        "metric",
+        "metric_version",
+        "event_id",
+        "axis",
+        "window",
+        "raw_signals",
+        "sample_selector",
+        "reducer",
+        "operator",
+        "limit",
+        "unit",
+        "computed_value",
+        "comparison_expression",
+        "status",
+        "reason",
+        "metric_implementation",
+        "raw_locators",
+        "requirement_ids",
+        "verification_spec_ids"
+      ],
+      "properties": {
+        "scenario_id": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "criterion_id": {
+          "enum": [
+            "stationary_attitude_peak",
+            "stationary_rate_peak",
+            "stationary_quaternion_norm",
+            "offset_tilt_settling_time",
+            "offset_tilt_peak_error",
+            "step_x_positive_settling_time",
+            "step_x_positive_overshoot",
+            "step_x_positive_cross_axis",
+            "step_x_negative_settling_time",
+            "step_x_negative_overshoot",
+            "step_x_negative_cross_axis",
+            "step_y_positive_settling_time",
+            "step_y_positive_overshoot",
+            "step_y_positive_cross_axis",
+            "step_y_negative_settling_time",
+            "step_y_negative_overshoot",
+            "step_y_negative_cross_axis",
+            "step_z_positive_settling_time",
+            "step_z_positive_overshoot",
+            "step_z_positive_cross_axis",
+            "step_z_negative_settling_time",
+            "step_z_negative_overshoot",
+            "step_z_negative_cross_axis",
+            "disturbance_peak_attitude",
+            "disturbance_recovery",
+            "disturbance_saturation_time",
+            "imu_roll_pitch_rms",
+            "imu_yaw_drift",
+            "saturation_integral_x_limit",
+            "saturation_integral_y_limit",
+            "saturation_integral_z_limit",
+            "saturation_recovery",
+            "saturation_duration_upper_bound",
+            "saturation_triggered_duration",
+            "acceleration_limitation_recorded",
+            "invalid_input_rejected",
+            "reset_is_deterministic"
+          ]
+        },
+        "g0_json_pointer": {
+          "type": "string",
+          "pattern": "^/scenarios/[0-7]/acceptance/[0-9]+$"
+        },
+        "metric": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "metric_version": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "event_id": {
+          "type": ["string", "null"]
+        },
+        "axis": {
+          "type": ["string", "null"],
+          "enum": ["x", "y", "z", null]
+        },
+        "window": {
+          "$ref": "#/$defs/window"
+        },
+        "raw_signals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "sample_selector": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "reducer": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "operator": {
+          "enum": ["<=", ">=", "=="]
+        },
+        "limit": {
+          "$ref": "#/$defs/result_value"
+        },
+        "unit": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "computed_value": {
+          "$ref": "#/$defs/result_value"
+        },
+        "comparison_expression": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "status": {
+          "enum": ["pass", "fail", "inconclusive", "not_applicable"]
+        },
+        "reason": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "metric_implementation": {
+          "$ref": "#/$defs/file_identity"
+        },
+        "raw_locators": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        },
+        "requirement_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^B0-REQ-[0-9]{4}$"
+          }
+        },
+        "verification_spec_ids": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^B0-VER-[A-Z0-9-]+$"
+          }
+        }
+      }
+    },
+    "integration_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "group",
+        "node_id",
+        "inputs",
+        "independent_expected",
+        "actual",
+        "unit",
+        "tolerance",
+        "comparison",
+        "status",
+        "junit_locator"
+      ],
+      "properties": {
+        "group": {
+          "enum": [
+            "G3-TIME",
+            "G3-HOLD",
+            "G3-EVENT",
+            "G3-INIT",
+            "G3-RESET",
+            "G3-INVALID",
+            "G3-TRUTH",
+            "G3-TRUTH-NEGATIVE",
+            "G3-BIND",
+            "G3-METRIC",
+            "G3-DATA",
+            "G3-SCENARIO",
+            "G3-REPLAY",
+            "G3-EVIDENCE"
+          ]
+        },
+        "node_id": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "inputs": {},
+        "independent_expected": {},
+        "actual": {},
+        "unit": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "tolerance": {},
+        "comparison": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "status": {
+          "enum": ["pass", "fail", "inconclusive"]
+        },
+        "junit_locator": {
+          "$ref": "#/$defs/nonempty"
+        }
+      }
+    },
+    "replay_stream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "count_a", "count_b", "tolerance", "matches"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "count_a": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "count_b": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tolerance": {
+          "type": "number",
+          "minimum": 0
+        },
+        "matches": {
+          "type": "boolean"
+        }
+      }
+    },
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id_a", "run_id_b", "versions_match", "input_hashes_match", "streams"],
+      "properties": {
+        "run_id_a": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "run_id_b": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "versions_match": {
+          "type": "boolean"
+        },
+        "input_hashes_match": {
+          "type": "boolean"
+        },
+        "streams": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/replay_stream"
+          }
+        }
+      }
+    },
+    "test_report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suite",
+        "build_type",
+        "junit_path",
+        "junit_sha256",
+        "collected",
+        "passed",
+        "failed",
+        "skipped",
+        "xfailed"
+      ],
+      "properties": {
+        "suite": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "build_type": {
+          "enum": ["Debug", "Release", "Python"]
+        },
+        "junit_path": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "junit_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "collected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "xfailed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "x-b0-acceptance-rule": "structural validity retains raw reports; semantic acceptance additionally requires required production suites to have collected > 0, passed == collected, failed == skipped == xfailed == 0, and counts equal retained JUnit"
+    },
+    "artifact_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "uri",
+        "content_sha256",
+        "archive_sha256",
+        "availability",
+        "verified_at_utc",
+        "expires_at_utc"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "uri": {
+          "$ref": "#/$defs/nonempty"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "archive_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "availability": {
+          "enum": [
+            "remote_unverified",
+            "remote_verified",
+            "local_verified",
+            "expired",
+            "missing"
+          ]
+        },
+        "verified_at_utc": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "expires_at_utc": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "artifacts"],
+      "properties": {
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/file_identity"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/artifact_provenance"
+          }
+        }
+      }
+    },
+    "claim_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integration_simulation_only",
+        "g4_complete",
+        "real_time_hil",
+        "board_execution",
+        "flight",
+        "limitations"
+      ],
+      "properties": {
+        "integration_simulation_only": {
+          "const": true
+        },
+        "g4_complete": {
+          "const": false
+        },
+        "real_time_hil": {
+          "const": false
+        },
+        "board_execution": {
+          "const": false
+        },
+        "flight": {
+          "const": false
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nonempty"
+          }
+        }
+      }
+    }
+  }
+}

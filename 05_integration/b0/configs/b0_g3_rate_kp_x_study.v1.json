@@ -1,0 +1,97 @@
+{
+  "schema_version": "b0-g3-rate-kp-x-study/v1",
+  "status": "change_study_accepted_not_parameter_accepted",
+  "authority": {
+    "pa_decision": "CHANGE_STUDY_ACCEPT",
+    "accepted_s0_commit": "e3a5df2c7b21b4f4a4c7c6f296e0711222ac2569",
+    "source_scenario": "saturation_withdrawal",
+    "source_g0_config": "05_integration/b0/configs/b0_g0_contract.v2.json",
+    "source_g0_canonical_lf_sha256": "5b95531a6f96cb67ce25f624d6921bd313696f3c0b9868ec1de13c24c34cd98c",
+    "baseline_shortfall_source_commit": "78abbbe27a6e451049d80fbcf9c8e031a5001b0c",
+    "baseline_result_sha256": "79e691f5b17655935943ad2e4ae1cb784e1cc82d8a122c36cde8a5a385075a0b"
+  },
+  "profile": {
+    "classification": "tuning_development_profile_not_acceptance",
+    "seed": 2026100900,
+    "source_acceptance_seed": 2026100906,
+    "acceptance_seed_must_not_run": true,
+    "frozen_fields": [
+      "command",
+      "event_interval",
+      "horizon",
+      "criteria",
+      "metric_tolerance",
+      "torque_limits",
+      "rate_target_limits",
+      "integral_limits",
+      "antiwindup_gains",
+      "derivative_filter_time_constant",
+      "base_period_and_schedule",
+      "plant",
+      "imu",
+      "estimator",
+      "initialization",
+      "reset_transaction"
+    ]
+  },
+  "parameter_whitelist": {
+    "field": "controller.rate_pid.kp.x",
+    "unit": "Nm*s/rad",
+    "minimum": 0.0,
+    "maximum": 0.2,
+    "all_other_parameters": "approved_G0_initial"
+  },
+  "analytic_reachability": {
+    "outer_rate_target_at_step_onset_rad_s": 2.0,
+    "zero_history_request_model_Nm": "rate_kp_x * 2.0",
+    "positive_torque_limit_Nm": 0.35,
+    "strict_saturation_nominal_boundary": "rate_kp_x > 0.175",
+    "note": "The finite runs remain authoritative because derivative, lag, estimator noise and trajectory evolution can change the actual request."
+  },
+  "execution_budget": {
+    "maximum_runs": 8,
+    "declared_runs": 7,
+    "one_execution_per_candidate": true,
+    "retry_policy": "no_retry; retain execution_error_inconclusive and stop for review",
+    "candidates_rate_kp_x": [
+      0.08,
+      0.17,
+      0.175,
+      0.176,
+      0.18,
+      0.19,
+      0.2
+    ]
+  },
+  "feasibility_rule": {
+    "primary": "saturation_union_duration_s >= 0.05 in source window [200,1000)",
+    "required_integrity": [
+      "structurally_complete",
+      "sealed_parameter_whitelist",
+      "core_proportional_readback",
+      "core_request_equals_P_plus_I_before_plus_D",
+      "real_component_call_and_pairing_contract"
+    ],
+    "candidate_ordering": [
+      "feasible_before_infeasible",
+      "minimum_absolute_delta_from_baseline_0.08",
+      "lower_rate_kp_x"
+    ],
+    "outcome_limit": "feasibility_only_not_parameter_acceptance"
+  },
+  "stopping_rules": [
+    "execute_the_declared_set_once_each_unless_an_execution_integrity_error_occurs",
+    "if_no_candidate_is_feasible_stop_without_expanding_the_search",
+    "if_feasible_candidates_exist_return_one_ranked_overlay_proposal_to_PA",
+    "do_not_run_any_acceptance_seed_before_PARAMETER_ACCEPT",
+    "do_not_use_the_exposed_2026100906_values_for_candidate_scoring_or_fitting"
+  ],
+  "retained_fields": [
+    "source_module_config_protocol_and_parameter_hashes",
+    "truth_estimate_command_raw_and_adapted_IMU",
+    "requested_limited_actual_and_saturation_pairing",
+    "integral_before_and_after_P_D_limit_AW_and_lag_AW",
+    "event_tick_timestamp_and_result_classification",
+    "all_failed_and_successful_candidates"
+  ]
+}

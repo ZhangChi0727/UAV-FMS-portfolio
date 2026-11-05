@@ -5,10 +5,12 @@ system relationships and their sources from executable module code, daily
 operation notes, and retained evidence. G0 and the G1.5-B joint baseline are
 approved, and G1 plant/actuator/IMU component acceptance is merged. The original
 PA accepted closeout K3; G1.5-C is now the active verification-traceability and
-reporting layer. G2-A is merged and post-merge accepted; G2-B PR #22 is closing
-implementation-review findings with a retained candidate package for re-review
-and is not yet accepted. This does not claim G2 overall, G3, G4, overall B0
-completion, hardware, flight, or research results.
+reporting layer. G2-A and G2-B are merged and post-merge accepted; the
+[current G2 closeout and G3 readiness record](reports/b0/g2_closeout_and_g3_readiness.md)
+separates that component acceptance from evidence availability. G3-A is active
+in implementation after original-PA `DESIGN_ACCEPT` of exact S0 candidate
+`e3a5df2c7b21b4f4a4c7c6f296e0711222ac2569`. This does not
+claim G3, G4, overall B0 completion, hardware, flight, or research results.
 
 ## Reading route
 
@@ -31,7 +33,8 @@ completion, hardware, flight, or research results.
    pre-approval wording. The [D2 approval](reports/b0/g15b_d2_approval.md) and
    [current closeout record](reports/b0/g15b_closeout_current.md) describe the
    effective lifecycle without rewriting those historical snapshots.
-4. **Development state** — [current status snapshot](reports/current_status.md)
+4. **Development state** — the historical [G1 status snapshot](reports/current_status.md),
+   the [current G2 closeout/G3 readiness record](reports/b0/g2_closeout_and_g3_readiness.md),
    and the module-local implementations under `01_simulation/`,
    `02_estimation/b0/`, `03_control/b0/` and `05_integration/`.
 5. **Verification evidence** — [execution/evidence contract](verification/README.md)
@@ -41,10 +44,10 @@ completion, hardware, flight, or research results.
 6. **Verification** — [verification plan](verification/verification_plan.md),
    [G0 acceptance](verification/g0_acceptance.md), and the
    [V&V report](reports/v_and_v_report.md).
-7. **Evidence** — [RESULTS.md](../RESULTS.md), the G1/G2-A retained component
-   artifacts, the [G2-B candidate validation record](reports/b0/g2b_validation_record.md),
-   and versioned reports under `reports/`. Candidate generators or green tests
-   do not imply PA acceptance.
+7. **Evidence** — [RESULTS.md](../RESULTS.md), the retained G1/G2 component
+   artifacts, the [G2-B validation record](reports/b0/g2b_validation_record.md),
+   and versioned reports under `reports/`. Component acceptance does not by
+   itself make remote artifacts verified or establish G3 performance.
 
 ## Source-of-truth boundaries
 
