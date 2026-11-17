@@ -4,3 +4,5 @@ external_transfer/service/** -text
 *.csv -text
 *.jsonl -text
 *.json -text
+# Retained files keep their original line endings; do not flag them in whitespace checks.
+* whitespace=cr-at-eol,-trailing-space,-blank-at-eof,-space-before-tab,-indent-with-non-tab
