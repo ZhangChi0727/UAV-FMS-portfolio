@@ -50,14 +50,16 @@ unchanged.
 All earlier failed or partial preparation and test attempts remain retained.
 They have not been overwritten or retrospectively accepted.
 
-Attempt 05 has completed input staging and independent archive review. PA has
-released its exact nine-node command once; the result is not yet accepted.
-Data and staging acceptance do not establish test success. Actual execution
-receipts, complete node outcomes and non-author result review are still required.
+Attempt 05 completed its sole released run with all nine prescribed nodes
+passing, zero failures/errors/skips and no xfail/xpass. PA accepted this finite
+batch after non-author artifact, source and execution-receipt review. Earlier
+failed attempts remain retained. The retained JUnit SHA-256 is
+`02BF65A4D75A3B80052C722615218D2A0A3A8E74487BD04ECE13717AA2A23208`.
+The review does not claim per-call dynamic counters absent from the logs.
 
 These synthetic verification inputs do not prove real component execution or
-complete eight-scenario/37-criterion coverage. Neither nine-node acceptance nor
-overall G3-B acceptance is claimed. The normal 50 ms saturation obligation
+complete eight-scenario/37-criterion coverage. Nine-node acceptance is limited to this exact batch;
+overall G3-B acceptance is not claimed. The normal 50 ms saturation obligation
 remains separate.
 
 The parallel research C1 finite check stage has separate acceptance. It is not
