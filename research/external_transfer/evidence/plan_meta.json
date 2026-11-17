@@ -1,0 +1,20 @@
+{
+  "source_sha256": "b38814583c20c7f03a4c03e285d17f4f6a8a3b49aabc3cdc598be268c5200c40",
+  "pub": "vehicle_attitude",
+  "read": "actuator_outputs",
+  "alternate": "vehicle_rates_setpoint",
+  "counts": {
+    "primary_population": 8652,
+    "primary_n": 48,
+    "primary_fifo_sat_eligible_after_exclusion": 276,
+    "primary_fifo_sat_n": 12,
+    "primary_far_latest_sat_eligible_after_exclusion": 218,
+    "primary_far_latest_sat_n": 12,
+    "alternate_fifo_sat_eligible_after_exclusion": 4879,
+    "alternate_fifo_sat_n": 12,
+    "alternate_far_latest_sat_eligible_after_exclusion": 0,
+    "alternate_far_latest_sat_n": 0
+  },
+  "plan1.jsonl": "5fe02d63208760827be9df95ecf825a87caf75feea294782c99e6eeca0830d0f",
+  "plan2.jsonl": "f3b4870cd817183d3f68c5f42406ddae4e97f3429b6745cb488552d7cd620cb8"
+}
