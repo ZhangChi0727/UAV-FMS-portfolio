@@ -28,6 +28,8 @@ No completed flight, hardware, broad performance, or research results are claime
 - [Research packages](research/README.md): independent questions and publication gates.
 - [Verification plan](systems_engineering/verification/verification_plan.md) and [results](RESULTS.md).
 - [Literature record](literature/README.md): discovery, screening, and claim evidence.
+- [Application evidence index](application/README.md): what an external reviewer can read first, what is
+  unfinished, and what is not claimed. Legacy EKF/UKF, geometric-control and TCN scaffolds are not evidence.
 
 ## First baseline: attitude closed loop
 
