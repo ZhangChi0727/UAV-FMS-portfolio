@@ -1,6 +1,9 @@
 # Scheduler and probe-effect study
 
-**State: in preparation. No number is published from this folder yet.**
+**State: draft for author review.** See [report.md](report.md). Its numbers come from a read-only re-check of the
+retained evidence in `research/scheduler_holdout`, `research/paired_scheduler`, `research/external_transfer` and
+`research/pubsub_transfer`; they are pending author sign-off. The periodic-service stress count in
+`research/external_transfer/service` matches the retained audit but was not re-derived.
 
 ## Question
 

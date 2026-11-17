@@ -24,7 +24,7 @@ retained artifact.
 
 | Entry | Content | State |
 |---|---|---|
-| [timing_probe_study/](timing_probe_study/README.md) | Scheduler and probe-effect measurement study on a Windows host | In preparation |
+| [timing_probe_study/](timing_probe_study/README.md) | Scheduler and probe-effect measurement study on a Windows host; [draft report](timing_probe_study/report.md) and the four research packages under `research/` | Draft for author review; numbers pending author sign-off |
 | [ml_study/](ml_study/README.md) | Small learned angular-rate forecaster compared against physics baselines on B0 plant data | In preparation; not trained yet |
 | [verification_algorithm/](verification_algorithm/README.md) | Pointer to a separate verification-method project | Placeholder |
 | [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | Who did what, including AI-agent assistance, and what is unfinished | Draft |
