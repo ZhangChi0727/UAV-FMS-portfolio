@@ -1,6 +1,6 @@
 # G3-B development progress — draft visibility snapshot
 
-Date: 2026-11-16 (Australia/Perth).
+Date: 2026-11-17 (Australia/Perth).
 Base: `3dc9050da9bc4cd79ce19f751a05419117e9b286` (merged PR #23).
 Status: **work in progress; not G3-B acceptance and not ready to merge**.
 
@@ -40,22 +40,29 @@ For the accepted LI batch, retained SHA-256 identifiers are:
 ## Current RJ/RP work
 
 RJ covers rejected-input transactions and recovery; RP covers reset/replay
-comparison. Private RJ checks have received non-author delta reviews for sample
-identity, failed extra-sample attempts, IMU-state continuity, timestamp-only
-fault injection and same-tick retry binding. The public invalid-input route
-remains closed until complete admission and joint RJ/RP evidence are accepted.
+comparison. RJ/RP preparation attempt 04 has received PA acceptance following
+non-author source, serialization-size and artifact review. Its correction makes
+boundary envelope inventories follow canonical port-key order with matching
+source references and stable de-duplication. Independent expected values,
+tolerances, production parameters, frozen contracts and data-size limits are
+unchanged.
 
-A synthetic-only development projection is being integrated to bind parameter
-contents, observer-source descriptions, constructor identities and separate
-main/twin reference domains. It is not an extension to the frozen runtime
-schema, nor proof of real execution. Five component constructors must not be
-misreported as six merely because six role identities exist.
+All earlier failed or partial preparation and test attempts remain retained.
+They have not been overwritten or retrospectively accepted.
 
-Remaining gates are complete transaction/authority/reference checks, independent
-oracle review, serializer size bounds, separately authorized data preparation,
-finite test execution and non-author result review. No successful materialization,
-RJ/RP test pass or complete eight-scenario/37-criterion result is claimed here.
-The normal 50 ms saturation obligation is not resolved by synthetic tests.
+Attempt 05 has completed input staging and independent archive review. PA has
+released its exact nine-node command once; the result is not yet accepted.
+Data and staging acceptance do not establish test success. Actual execution
+receipts, complete node outcomes and non-author result review are still required.
+
+These synthetic verification inputs do not prove real component execution or
+complete eight-scenario/37-criterion coverage. Neither nine-node acceptance nor
+overall G3-B acceptance is claimed. The normal 50 ms saturation obligation
+remains separate.
+
+The parallel research C1 finite check stage has separate acceptance. It is not
+a G3-B prerequisite and does not close outstanding G3-B gates; subsequent data
+generation and training are not authorized by that acceptance.
 
 ## Publication and next steps
 
