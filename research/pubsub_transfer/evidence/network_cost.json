@@ -1,0 +1,608 @@
+{
+  "design": "Supplemental post-design TCP loopback piggyback service-cost comparison",
+  "endpoint_scope": "127.0.0.1 only",
+  "socket_types": "XPUB/SUB",
+  "preencoded": true,
+  "handshake_verified": true,
+  "validated_all_records": true,
+  "local_ack_after_all_frames": true,
+  "high_water_mark": 4096,
+  "timing_definition": "publisher first send through subscriber whole-frame byte comparisons and local ack; includes end marker",
+  "cost_scope": "application record payload; TCP/IP and ZeroMQ wire overhead unmeasured",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "pyzmq": "27.1.0",
+  "libzmq": "4.3.5",
+  "clock_resolution_ns": 100.0,
+  "record_width": {
+    "none": 24,
+    "one": 28
+  },
+  "common_marker_bytes": 12,
+  "payload_bytes_delta_per_message": 4,
+  "per_layout_sha256": {
+    "none": "3cf8ca82d1efaad40c5273d7750e1896b2f9a0e38e220ad051c35aa8e762580a",
+    "one": "7ff0bb2ee590aa44f541b3527b56db2d0b62736c1f01fddd8a41618311ea24eb"
+  },
+  "pairs": 24,
+  "records_per_batch": 2048,
+  "warmup": [
+    {
+      "mode": "none",
+      "duration_ns": 1660100,
+      "messages": 2048,
+      "marker_bytes": 12,
+      "data_payload_bytes": 49152
+    },
+    {
+      "mode": "one",
+      "duration_ns": 1790800,
+      "messages": 2048,
+      "marker_bytes": 12,
+      "data_payload_bytes": 57344
+    },
+    {
+      "mode": "one",
+      "duration_ns": 1795000,
+      "messages": 2048,
+      "marker_bytes": 12,
+      "data_payload_bytes": 57344
+    },
+    {
+      "mode": "none",
+      "duration_ns": 1859000,
+      "messages": 2048,
+      "marker_bytes": 12,
+      "data_payload_bytes": 49152
+    }
+  ],
+  "samples": [
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1657200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1595400,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -61800,
+      "delta_ns_per_message": -30.17578125
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1637400,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1535600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -101800,
+      "delta_ns_per_message": -49.70703125
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1527700,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1999700,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 472000,
+      "delta_ns_per_message": 230.46875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1809800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1737200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -72600,
+      "delta_ns_per_message": -35.44921875
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1652800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1523300,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -129500,
+      "delta_ns_per_message": -63.232421875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1777300,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 2214100,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 436800,
+      "delta_ns_per_message": 213.28125
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1524600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1518600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -6000,
+      "delta_ns_per_message": -2.9296875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1499200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1498800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -400,
+      "delta_ns_per_message": -0.1953125
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1492100,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1634800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 142700,
+      "delta_ns_per_message": 69.677734375
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1465000,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1724700,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 259700,
+      "delta_ns_per_message": 126.806640625
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1508200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1583000,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 74800,
+      "delta_ns_per_message": 36.5234375
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1930900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1456700,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -474200,
+      "delta_ns_per_message": -231.54296875
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1628900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1757600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 128700,
+      "delta_ns_per_message": 62.841796875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1509100,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1656500,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 147400,
+      "delta_ns_per_message": 71.97265625
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1496100,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1903000,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 406900,
+      "delta_ns_per_message": 198.681640625
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1474300,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1594900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 120600,
+      "delta_ns_per_message": 58.88671875
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1429800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1472300,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 42500,
+      "delta_ns_per_message": 20.751953125
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1730900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 2375300,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 644400,
+      "delta_ns_per_message": 314.6484375
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1486100,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1507500,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 21400,
+      "delta_ns_per_message": 10.44921875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1846400,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1765900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -80500,
+      "delta_ns_per_message": -39.306640625
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1616200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1741600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 125400,
+      "delta_ns_per_message": 61.23046875
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1921400,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1499500,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -421900,
+      "delta_ns_per_message": -206.005859375
+    },
+    {
+      "order": [
+        "none",
+        "one"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1507200,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1644900,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": 137700,
+      "delta_ns_per_message": 67.236328125
+    },
+    {
+      "order": [
+        "one",
+        "none"
+      ],
+      "none": {
+        "mode": "none",
+        "duration_ns": 1926600,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 49152
+      },
+      "one": {
+        "mode": "one",
+        "duration_ns": 1643800,
+        "messages": 2048,
+        "marker_bytes": 12,
+        "data_payload_bytes": 57344
+      },
+      "delta_ns": -282800,
+      "delta_ns_per_message": -138.0859375
+    }
+  ],
+  "delta_ns_per_message": {
+    "min": -231.54296875,
+    "median": 28.6376953125,
+    "max": 314.6484375
+  },
+  "positive": 14,
+  "negative": 10,
+  "zero": 0,
+  "per_order": {
+    "('none', 'one')": {
+      "min": -63.232421875,
+      "median": 48.876953125,
+      "max": 230.46875
+    },
+    "('one', 'none')": {
+      "min": -231.54296875,
+      "median": -17.822265625,
+      "max": 314.6484375
+    }
+  }
+}
