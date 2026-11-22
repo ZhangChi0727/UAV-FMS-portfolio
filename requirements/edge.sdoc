@@ -60,13 +60,13 @@ TITLE: Image to structured finding
 STATUS: proposed
 STATE: planned
 STATEMENT: >>>
-Given an image and a task record, the system shall produce a structured finding containing defect class, image region, confidence and an explicit abstain flag.
+Given an image and a task record, the system shall produce a structured finding containing defect class, image region, confidence and an explicit abstain status. The abstain status and confidence shall be computed only from information available at run time, without reference answers or ground-truth labels.
 <<<
 RATIONALE: >>>
-Downstream reporting needs machine-readable findings and an explicit uncertainty channel.
+Downstream reporting needs machine-readable findings and an explicit uncertainty channel. The literature review found that answer-level correctness estimators exist; the requirement fixes which signals are admissible at run time.
 <<<
 ACCEPTANCE: >>>
-Findings are evaluated on a named public or synthetic dataset whose licence is recorded; per-class results and abstention rate are reported.
+Findings are evaluated on a named dataset whose licence is recorded and whose split follows EDG-REQ-0015. Per-class results are reported together with coverage and selective risk as defined in EDG-REQ-0013. Missed defects and false findings on labelled-absent regions are counted separately; unlabelled regions are handled under EDG-REQ-0030.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -82,10 +82,10 @@ STATEMENT: >>>
 The system shall execute the selected vision-language or language models on the development GPU in PyTorch and record model identifier, precision, library versions and device identifier for every run.
 <<<
 RATIONALE: >>>
-Deployment and PyTorch experience is a stated requirement of the target role; provenance of each run is required for fair comparison.
+Each model run must be attributable to fixed software, model and hardware versions so that comparisons are reproducible.
 <<<
 ACCEPTANCE: >>>
-A run record contains all listed fields and the model produces output for the fixed evaluation set.
+A run record contains all listed fields and the model produces output for the fixed evaluation set. A toolchain smoke run on a small sample demonstrates readiness only; it does not satisfy this requirement until the fixed evaluation set has been run.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -101,10 +101,10 @@ STATEMENT: >>>
 The profiling harness shall measure inference latency distribution, peak memory and, where the platform exposes it, energy, using warm-up, repeated runs and raw per-run output.
 <<<
 RATIONALE: >>>
-Placement decisions depend on measured cost; summary statistics without raw data cannot be audited.
+Placement decisions depend on measured cost; summary statistics without raw data cannot be audited. Published placement studies differ in timing boundaries, warm-up, power mode and output length, so these must be fixed and recorded.
 <<<
 ACCEPTANCE: >>>
-The harness reproduces its raw output format on the same host; summaries are computed only from retained raw files.
+Each run record states software versions, power or clock mode, warm-up count, repetition count, output length and whether network time is included. Energy is reported only when measured by a named tool. Summaries are computed only from retained raw files.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -120,10 +120,10 @@ STATEMENT: >>>
 Given a task record, device profiles and link state, the system shall select one placement from onboard, edge server, cloud or split inference, using a deterministic function of its declared inputs.
 <<<
 RATIONALE: >>>
-Placement across onboard, edge and cloud is the central systems question of the target role.
+Placement of each inference step across onboard, edge and cloud, under latency, energy and link constraints, is the central systems question of this track.
 <<<
 ACCEPTANCE: >>>
-Identical inputs yield identical placements; the function is compared against fixed-placement and greedy-latency baselines on the same replay.
+Identical inputs yield identical placements. The policy is compared with the placement baselines of EDG-REQ-0016 on the same replay. Policy inputs exclude reference answers, ground-truth labels and any output not yet available at decision time; a quality signal from an already completed step is permitted when its cost is charged under EDG-REQ-0031.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -136,13 +136,13 @@ TITLE: Fallback under link or budget violation
 STATUS: proposed
 STATE: planned
 STATEMENT: >>>
-When the link is degraded or lost, or a measured budget is exceeded, the system shall select a fallback placement and log the trigger and the decision.
+When the link is degraded or lost, a cloud or edge result arrives after its freshness limit or fails to arrive, or a measured budget is exceeded, the system shall select a fallback placement and log the trigger and the decision. If no placement is feasible, the system shall reject the request or abstain, log it, and not execute a task beyond its declared budget. Retries are limited to a fixed count declared per task class.
 <<<
 RATIONALE: >>>
-A placement policy without an explicit fallback is not safe to evaluate under realistic network conditions.
+A placement policy without an explicit fallback and terminal action is not safe to evaluate under realistic network conditions. Late and missing results are the common failure modes in the reviewed systems and must be handled explicitly.
 <<<
 ACCEPTANCE: >>>
-Injected link-loss and budget-violation events in a replay produce the logged fallback decision in every injected case.
+Injected link-loss, late-delivery, budget-violation and no-feasible-placement events in a replay produce the logged fallback or terminal decision in every injected case, with no retry beyond the declared limit.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -155,13 +155,13 @@ TITLE: Reproducible scenario replay
 STATUS: proposed
 STATE: planned
 STATEMENT: >>>
-The system shall replay task streams with synthetic network and battery traces from recorded seeds, producing identical event logs for identical inputs.
+The system shall replay task streams with synthetic network and battery traces from recorded seeds, producing identical normalised event logs for identical inputs.
 <<<
 RATIONALE: >>>
 Comparisons between placement policies are only meaningful under identical inputs.
 <<<
 ACCEPTANCE: >>>
-Two replays with the same seed and configuration produce byte-identical event logs.
+Two replays with the same seed, configuration and trace files produce identical normalised event logs. Normalisation removes only wall-clock timestamps and run identifiers, which are stored separately as run metadata. Replays consume fixed inputs and recorded measurement artefacts; they do not re-run GPU inference. Late deliveries, retries and discarded results are recorded as costs.
 <<<
 EVIDENCE: none yet
 RELATIONS:
@@ -215,7 +215,7 @@ STATEMENT: >>>
 The system shall be scoped to civil bridge inspection tasks and shall not include defence, surveillance or targeting functions.
 <<<
 RATIONALE: >>>
-The civil-use attribute of the target project is a precondition for the work.
+The civil-use attribute of the project is a precondition for the work.
 <<<
 ACCEPTANCE: >>>
 Inspection of task schema and datasets finds no non-civil classes or use cases; dataset licences are recorded.
@@ -259,3 +259,402 @@ EVIDENCE: none yet
 RELATIONS:
 - TYPE: Parent
   VALUE: B0-REQ-0030
+
+[REQUIREMENT]
+UID: EDG-REQ-0013
+TITLE: Selective-prediction evaluation
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The evaluation of image findings shall report coverage and selective risk. An accepted item has a schema-valid findings or no_finding record; invalid or malformed records, failed executions and abstentions are not accepted. Coverage is accepted items divided by submitted items. Selective risk is the number of accepted-and-scoreable items judged erroneous divided by the number of accepted-and-scoreable items, where scoreability depends on reference evidence for the facts being scored under EDG-REQ-0030. Unscoreable items, invalid or malformed records, failed executions and abstentions shall be counted separately and never silently removed.
+<<<
+RATIONALE: >>>
+A low error rate achieved by abstaining on most inputs is not a reliability improvement. Coverage and selective risk must use separate, explicit denominators.
+<<<
+ACCEPTANCE: >>>
+The report includes a risk-coverage table or curve and, at each reported coverage, the submitted, accepted, accepted-and-scoreable and error counts and selective risk. When accepted-and-scoreable is zero, selective risk is not applicable, never zero, even if accepted is nonzero. A valid no_finding record may be correct when reliable reference evidence establishes no relevant defect; an empty string or invalid empty output is not a valid no_finding record and is not counted as correct.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0002
+
+[REQUIREMENT]
+UID: EDG-REQ-0014
+TITLE: Total cost accounting
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Every placement comparison shall charge all execution costs of the decision, including failed uploads, retries, extra model or verification calls, queueing and decision overhead, and shall report deadline-miss rate together with end-to-end tail latency.
+<<<
+RATIONALE: >>>
+Escalation and verification gains are offset by the cost of calls that were made and discarded. Cost comparisons that omit these terms overstate the benefit of a policy.
+<<<
+ACCEPTANCE: >>>
+Each comparison table lists the cost categories used, the deadline-miss rate over all requests and the 95th or 99th percentile end-to-end latency of completed requests, reported beside the not-completed rate.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0005
+
+[REQUIREMENT]
+UID: EDG-REQ-0015
+TITLE: Dataset provenance and grouped split
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Every dataset used for evaluation shall have a recorded source, version and licence. Its splits shall be defined at bridge level when bridge identifiers exist, and otherwise at source-image level. All crops and augmented copies shall inherit the group of their source image. Where image relatedness cannot be reliably determined, results are exploratory and no independent cross-source generalisation is claimed. Unlabelled defects shall not be treated as negative examples.
+<<<
+RATIONALE: >>>
+Random splits of image patches or near-duplicate frames inflate apparent accuracy. Missing labels are not evidence of absence.
+<<<
+ACCEPTANCE: >>>
+The split file maps every image, crop and augmented copy to a group identifier and declares its grouping level (bridge or source image). Generalisation claims are limited to the level achieved. Licence terms are recorded in the result document before use.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0010
+
+[REQUIREMENT]
+UID: EDG-REQ-0016
+TITLE: Baseline set and visible information
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Each finding or abstention policy shall be compared with the discovery baselines declared in its result document: a fixed model, a confidence or length threshold, a rule-based verification step, and a dedicated visual classifier where a training split exists. Each placement policy shall be compared with the placement baselines: fixed local, fixed remote, fastest feasible, and a quality lookup table. Within each comparison, visible information and cost accounting are identical; models may differ only where declared.
+<<<
+RATIONALE: >>>
+Each cited method solves a different problem or uses different information. A fair comparison requires that policies in the same comparison see the same inputs and pay the same costs.
+<<<
+ACCEPTANCE: >>>
+The result document lists the visible inputs of every policy in each comparison. Oracle or offline-optimal results are labelled as upper bounds and are not compared as deployable policies.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0005
+
+[REQUIREMENT]
+UID: EDG-REQ-0017
+TITLE: Negative result retention
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+If a candidate signal does not add predictive power over the simple baselines, or a policy does not improve the cost-risk trade-off, the result shall be reported as a negative result with its conditions.
+<<<
+RATIONALE: >>>
+The project does not assume that a novel method will be shown to help. Reporting only positive outcomes would bias the study.
+<<<
+ACCEPTANCE: >>>
+The results document contains an explicit section for negative findings and the conditions under which they hold.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0010
+
+[REQUIREMENT]
+UID: EDG-REQ-0018
+TITLE: Finding record schema
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+A model output shall be encoded with one of four statuses: findings, no_finding, abstain or invalid. A findings record contains one or more finding entries. Each entry has one defect class from the closed label set of the named dataset version, one bounding box in source-image pixel coordinates with origin at the top-left corner, and one confidence value in the interval zero to one. Any other encoding is invalid.
+<<<
+RATIONALE: >>>
+Machine-checkable findings require closed vocabularies and an unambiguous encoding of empty, abstained and invalid outputs; open text cannot be scored against labels.
+<<<
+ACCEPTANCE: >>>
+Schema validation runs on every model output of an evaluation. Invalid records are retained with their raw outputs and remain in the denominator of EDG-REQ-0002.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0002
+
+[REQUIREMENT]
+UID: EDG-REQ-0019
+TITLE: Evaluation fixing before test use
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Before the test split is first evaluated, prompts, model selection, scorer, abstention threshold and all baselines shall be fixed using only the training/development and calibration splits. Training/development is one split used for fitting and model or prompt selection; calibration is used for predeclared calibration and threshold selection. The test split is used for a single frozen evaluation, with the same separation applied to all baselines.
+<<<
+RATIONALE: >>>
+Choosing any evaluation element after seeing test outcomes makes the reported point optimistic.
+<<<
+ACCEPTANCE: >>>
+The result record contains the threshold value, the split identifiers and the hash of each split file. Any change made after test evaluation is reported as a separate, labelled exploratory analysis and does not replace the frozen evaluation.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0002
+
+[REQUIREMENT]
+UID: EDG-REQ-0020
+TITLE: Deterministic placement function
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The placement function shall be a pure function of its declared inputs. It shall keep no state between decisions other than inputs explicitly passed to it, and any randomness shall come from a recorded seed.
+<<<
+RATIONALE: >>>
+Hidden state makes a policy's decisions depend on history that is not in the result record.
+<<<
+ACCEPTANCE: >>>
+Running the same replay twice yields identical decision logs, checked by hash after normalisation under EDG-REQ-0007. A test that reorders independent input messages yields unchanged decisions.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0005
+
+[REQUIREMENT]
+UID: EDG-REQ-0021
+TITLE: Declared placement inputs
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The placement decision inputs shall be limited to the task record, the device profile of each candidate location with its source (measured or declared), a link-state estimate, and the energy or time budget. Each input shall carry a timestamp. A quality signal from an already completed local step may also be an input, provided its generation cost is charged under EDG-REQ-0031. Outputs not yet available at decision time shall not be inputs.
+<<<
+RATIONALE: >>>
+Undeclared inputs cannot be audited, and untimestamped inputs cannot be checked for staleness.
+<<<
+ACCEPTANCE: >>>
+Each decision record lists its inputs with timestamps and sources. An input older than its freshness limit causes a logged fallback under EDG-REQ-0006 and is not used silently.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0005
+
+[REQUIREMENT]
+UID: EDG-REQ-0022
+TITLE: Latency measurement boundary
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Each latency measurement shall define its start and end events and state whether network transfer is included. For profiling runs, reported statistics shall be the 50th, 95th and 99th percentiles over all retained runs. For replayed requests, percentiles shall be computed over completed requests only and reported beside the not-completed rate. A timeout time shall not be recorded as a completion time.
+<<<
+RATIONALE: >>>
+Published latency figures differ in their start and end events; without a stated boundary, values cannot be compared. Incomplete requests have no completion time and must not be mixed into completion percentiles.
+<<<
+ACCEPTANCE: >>>
+Each result table names its start event, end event, network inclusion and run count, and the percentiles are recomputed from the retained raw file by the analysis script.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0004
+
+[REQUIREMENT]
+UID: EDG-REQ-0023
+TITLE: Cold and warm state reporting
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Cold-start and warm inference shall be reported separately. Each run shall record the GPU clock or power mode where the driver exposes it.
+<<<
+RATIONALE: >>>
+Including model loading in a warm measurement, or mixing clock states, makes timings incomparable.
+<<<
+ACCEPTANCE: >>>
+Each row of a result table is labelled cold or warm. The source of the clock or power readout is recorded, or its absence is stated.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0004
+
+[REQUIREMENT]
+UID: EDG-REQ-0024
+TITLE: Result freshness limit
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Each task class shall declare a freshness limit in seconds. Age is measured from the capture timestamp of the image to the decision time. A result is fresh only if its age is strictly less than the limit; a result whose age equals the limit is stale. A stale remote result shall be discarded and logged, and shall not be used for the decision.
+<<<
+RATIONALE: >>>
+A late result used as current evidence can mislead the operator; the limit and its boundary condition must be explicit.
+<<<
+ACCEPTANCE: >>>
+Injected late-arrival and boundary-age events in a replay produce discard log entries, and no decision uses a discarded result.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0006
+
+[REQUIREMENT]
+UID: EDG-REQ-0025
+TITLE: Ordered fallback list
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The fallback shall be a fixed, ordered list of placements declared for each task class. The first feasible entry under the current budget shall be selected. If no entry is feasible, the terminal action of EDG-REQ-0006 applies.
+<<<
+RATIONALE: >>>
+An unordered fallback cannot be evaluated or reproduced.
+<<<
+ACCEPTANCE: >>>
+A test verifies selection of the first feasible entry and the terminal action when none is feasible. The log records the reason each earlier entry was skipped.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0006
+
+[REQUIREMENT]
+UID: EDG-REQ-0026
+TITLE: Seeded trace generation
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Network and battery traces shall be generated from a seed and a declared model. The hash of each trace file shall be recorded with every replay that uses it.
+<<<
+RATIONALE: >>>
+Replays can only be compared if the exact trace is identifiable.
+<<<
+ACCEPTANCE: >>>
+Regenerating a trace from the same seed and model reproduces the same hash. A replay whose trace hash does not match its record is rejected.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0007
+
+[REQUIREMENT]
+UID: EDG-REQ-0027
+TITLE: Modelled energy declaration
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Energy values derived from a power model shall be labelled as modelled. The model source and parameters shall be recorded. They shall not be reported as measured.
+<<<
+RATIONALE: >>>
+A modelled value presented as a measurement overstates the evidence, which is especially likely for battery and flight-energy figures.
+<<<
+ACCEPTANCE: >>>
+Result tables mark every modelled energy value. Inspection finds no modelled value presented as measured.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0007
+
+[REQUIREMENT]
+UID: EDG-REQ-0028
+TITLE: Dataset source inventory
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Every dataset used shall have an inventory entry containing its URL, version or access date, licence name and a hash of the licence text.
+<<<
+RATIONALE: >>>
+Licence terms are only checkable if the exact text and version are retained. Mirrors have been seen to state licences that conflict with the original.
+<<<
+ACCEPTANCE: >>>
+The inventory contains every field for each dataset used. A dataset without an entry cannot appear in any result record. Redistribution of third-party images is not part of this requirement and requires separate approval.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0015
+
+[REQUIREMENT]
+UID: EDG-REQ-0029
+TITLE: Group identifiers and leakage check
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Each evaluation image, crop and augmented copy shall carry a group identifier at the grouping level declared under EDG-REQ-0015. A check shall confirm that no group identifier appears in more than one split.
+<<<
+RATIONALE: >>>
+Splits that share bridges or source frames inflate apparent generalisation.
+<<<
+ACCEPTANCE: >>>
+The leakage check runs before each evaluation and its output is retained. A failed check blocks the evaluation. Items whose group cannot be assigned are excluded from held-out splits and reported only as exploratory.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0015
+
+[REQUIREMENT]
+UID: EDG-REQ-0030
+TITLE: Label semantics
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Annotations shall distinguish defect present, labelled absent and unlabelled. Unlabelled regions shall not be counted as false positives; they shall be excluded or reported separately. Reliable positive labels support scoring detections and missed defects even without a reliable negative label; reliable negative labels support scoring false positives. A scored fact is undeterminable only when the available evidence can neither support nor refute it, and an undeterminable fact is counted neither as correct nor as incorrect.
+<<<
+RATIONALE: >>>
+Missing annotation is not evidence of absence; treating it as negative penalises correct detections and distorts risk estimates.
+<<<
+ACCEPTANCE: >>>
+The evaluator reports present, labelled-absent, unlabelled and undeterminable counts separately for each class. No complete fabrication rate is reported for an evaluation that contains unlabelled regions.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0015
+
+[REQUIREMENT]
+UID: EDG-REQ-0031
+TITLE: Per-request cost logging
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Each request shall log every cost category named in the result document, including failed uploads, retries, extra model calls, verification calls, queue wait and decision time.
+<<<
+RATIONALE: >>>
+A total cost figure without its components cannot be audited or reused.
+<<<
+ACCEPTANCE: >>>
+Every logged request contains all named fields. A run with missing fields is rejected.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0014
+
+[REQUIREMENT]
+UID: EDG-REQ-0032
+TITLE: Mutually exclusive request outcomes
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Every replayed request shall belong to exactly one outcome class: completed on time, completed late, or not completed. The deadline-miss rate is the sum of the completed-late and not-completed classes divided by the number of all requests.
+<<<
+RATIONALE: >>>
+Excluding incomplete requests from the denominator makes a policy that drops work look faster; counting them in two classes double-counts them.
+<<<
+ACCEPTANCE: >>>
+The three class counts sum to the total number of requests. The reported miss rate is recomputed from the raw log by the analysis script.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0014
+
+[REQUIREMENT]
+UID: EDG-REQ-0033
+TITLE: Training-split use for baselines
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+A dedicated visual classifier and every other baseline with trainable or tuned parameters shall use the training/development, calibration and test splits under EDG-REQ-0015 and EDG-REQ-0019: fitting and model or prompt selection use training/development; predeclared calibration and threshold selection use calibration; test is reserved for a single frozen evaluation.
+<<<
+RATIONALE: >>>
+Training or calibrating a baseline on test data inflates its score and invalidates the comparison.
+<<<
+ACCEPTANCE: >>>
+The fitting, model or prompt selection, and calibration configurations reference their split files. Records show calibration and threshold selection follow the predeclared rule. Test-split identifiers do not appear in fitting, selection or calibration logs, and each baseline follows the single frozen test evaluation.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0016

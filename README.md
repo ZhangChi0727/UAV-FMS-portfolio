@@ -22,7 +22,7 @@ All numbers below come from the commands listed in this file.
 | B0 estimator | B0-REQ-0012 to 0015, 0019 | implemented, unit-tested | `02_estimation/b0`, 52 pytest cases |
 | B0 controller | B0-REQ-0007, 0016 to 0019, 0026 | implemented, C++ and binding tested | `03_control/b0`, 25 CTest cases (Debug) |
 | B0 closed-loop integration | B0-REQ-0002, 0003, 0020 to 0025 | not in active tree | archived at tag `pre-surgery-2026-11-22` |
-| EDGE track | EDG-REQ-0001 to 0012 | planned | none yet |
+| EDGE track | EDG-REQ-0001 to 0033 | planned; requirements proposed, not frozen | none yet |
 
 B0 is not accepted as a whole. Its closed-loop integration layer, a saturation
 reachability negative finding, and several evidence chains were removed from the
@@ -115,7 +115,7 @@ Release, clean-machine, closed-loop or hardware result.
 
 ## Roadmap
 
-1. **Now**: merge the lean-restructuring PR; freeze `requirements/` at a tag after review.
+1. **Now**: the lean-restructuring PR is merged; review the proposed requirements before any future freeze.
 2. **EDGE-1**: task instruction to structured task (EDG-REQ-0001) on the development GPU.
 3. **EDGE-2**: image to structured finding with abstention (EDG-REQ-0002).
 4. **EDGE-3**: latency and resource profiling of the models (EDG-REQ-0004).

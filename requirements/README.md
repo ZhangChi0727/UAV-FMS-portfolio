@@ -7,7 +7,7 @@ used for requirements, status and traceability.
 | File | Content |
 |---|---|
 | [b0.sdoc](b0.sdoc) | B0-REQ-0001 to B0-REQ-0030: attitude estimation and cascaded control |
-| [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to EDG-REQ-0012: distributed edge AI for bridge inspection |
+| [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to EDG-REQ-0033: distributed edge AI for bridge inspection (all proposed, not frozen) |
 
 ## Field definitions
 
@@ -35,9 +35,9 @@ tag `pre-surgery-2026-11-22` and at the
   licence recorded.
 - No hardware is available. Every measurement is a development-host (Intel i9 CPU,
   NVIDIA RTX 4060 GPU) result and must be labelled as such.
-- Numerical acceptance thresholds for edge-inference requirements are not defined
-  yet. They are set in a separate, reviewed design note before any measurement is
-  claimed.
+- Normative edge-inference acceptance definitions are maintained in `edge.sdoc`.
+  Run configurations and technical explanations reference those definitions;
+  they do not constitute a separate normative authority.
 
 ## Commands
 

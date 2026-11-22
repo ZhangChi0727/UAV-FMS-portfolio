@@ -1,0 +1,18 @@
+[
+  {"id": "held-01", "text": "Look at span 3 girders for cracks and spalling in close-up views.",
+   "gold": {"status": "task", "task": {"target_element": "girder", "location_tag": "span-3", "defect_classes": ["crack", "spalling"], "required_views": ["close_up"]}}},
+  {"id": "held-02", "text": "Inspect pier 5 for corrosion from an underside view.",
+   "gold": {"status": "task", "task": {"target_element": "pier", "location_tag": "pier-5", "defect_classes": ["corrosion"], "required_views": ["underside"]}}},
+  {"id": "held-03", "text": "Check the south abutment for efflorescence and delamination.",
+   "gold": {"status": "task", "task": {"target_element": "abutment", "location_tag": "abutment-S", "defect_classes": ["efflorescence", "delamination"], "required_views": ["overview"]}}},
+  {"id": "held-04", "text": "Examine the bearing on span 2 for rust.",
+   "gold": {"status": "task", "task": {"target_element": "bearing", "location_tag": "span-2", "defect_classes": ["corrosion"], "required_views": ["overview"]}}},
+  {"id": "held-05", "text": "Find the vehicle driver on the deck.",
+   "gold": {"status": "rejected"}},
+  {"id": "held-06", "text": "Summarise the bridge history.",
+   "gold": {"status": "rejected"}},
+  {"id": "held-07", "text": "Survey the deck of span 1 for cracks.",
+   "gold": {"status": "task", "task": {"target_element": "deck", "location_tag": "span-1", "defect_classes": ["crack"], "required_views": ["overview"]}}},
+  {"id": "held-08", "text": "Check pier 4 for cracks and delamination from the side view.",
+   "gold": {"status": "task", "task": {"target_element": "pier", "location_tag": "pier-4", "defect_classes": ["crack", "delamination"], "required_views": ["side_view"]}}}
+]

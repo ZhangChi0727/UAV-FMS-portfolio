@@ -1,0 +1,8 @@
+{
+    "schema":  "m1-instruction-dataset-manifest/v1",
+    "note":  "dev set may inform rule design; heldout set must be scored once per parser version",
+    "files":  {
+                  "dev_instructions_v1.json":  "40000630490c7bdb7c272f6b45d4f76d7b97a8871d49b58c2362a821f176929d",
+                  "heldout_instructions_v1.json":  "094cf9a0ad99ee665cfc730ba79569c072a471988bad62dc65efbf229523d006"
+              }
+}
