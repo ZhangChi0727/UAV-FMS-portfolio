@@ -1,0 +1,261 @@
+[DOCUMENT]
+TITLE: EDGE Requirements (distributed edge AI for UAV bridge inspection)
+UID: EDGE-REQUIREMENTS
+
+[GRAMMAR]
+ELEMENTS:
+- TAG: REQUIREMENT
+  PROPERTIES:
+    IS_COMPOSITE: False
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATUS
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: RATIONALE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ACCEPTANCE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: EVIDENCE
+    TYPE: String
+    REQUIRED: True
+  RELATIONS:
+  - TYPE: Parent
+
+[REQUIREMENT]
+UID: EDG-REQ-0001
+TITLE: Instruction to structured task
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall convert a natural-language bridge inspection instruction into a task record with target element, location tag, defect classes and required views, and shall reject any output that does not conform to the task schema.
+<<<
+RATIONALE: >>>
+The inspection workflow requires machine-checkable tasks; free text cannot be scheduled or audited.
+<<<
+ACCEPTANCE: >>>
+Accuracy is reported per field over a fixed, versioned instruction set; schema violations are counted and retained with raw model outputs.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0010
+
+[REQUIREMENT]
+UID: EDG-REQ-0002
+TITLE: Image to structured finding
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Given an image and a task record, the system shall produce a structured finding containing defect class, image region, confidence and an explicit abstain flag.
+<<<
+RATIONALE: >>>
+Downstream reporting needs machine-readable findings and an explicit uncertainty channel.
+<<<
+ACCEPTANCE: >>>
+Findings are evaluated on a named public or synthetic dataset whose licence is recorded; per-class results and abstention rate are reported.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0010
+
+[REQUIREMENT]
+UID: EDG-REQ-0003
+TITLE: Local GPU model execution
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall execute the selected vision-language or language models on the development GPU in PyTorch and record model identifier, precision, library versions and device identifier for every run.
+<<<
+RATIONALE: >>>
+Deployment and PyTorch experience is a stated requirement of the target role; provenance of each run is required for fair comparison.
+<<<
+ACCEPTANCE: >>>
+A run record contains all listed fields and the model produces output for the fixed evaluation set.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0011
+
+[REQUIREMENT]
+UID: EDG-REQ-0004
+TITLE: Latency and resource profiling
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The profiling harness shall measure inference latency distribution, peak memory and, where the platform exposes it, energy, using warm-up, repeated runs and raw per-run output.
+<<<
+RATIONALE: >>>
+Placement decisions depend on measured cost; summary statistics without raw data cannot be audited.
+<<<
+ACCEPTANCE: >>>
+The harness reproduces its raw output format on the same host; summaries are computed only from retained raw files.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0011
+
+[REQUIREMENT]
+UID: EDG-REQ-0005
+TITLE: Task placement decision
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Given a task record, device profiles and link state, the system shall select one placement from onboard, edge server, cloud or split inference, using a deterministic function of its declared inputs.
+<<<
+RATIONALE: >>>
+Placement across onboard, edge and cloud is the central systems question of the target role.
+<<<
+ACCEPTANCE: >>>
+Identical inputs yield identical placements; the function is compared against fixed-placement and greedy-latency baselines on the same replay.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0012
+
+[REQUIREMENT]
+UID: EDG-REQ-0006
+TITLE: Fallback under link or budget violation
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+When the link is degraded or lost, or a measured budget is exceeded, the system shall select a fallback placement and log the trigger and the decision.
+<<<
+RATIONALE: >>>
+A placement policy without an explicit fallback is not safe to evaluate under realistic network conditions.
+<<<
+ACCEPTANCE: >>>
+Injected link-loss and budget-violation events in a replay produce the logged fallback decision in every injected case.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0012
+
+[REQUIREMENT]
+UID: EDG-REQ-0007
+TITLE: Reproducible scenario replay
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall replay task streams with synthetic network and battery traces from recorded seeds, producing identical event logs for identical inputs.
+<<<
+RATIONALE: >>>
+Comparisons between placement policies are only meaningful under identical inputs.
+<<<
+ACCEPTANCE: >>>
+Two replays with the same seed and configuration produce byte-identical event logs.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0012
+
+[REQUIREMENT]
+UID: EDG-REQ-0008
+TITLE: Result provenance
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Every reported result shall identify code revision, configuration, seed, host or device identifier, raw artifact location and analysis command.
+<<<
+RATIONALE: >>>
+Results without provenance cannot be reproduced or checked by a reviewer.
+<<<
+ACCEPTANCE: >>>
+Each result record in the repository contains every listed field; records missing a field are rejected by inspection.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0024
+
+[REQUIREMENT]
+UID: EDG-REQ-0009
+TITLE: Development-host labelling
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+Measurements taken on the development PC shall be labelled as development-host results and shall not be reported as onboard, edge-device or flight performance.
+<<<
+RATIONALE: >>>
+No edge hardware is available; mislabelled results would overstate the evidence.
+<<<
+ACCEPTANCE: >>>
+Every result document states the host type; inspection finds no onboard or edge-device claim without a corresponding hardware record.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: EDG-REQ-0004
+
+[REQUIREMENT]
+UID: EDG-REQ-0010
+TITLE: Bridge inspection task scope
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall be scoped to civil bridge inspection tasks and shall not include defence, surveillance or targeting functions.
+<<<
+RATIONALE: >>>
+The civil-use attribute of the target project is a precondition for the work.
+<<<
+ACCEPTANCE: >>>
+Inspection of task schema and datasets finds no non-civil classes or use cases; dataset licences are recorded.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0011
+TITLE: Model execution and profiling scope
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The model execution and profiling capability shall be treated as an optional extension of the platform and shall not depend on B0 control results for its own acceptance.
+<<<
+RATIONALE: >>>
+Keeps the edge-inference track independent of the attitude-control baseline, which is frozen at component level.
+<<<
+ACCEPTANCE: >>>
+The model and profiling tests run without the B0 control modules installed.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0030
+
+[REQUIREMENT]
+UID: EDG-REQ-0012
+TITLE: Placement policy scope
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The placement policy shall be evaluated on replayed scenarios only; no flight, hardware-in-the-loop or live-link claim shall be made without a separately approved extension.
+<<<
+RATIONALE: >>>
+Prevents simulated placement results from being presented as operational evidence.
+<<<
+ACCEPTANCE: >>>
+Inspection of result documents finds only replay-scope claims.
+<<<
+EVIDENCE: none yet
+RELATIONS:
+- TYPE: Parent
+  VALUE: B0-REQ-0030
