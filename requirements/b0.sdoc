@@ -38,7 +38,7 @@ ELEMENTS:
 [REQUIREMENT]
 UID: B0-REQ-0001
 TITLE: Bounded attitude experiment
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 system shall execute a configured bounded multirotor attitude-estimation and control experiment without representing the experiment as full-flight capability.
@@ -57,7 +57,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0002
 TITLE: Deterministic configuration and replay
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 system shall produce repeatable samples and state evolution for identical approved configuration, seed, initial state, input sequence, reset sequence and software revision.
@@ -76,7 +76,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0003
 TITLE: Runtime truth isolation
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 system shall prevent live plant truth from entering estimator or controller runtime inputs after explicit initialization while permitting truth to reach sensor generation and independent evaluation.
@@ -95,7 +95,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0004
 TITLE: Shared frames units and quaternion convention
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 system shall represent exchanged quantities using the NED and body frames, SI units, and scalar-first Hamilton quaternion convention.
@@ -114,7 +114,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0005
 TITLE: Rigid-body rotational dynamics
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 plant shall propagate body angular velocity using the rigid-body rotational equation and a positive-definite inertia.
@@ -133,7 +133,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0006
 TITLE: Quaternion plant state
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 plant shall propagate and normalize its scalar-first attitude quaternion using the body-rate and frame convention.
@@ -152,7 +152,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0007
 TITLE: Paired torque command
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 controller shall publish one timestamped torque command that pairs requested torque, limited target and saturation status from the same controller due tick.
@@ -171,7 +171,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0008
 TITLE: Limited-target actuator dynamics
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 actuator shall advance its response using only the held limited target from the latest eligible paired torque command.
@@ -190,7 +190,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0009
 TITLE: Actuator feedback pairing
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 actuator shall publish actual torque and the originating paired-command timestamp in actuator feedback.
@@ -209,7 +209,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0010
 TITLE: Gyroscope measurement
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 IMU shall produce timestamped body-frame angular-rate measurements with the approved bias, noise, validity and seed semantics.
@@ -228,7 +228,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0011
 TITLE: Accelerometer specific force
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 IMU shall produce timestamped body-frame specific-force measurements using the gravity sign, bias, noise, validity and seed semantics.
@@ -247,7 +247,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0012
 TITLE: Estimator propagation
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 estimator shall propagate and normalize a scalar-first attitude estimate from valid gyroscope samples and positive time increments.
@@ -266,7 +266,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0013
 TITLE: Roll and pitch fusion
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 estimator shall apply bounded accelerometer-based roll and pitch correction only when the validity and bounded-specific-force conditions permit it.
@@ -285,7 +285,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0014
 TITLE: Yaw observability limitation
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 system shall report yaw as relative propagation and drift without claiming absolute yaw observability from gyroscope and accelerometer measurements alone.
@@ -304,7 +304,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0015
 TITLE: Acceleration contamination handling
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 estimator shall expose the correction-gating status when non-gravitational specific force violates its bounded tilt-correction assumptions.
@@ -323,7 +323,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0016
 TITLE: Cascaded attitude and rate control
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 controller shall compute body-torque request through the attitude-error and body-rate feedback signs in a cascaded attitude and rate structure.
@@ -342,7 +342,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0017
 TITLE: Unique controller saturation responsibility
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 controller shall be the sole component that limits requested body torque to the target bounds and sets the paired saturation status.
@@ -361,7 +361,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0018
 TITLE: Anti-windup update
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 controller shall update each rate-integral contribution using the conditional-integration and paired-feedback back-calculation rule and shall enforce the per-axis integral bounds.
@@ -380,7 +380,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0019
 TITLE: Invalid input rejection
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 system shall reject invalid, non-finite, stale, mis-shaped or non-positive-time inputs according to the owning component contract without silently advancing state.
@@ -399,7 +399,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0020
 TITLE: Reset contract
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 system shall reset all stateful components to explicit initial state, seed and epoch-local scheduling while preserving the monotonically increasing scenario clock and discarding pre-reset held commands and feedback.
@@ -418,7 +418,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0021
 TITLE: Deterministic scheduling and timestamps
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 execution adapter shall schedule component updates and construct timestamps from integer base ticks using the due-phase, consumption and held-command rules.
@@ -437,7 +437,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0022
 TITLE: Approved scenario suite
-STATUS: frozen
+STATUS: proposed
 STATE: planned
 STATEMENT: >>>
 The B0 system shall support the normal, initial-offset, signed-step, disturbance, noise-and-bias, saturation-withdrawal, acceleration-contamination, and invalid-input-and-reset scenarios.
@@ -456,7 +456,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0023
 TITLE: Independent evaluation
-STATUS: frozen
+STATUS: proposed
 STATE: planned
 STATEMENT: >>>
 The B0 evaluator shall compute acceptance metrics independently of estimator and controller implementations using the approved raw signals, windows, units and invalid-data rules.
@@ -475,7 +475,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0024
 TITLE: Evidence provenance
-STATUS: frozen
+STATUS: proposed
 STATE: planned
 STATEMENT: >>>
 Any reported result shall identify software revision, configuration hash, scenario, seed, environment, command, raw artifact location and terminal result.
@@ -494,7 +494,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0025
 TITLE: Defect-detection demonstration
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 release shall demonstrate that selected independent checks detect isolated sign, unit, quaternion-ordering or anti-windup defects without modifying the production baseline.
@@ -513,7 +513,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0026
 TITLE: Implementation language boundary
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 control core shall be implemented in C++17, and Python shall be limited to simulation, orchestration and analysis through a declared interface boundary.
@@ -532,7 +532,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0027
 TITLE: Clean-checkout reproduction
-STATUS: frozen
+STATUS: proposed
 STATE: planned
 STATEMENT: >>>
 The B0 release shall be reproducible from a clean checkout using documented dependency versions and commands without relying on untracked developer state.
@@ -551,7 +551,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0028
 TITLE: Legacy control disposition
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 system shall record CTL-REQ-001 and CTL-REQ-002 as historical references, not as B0 criteria, and shall attach no satisfaction claim to them.
@@ -570,7 +570,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0029
 TITLE: Invalid measurement handling
-STATUS: frozen
+STATUS: proposed
 STATE: partial
 STATEMENT: >>>
 The B0 estimator and controller shall not consume an invalid or stale measurement as a valid update and shall expose the rejection or hold status.
@@ -589,7 +589,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: B0-REQ-0030
 TITLE: B0 exclusion boundary
-STATUS: frozen
+STATUS: proposed
 STATE: implemented
 STATEMENT: >>>
 The B0 system shall exclude position and velocity loops, waypoint flight, full INS or GNSS estimation, advanced-control comparisons, learning algorithms, embedded targets, HIL and flight claims unless a separately approved extension activates them.

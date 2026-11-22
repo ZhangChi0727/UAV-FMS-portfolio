@@ -11,11 +11,13 @@ retained artifact.
 
 - It is a verification platform for a bounded multirotor attitude experiment (baseline B0 v0.2): attitude
   estimation and cascaded control, with systems-engineering models, requirements status and evidence reports.
-- B0 as a whole is **not** accepted. See [RESULTS.md](../RESULTS.md) for what has been accepted and what has not.
+- B0 as a whole is **not** accepted. For current scope and requirements, see the
+  [repository README](../README.md) and [requirements](../requirements/README.md).
+  Historical results are in the [archived RESULTS.md](https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/d102a9e018c9b9b0b0e5385f509c2fb2c3adffbd/RESULTS.md).
 - No flight, hardware, HIL or broad performance result is claimed.
 - The saturation-reachability finding is a negative result and is unresolved: the frozen scenario requires at
   least 0.05 s of saturation, and the recorded runs reach 0.0 s (best of seven candidates 0.025 s). See
-  [RESULTS.md](../RESULTS.md).
+  [archived RESULTS.md](https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/d102a9e018c9b9b0b0e5385f509c2fb2c3adffbd/RESULTS.md).
 - The older EKF/UKF, geometric-control, TCN and related modules (`02_estimation/python`, `02_estimation/cpp`,
   `03_control/python`, `04_fault_detection`, `06_safety`, and parts of `01_simulation` and `05_integration`) are
   **legacy scaffolds**. Several are placeholders or `NotImplemented`. They are not evidence.
@@ -33,7 +35,9 @@ retained artifact.
 
 1. This page.
 2. [CONTRIBUTIONS.md](CONTRIBUTIONS.md).
-3. [RESULTS.md](../RESULTS.md) and the [project charter](../systems_engineering/project_charter.md).
+3. The current [repository README](../README.md) and [requirements](../requirements/README.md),
+   then the [archived RESULTS.md](https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/d102a9e018c9b9b0b0e5385f509c2fb2c3adffbd/RESULTS.md)
+   and [historical project charter](https://github.com/ZhangChi0727/UAV-FMS-portfolio/blob/d102a9e018c9b9b0b0e5385f509c2fb2c3adffbd/systems_engineering/project_charter.md).
 4. The two study folders, once their state changes from "In preparation".
 
 ## Conventions

@@ -21,8 +21,13 @@ used for requirements, status and traceability.
   No requirement is marked as verified by a system-level test.
 - `EVIDENCE` lists file paths or states that none exists yet.
 
+The B0 StrictDoc statements in this migration are `proposed` and await review
+and a future freeze; no `req-freeze-*` tag is asserted here. This lifecycle
+status does not revoke historical G0 or component approvals.
+
 Requirement IDs are never renumbered. Retired text is kept in git history at the
-tag `pre-surgery-2026-11-22`.
+tag `pre-surgery-2026-11-22` and at the
+[archived commit](https://github.com/ZhangChi0727/UAV-FMS-portfolio/tree/d102a9e018c9b9b0b0e5385f509c2fb2c3adffbd).
 
 ## Scope notes
 
