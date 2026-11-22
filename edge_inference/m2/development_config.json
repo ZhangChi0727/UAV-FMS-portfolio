@@ -1,0 +1,57 @@
+{
+  "schema_version": "m2-development-config/v1",
+  "purpose": "development scaffold only; no evaluated model or performance claim",
+  "execution_host": "development-host",
+  "gpu_memory_budget_mib": 8188,
+  "model_selection": {
+    "candidate_id": "HuggingFaceTB/SmolVLM-256M-Instruct",
+    "official_revision": "d039ab0d4b9311b617e8ffec1d06c8464364aeb3",
+    "official_license": "Apache-2.0 (model metadata declaration; verify terms before use)",
+    "official_metadata_url": "https://huggingface.co/api/models/HuggingFaceTB/SmolVLM-256M-Instruct?blobs=true",
+    "publisher_model_safetensors_bytes": 513028808,
+    "estimated_download_bytes": null,
+    "precision": "bfloat16",
+    "input_resolution": [512, 512],
+    "processor_size_longest_edge": 512,
+    "max_new_tokens": 128,
+    "batch_size": 1,
+    "do_sample": false,
+    "attention_implementation": ["sdpa", "eager"],
+    "trust_remote_code": false,
+    "weights_format": "safetensors_only",
+    "process_memory_cap_mib": 7168,
+    "allowed_smoke_input": "synthetic local image and synthetic task only",
+    "status": "PA_approved_synthetic_smoke_only_not_evaluation",
+    "download_and_dry_run_authorized": true,
+    "development_data_execution_authorized": false,
+    "exclusion_rules": ["unverified license or revision", "estimated or measured memory beyond declared budget or currently available GPU memory", "out-of-memory", "unsupported task mapping", "invalid image", "requires uploading images to a third party", "requires payment", "unsupported hardware or dependencies"]
+  },
+  "dataset": {
+    "name": "dacl10k",
+    "version": "v2",
+    "allowed_development_source_splits": ["train", "validation"],
+    "testdev_and_testchallenge": "quarantined; no inspection, scoring, rules, or threshold selection",
+    "independent_grouped_split_ready": false
+  },
+  "task_mapping": {
+    "schema_version": "task-schema/v1",
+    "status": "unresolved",
+    "target_elements": {"deck": null, "girder": null, "pier": null, "abutment": null, "bearing": null},
+    "defect_classes": {"crack": null, "spalling": null, "corrosion": null, "efflorescence": null, "delamination": null},
+    "context_rules": {"locations": {}, "views": {}},
+    "rule": "null means unsupported; never infer mapping from string similarity"
+  },
+  "evaluation": {
+    "status": "design_only_no_formal_evaluation",
+    "fact_adjudication_rule": null,
+    "box_matching_rule": null,
+    "abstention_threshold": null,
+    "calibration_split_hash": null,
+    "calibration_rule": "predeclare on a separate calibration split before test; never choose from test",
+    "visible_inputs": ["image", "validated task record"],
+    "prohibited_runtime_inputs": ["reference labels", "ground-truth answers", "other model output", "hidden test information"],
+    "baselines_planned_not_implemented": ["fixed model", "confidence or length threshold", "rule-based verification", "dedicated visual classifier if training split exists"],
+    "comparison_rule": "same visible information and complete costs; declared differences only",
+    "no_ready_claim": "independent groups and complete label semantics are not yet established"
+  }
+}

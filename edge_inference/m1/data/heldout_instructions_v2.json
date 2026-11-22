@@ -1,0 +1,444 @@
+[
+  {
+    "id": "held2-01",
+    "text": "Please examine the bridge deck for cracks.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "deck",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "crack"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The deck and cracks are explicit, while the absent location and view take their specified defaults."
+  },
+  {
+    "id": "held2-02",
+    "text": "The girder in span 3 needs checking for corrosion.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "girder",
+        "location_tag": "span-3",
+        "defect_classes": [
+          "corrosion"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The instruction identifies the girder in span 3 and corrosion, with no requested view so overview applies."
+  },
+  {
+    "id": "held2-03",
+    "text": "At pier 7, the pier is to be inspected for spalling as well as cracking.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "pier",
+        "location_tag": "pier-7",
+        "defect_classes": [
+          "spalling",
+          "crack"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The pier at pier 7 is explicitly assigned spalling and crack inspection, with overview supplied only as the absent-view default."
+  },
+  {
+    "id": "held2-04",
+    "text": "Check the south abutment for efflorescence.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "abutment",
+        "location_tag": "abutment-S",
+        "defect_classes": [
+          "efflorescence"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The south abutment identifies abutment-S and efflorescence is requested, while the absent view defaults to overview."
+  },
+  {
+    "id": "held2-05",
+    "text": "plz chk the bridge bearing for corosion",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "bearing",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "corrosion"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The obvious shorthand and misspelling still unambiguously request bearing corrosion inspection, with both optional fields defaulted."
+  },
+  {
+    "id": "held2-06",
+    "text": "Before the inspection team leaves, make sure the deck has been examined for delamination and spalling.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "deck",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "delamination",
+          "spalling"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The subordinate timing clause does not change the request to inspect the deck for both delamination and spalling, with no location or view specified."
+  },
+  {
+    "id": "held2-07",
+    "text": "On the girder, investigate both cracking and corrosion.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "girder",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "crack",
+          "corrosion"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The girder and both cracking and corrosion are explicit, and the unspecified location and view use their defaults."
+  },
+  {
+    "id": "held2-08",
+    "text": "Hey, give the pier a once-over for efflorescence and spalling.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "pier",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "efflorescence",
+          "spalling"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The informal once-over requests pier inspection for efflorescence and spalling without specifying a location identifier or camera view."
+  },
+  {
+    "id": "held2-09",
+    "text": "A close-up is needed of the deck in span 12, where cracks and spalling are to be checked.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "deck",
+        "location_tag": "span-12",
+        "defect_classes": [
+          "crack",
+          "spalling"
+        ],
+        "required_views": [
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "The passive request identifies a close-up of the span-12 deck for both cracks and spalling."
+  },
+  {
+    "id": "held2-10",
+    "text": "Show the underside of the girder in span 2 while checking it for corrosion and delamination.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "girder",
+        "location_tag": "span-2",
+        "defect_classes": [
+          "corrosion",
+          "delamination"
+        ],
+        "required_views": [
+          "underside"
+        ]
+      }
+    },
+    "gold_reason": "The girder in span 2 is to be checked for corrosion and delamination using its underside view."
+  },
+  {
+    "id": "held2-11",
+    "text": "Inspect pier 4 for cracks using a side view.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "pier",
+        "location_tag": "pier-4",
+        "defect_classes": [
+          "crack"
+        ],
+        "required_views": [
+          "side_view"
+        ]
+      }
+    },
+    "gold_reason": "Pier 4 supplies both the pier element and pier-4 location, with crack inspection and a side view explicitly requested."
+  },
+  {
+    "id": "held2-12",
+    "text": "The north abutment should be checked for efflorescence and spalling, with an overview followed by a close-up.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "abutment",
+        "location_tag": "abutment-N",
+        "defect_classes": [
+          "efflorescence",
+          "spalling"
+        ],
+        "required_views": [
+          "overview",
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "The north abutment maps to abutment-N and the passive request names both defect classes and both required views."
+  },
+  {
+    "id": "held2-13",
+    "text": "pls get a close-up of the bearing in span 9; look for corosion.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "bearing",
+        "location_tag": "span-9",
+        "defect_classes": [
+          "corrosion"
+        ],
+        "required_views": [
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "Despite obvious shorthand and a spelling error, the bearing in span 9, corrosion, and close-up view are unambiguous."
+  },
+  {
+    "id": "held2-14",
+    "text": "Where the deck can be viewed from underneath, inspect it for delamination and capture that underside view.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "deck",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "delamination"
+        ],
+        "required_views": [
+          "underside"
+        ]
+      }
+    },
+    "gold_reason": "The instruction explicitly requests the deck underside for delamination inspection but supplies no location identifier."
+  },
+  {
+    "id": "held2-15",
+    "text": "For a crack inspection of the girder, obtain a side view and a close-up.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "girder",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "crack"
+        ],
+        "required_views": [
+          "side_view",
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "A girder crack inspection and both side and close-up views are requested, while the location is absent."
+  },
+  {
+    "id": "held2-16",
+    "text": "Take an overview of the pier to check for corrosion.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "pier",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "corrosion"
+        ],
+        "required_views": [
+          "overview"
+        ]
+      }
+    },
+    "gold_reason": "The pier, corrosion inspection, and overview are explicit, while its location identifier remains unspecified."
+  },
+  {
+    "id": "held2-17",
+    "text": "Get a close-up of the abutment for checking cracks together with delamination.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "abutment",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "crack",
+          "delamination"
+        ],
+        "required_views": [
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "The abutment is assigned crack and delamination checks using a close-up, with no location identifier given."
+  },
+  {
+    "id": "held2-18",
+    "text": "Inspect the bearing for corrosion and cracks; provide both an overview and a close-up.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "bearing",
+        "location_tag": "unspecified",
+        "defect_classes": [
+          "corrosion",
+          "crack"
+        ],
+        "required_views": [
+          "overview",
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "The bearing requires corrosion and crack inspection in both overview and close-up views, with location defaulting to unspecified."
+  },
+  {
+    "id": "held2-19",
+    "text": "For a naval patrol ship maintenance inspection, check the deck for corrosion and capture an overview.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The explicit military naval-vessel context is not civil bridge inspection, even though deck and corrosion are otherwise supported field values."
+  },
+  {
+    "id": "held2-20",
+    "text": "Need a close-up of pier 1 for spalling, thx.",
+    "gold": {
+      "status": "task",
+      "task": {
+        "target_element": "pier",
+        "location_tag": "pier-1",
+        "defect_classes": [
+          "spalling"
+        ],
+        "required_views": [
+          "close_up"
+        ]
+      }
+    },
+    "gold_reason": "The informal request unambiguously names pier 1, spalling, and a close-up view."
+  },
+  {
+    "id": "held2-21",
+    "text": "At span 6, look for cracks and take a close-up.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "A location, defect, and view are present but no target element is identified, so the task must be rejected."
+  },
+  {
+    "id": "held2-22",
+    "text": "Inspect the bearing in span 8 and provide an overview.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The bearing and view are identified but no defect class is requested, so no supported complete task can be formed."
+  },
+  {
+    "id": "held2-23",
+    "text": "Inspect the backyard timber deck for cracks and take an overview.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The backyard timber deck is an explicitly unrelated civilian structure rather than a civil bridge element."
+  },
+  {
+    "id": "held2-24",
+    "text": "Check the warehouse roof for leaks and photograph it from the side.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "Warehouse roof inspection is an explicitly unrelated civilian task outside the civil bridge inspection domain."
+  },
+  {
+    "id": "held2-25",
+    "text": "Check either the deck or the girder for cracks; the request does not identify which one.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The instruction explicitly leaves deck versus girder unresolved, so choosing either target would require guessing."
+  },
+  {
+    "id": "held2-26",
+    "text": "Inspect the bearing for corrosion at span 3 or span 4; I cannot confirm the intended span.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The intended location remains an unresolved choice between span 3 and span 4 and cannot be replaced with an absent-location default."
+  },
+  {
+    "id": "held2-27",
+    "text": "Inspect the deck for either cracking or delamination, but not both; which defect is intended is still undecided.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The defect is an unresolved exclusive choice, so neither one class nor both classes would faithfully represent the request."
+  },
+  {
+    "id": "held2-28",
+    "text": "Please check for corrosion and spalling with an overview and a close-up; no bridge element has been selected yet.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The instruction explicitly lacks a selected target element despite supplying defects and views."
+  },
+  {
+    "id": "held2-29",
+    "text": "At pier 2, inspect the pier using a side view; the defect checklist has not been provided.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The pier, location, and view are supplied but no defect class is requested, so a complete task cannot be formed."
+  },
+  {
+    "id": "held2-30",
+    "text": "The bridge inspection is at span 10. Capture an underside view to investigate delamination; the component to examine is still unspecified.",
+    "gold": {
+      "status": "rejected"
+    },
+    "gold_reason": "The instruction names a bridge span, defect, and view but explicitly leaves the target component unspecified."
+  }
+]

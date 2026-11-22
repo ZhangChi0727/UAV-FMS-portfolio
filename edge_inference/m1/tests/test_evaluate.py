@@ -6,6 +6,7 @@ manifest. They do not assert any parser score on the real datasets.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -30,14 +31,14 @@ def _item(item_id, gold):
 
 def test_manifest_matches_dataset_files():
     actual = verify_manifest()
-    assert set(actual) == {"dev_instructions_v1.json", "heldout_instructions_v1.json"}
+    assert set(actual) == {"dev_instructions_v1.json", "heldout_instructions_v1.json", "heldout_instructions_v2.json"}
 
 
 def test_manifest_detects_changed_file(tmp_path):
-    source = Path(__file__).resolve().parents[1] / "data"
-    for name in ("dev_instructions_v1.json", "heldout_instructions_v1.json", "MANIFEST.json"):
-        (tmp_path / name).write_bytes((source / name).read_bytes())
-    (tmp_path / "dev_instructions_v1.json").write_text("[]", encoding="utf-8")
+    (tmp_path / "synthetic.json").write_text("changed", encoding="utf-8")
+    (tmp_path / "MANIFEST.json").write_text(
+        json.dumps({"files": {"synthetic.json": "0" * 64}}), encoding="utf-8"
+    )
     with pytest.raises(ValueError, match="changed"):
         verify_manifest(tmp_path)
 

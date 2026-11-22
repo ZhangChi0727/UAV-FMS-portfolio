@@ -1,0 +1,2 @@
+# Keep manifest-checked dataset bytes stable across Windows and Linux checkouts.
+*.json text eol=lf

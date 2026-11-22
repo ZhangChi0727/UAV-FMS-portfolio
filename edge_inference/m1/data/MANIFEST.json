@@ -1,8 +1,14 @@
 {
     "schema":  "m1-instruction-dataset-manifest/v1",
-    "note":  "dev set may inform rule design; heldout set must be scored once per parser version",
+    "note":  "v1 heldout 为设计使用，不再作为评价集。v2 为一次性评价集，首次评分前冻结；本轮仅登记，不评分。正式评分须待 M1 方法与规则基线均固定，且满足 M2 就绪前置条件，同批运行，不按 parser 版本反复评价。",
+    "dataset_roles": {
+        "dev_instructions_v1.json": "development",
+        "heldout_instructions_v1.json": "design_used_not_evaluation",
+        "heldout_instructions_v2.json": "one_time_evaluation_registered_not_scored"
+    },
     "files":  {
                   "dev_instructions_v1.json":  "40000630490c7bdb7c272f6b45d4f76d7b97a8871d49b58c2362a821f176929d",
-                  "heldout_instructions_v1.json":  "094cf9a0ad99ee665cfc730ba79569c072a471988bad62dc65efbf229523d006"
+                  "heldout_instructions_v1.json":  "094cf9a0ad99ee665cfc730ba79569c072a471988bad62dc65efbf229523d006",
+                  "heldout_instructions_v2.json": "eeaf3936abd77e5593badf1b6069c065fe7c2a7e47105ca11f2ace2da72198a3"
               }
 }

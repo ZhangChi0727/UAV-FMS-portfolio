@@ -58,7 +58,7 @@ Given events `[{"run_id":"a","wall_clock_s":1.0,"event":"submit"}]` and the same
 
 ## Learning card: M1 instruction to task
 
-Code: [m1/](m1/) (`task_schema.py`, `rule_parser.py`, `evaluate.py`). Tests: `cd edge_inference/m1 && python -m pytest -q` (50 passed on the development PC). Data: `m1/data/` with a hash manifest (`MANIFEST.json`).
+Code: [m1/](m1/) (`task_schema.py`, `rule_parser.py`, `evaluate.py`). The development-PC module regression explicitly selected `tests/test_evaluate.py`, `tests/test_manifest_isolated.py`, `tests/test_rule_parser.py` and `tests/test_task_schema.py` with `python -B -m pytest -q -p no:cacheprovider`: 52 passed. Its manifest check reads the registered v2 bytes only for hash integrity; no parser or scorer consumes v2 in the tests. Other scoring cases use synthetic fixtures.
 
 **External interface**
 
@@ -88,12 +88,35 @@ Code: [m1/](m1/) (`task_schema.py`, `rule_parser.py`, `evaluate.py`). Tests: `cd
 **Result and its limit (read before quoting)**
 
 - Development set (12 items): status 1.0; field accuracy 1.0 for all four fields; 0 schema violations.
-- Held-out set (8 items): status 1.0; field accuracy 1.0; 0 schema violations.
+- The former v1 held-out set (8 items): status 1.0; field accuracy 1.0; 0 schema violations. It was used during design and is permanently **design-only**, not an evaluation set.
 
-These numbers are not evidence of generalisation. Both sets were written by the same author, in the same phrasing style, while the rules were being written, and the held-out set is only eight items. The result shows that the rules match the author's own sentences. A fair test needs instructions written by someone else, in varied wording, and scored once.
+These historical numbers are not evaluation or evidence of generalisation. Both sets were written by the same author, in the same phrasing style, while the rules were being written. The independently authored v2 instructions have been registered but not scored; they are reserved for evaluating M1, not M2, after the methods are frozen. They must not be read or used to design the parser, prompts or model.
 
 **Exercise (hand calculation)**
 
 Trace "Examine the girder of span 1 for cracks; underside view required." through the rules. Why does `side_view` not match? Why is `required_views` `["underside"]` and not `["overview"]`? Then find one sentence the rules would wrongly reject and explain which rule causes it.
 
 **Not covered by M1**: no language model, no image, no latency, and no external instruction set.
+
+## Learning card: M2 finding records and evidence limits
+
+The [M2 scaffold](m2/) defines four output states: `findings`, `no_finding`,
+`abstain`, and `invalid`. Findings use a declared dacl10k/v2 damage class, a
+source-image pixel box, and a finite confidence in [0, 1]. The task adapter
+requires an explicitly reviewed M1-to-dataset mapping; unresolved mappings are
+unsupported, never guessed from spelling. The development-data execution gate
+remains closed.
+
+Scoring accepts explicitly adjudicated facts rather than deriving truth from
+missing labels. It keeps reliable present, labelled-absent and unlabelled facts
+separate; a zero accepted-and-scoreable denominator gives an unavailable risk,
+not zero. The annotation inventory treats empty `shapes` as unlabelled rather
+than proof of absence, and the duplicate scanner reports candidate links rather
+than proof of a common bridge or source image. These tools do not by themselves
+establish a reviewed label protocol, independent groups or a leak-free split.
+
+The model configuration permits only the separately approved local synthetic
+smoke. Interface tests use synthetic fixtures; they do not demonstrate real
+bridge-image performance. The official W1 data package was inaccessible during
+this run, so package verification, real annotation review and dataset-based M2
+evaluation remain outstanding.
