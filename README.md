@@ -1,91 +1,95 @@
-# UAV Flight Control & Navigation Development and Verification Platform
+# UAV FMS Portfolio
 
-A modular experimental platform for flight-control development, state estimation,
-embedded implementation, and reproducible verification.
+A small, reproducible engineering project with two parts:
 
-**Current status:** planning baseline B0 v0.2 is active. G0, G1 and the complete
-G1.5-A/B/C governance sequence are accepted. G2-A and G2-B are merged and have
-original-PA post-merge acceptance; the controlled closeout is recorded in
-[G2 closeout and G3 readiness](systems_engineering/reports/b0/g2_closeout_and_g3_readiness.md).
-G3-A is the active engineering increment. Its exact local S3 source has original-PA
-[`IMPLEMENTATION_ACCEPT`](systems_engineering/reports/b0/g3a_local_s3_implementation_acceptance.md)
-after real Debug/Release development integration and independent raw-evidence review.
-Candidate CI and post-merge closure decisions are tracked in
-[PR #23](https://github.com/ZhangChi0727/UAV-FMS-portfolio/pull/23) and
-[Issue #7](https://github.com/ZhangChi0727/UAV-FMS-portfolio/issues/7);
-local implementation acceptance alone does not close G3-A.
-No approved normal-scenario or closed-loop performance result is yet claimed.
-G3/G4 and overall B0 completion remain open.
-No completed flight, hardware, broad performance, or research results are claimed.
+1. **B0 attitude platform** (frozen at component level): rigid-body and sensor
+   models, a complementary attitude estimator, and a C++17 cascaded
+   attitude/rate controller with a Python binding and tests.
+2. **EDGE track** (planned): distributed edge AI for UAV bridge inspection.
+   Language-model and vision-language inference is placed across onboard, edge
+   and cloud resources, and measured by replay. See
+   [requirements/edge.sdoc](requirements/edge.sdoc).
 
-## Start here
+No flight, hardware or closed-loop performance result is claimed.
+All numbers below come from the commands listed in this file.
 
-- [Systems-engineering entry](systems_engineering/README.md): models, requirements status, development and verification route.
-- [Project charter](systems_engineering/project_charter.md): purpose, scope, and completion rules.
-- [B0 development baseline](systems_engineering/development_baseline.md): first deliverable.
-- [Architecture and model views](systems_engineering/models/architecture.md): interfaces and numerical conventions.
-- [Roadmap and backlog](docs/roadmap.md): dependency-ordered work and extensions.
-- [Research packages](research/README.md): independent questions and publication gates.
-- [Verification plan](systems_engineering/verification/verification_plan.md) and [results](RESULTS.md).
-- [Literature record](literature/README.md): discovery, screening, and claim evidence.
-- [Application evidence index](application/README.md): what an external reviewer can read first, what is
-  unfinished, and what is not claimed. Legacy EKF/UKF, geometric-control and TCN scaffolds are not evidence.
+## Status
 
-## First baseline: attitude closed loop
+| Area | Requirements | State | Evidence |
+|---|---|---|---|
+| B0 plant, IMU, actuator | B0-REQ-0004 to 0011 | implemented, unit-tested | `01_simulation/b0`, 25 pytest cases |
+| B0 estimator | B0-REQ-0012 to 0015, 0019 | implemented, unit-tested | `02_estimation/b0`, 52 pytest cases |
+| B0 controller | B0-REQ-0007, 0016 to 0019, 0026 | implemented, C++ and binding tested | `03_control/b0`, 25 CTest cases (Debug) |
+| B0 closed-loop integration | B0-REQ-0002, 0003, 0020 to 0025 | not in active tree | archived at tag `pre-surgery-2026-11-22` |
+| EDGE track | EDG-REQ-0001 to 0012 | planned | none yet |
 
-B0 implements a bounded multirotor attitude experiment: rotational dynamics,
-gyroscope/accelerometer observations, basic quaternion attitude fusion, cascaded
-attitude/rate control, actuator saturation, and automated evaluation. C++17 is
-the planned control-core language; Python provides simulation and analysis.
+B0 is not accepted as a whole. Its closed-loop integration layer, a saturation
+reachability negative finding, and several evidence chains were removed from the
+active tree by the lean-restructuring PR. They remain in git history at the tag.
 
-B0 does not require position flight, INS/GNSS, PX4, STM32, HIL, learning algorithms,
-or a publication. Each is independently scoped in the extension registry.
+## Repository layout
 
-## Repository map
+| Path | Content |
+|---|---|
+| `requirements/` | StrictDoc requirements: the single systems-engineering source |
+| `01_simulation/b0/` | Frame and quaternion conventions, rigid-body plant, IMU, actuator |
+| `02_estimation/b0/` | Complementary attitude estimator and its configuration |
+| `03_control/b0/` | C++17 controller core, pybind11 binding, Python adapter, tests |
+| `05_integration/b0/` | G0 contract (v1 and v2), its validator, and validator tests |
+| `edge_inference/` | Planned learning modules for the EDGE track |
+| `research/` | Scheduler and probe-timing study code and data |
+| `literature/references.bib` | Bibliography |
 
-| Directory | Responsibility | Current implementation |
-|---|---|---|
-| 01_simulation/ | Plant, sensors, actuators, environment | Legacy generator scaffold |
-| 02_estimation/ | Attitude estimation; optional navigation | Legacy EKF/UKF scaffold |
-| 03_control/ | B0 cascaded control; optional advanced control | Legacy geometric/LQR scaffold |
-| 04_fault_detection/ | Optional health and recovery | Legacy TCN scaffold |
-| 05_integration/ | Execution adapters, scenarios, evidence integration | G3-A local implementation accepted; CI/main decisions tracked in PR #23 |
-| 06_safety/ | Failure analysis and limitations | Preliminary analysis |
-| systems_engineering/ | Models, requirements status, verification and reports | G1.5-C/G2 accepted; G3-A local implementation review recorded |
-| docs/ | Roadmap, environment and work orders | G3 work order dispatched; G3-A implementation active |
-| research/ | Independently gated research packages | Candidates only |
-| literature/ | Shared bibliographic and evidence record | Historical pilot screening |
+`05_integration/b0` is kept only because the estimator and controller load and
+validate the G0 contract at runtime. The approval records for the estimator and
+controller are read by the same loaders.
 
-Existing code paths are preserved to avoid breaking imports and build references.
-Module ownership, rather than chronological phase numbers, governs new work.
+## Reproduce
 
-## Development checks
-
-Python 3.11+ is used by the existing navigation contract suite:
+Python 3.11 and a C++17 compiler are required. Python dependencies:
 
 ```sh
-python -m pip install numpy==1.26.4 pytest==8.2.0
-cd 02_estimation/python
-python -m pytest -v
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt   # Windows
+# .venv/bin/python -m pip install -r requirements.txt     # Linux/macOS
 ```
 
-Run pytest inside each track; root collection is not supported. Expected failures
-in navigation contracts describe pending extension behavior, not B0 completion.
-The default root CMake build still targets the optional navigation EKF scaffold.
-The explicit `b0-controller-debug` and `b0-controller-release` presets build the
-B0 C++17 controller core, mandatory Python binding and their component tests;
-see [the track README](03_control/b0/README.md). The legacy target prerequisites
-include Eigen3 and Catch2.
-MATLAB, PyTorch, PX4, and hardware tools are extension-specific dependencies.
+Python tests run inside each track directory:
 
-The [B0 integration track](05_integration/b0/README.md) documents the gated
-development runner. It is not yet the normal-scenario acceptance suite or B0 completion.
+```sh
+cd 01_simulation/b0 && python -m pytest -q
+cd 02_estimation/b0 && python -m pytest -q
+cd 05_integration/b0 && python -m pytest -q
+```
 
-## Contribution policy
+The C++ controller and its Python binding are built and tested with CMake. The
+Python binding test needs the MinGW runtime DLLs next to the module on Windows.
 
-Use one coherent issue and pull request per increment. Record assumptions,
-acceptance checks, validation commands, and evidence. Numerical results must
-link retained artifacts; pending behavior and limitations must remain visible.
-See [management rules](docs/roadmap.md#work-management).
+```sh
+cmake --preset b0-controller-debug
+cmake --build --preset b0-controller-debug
+ctest --preset b0-controller-debug
+```
 
-MIT license. Maintainer: Chi Zhang.
+Requirements are exported with StrictDoc:
+
+```sh
+strictdoc export requirements --output-dir requirements/build
+```
+
+## Roadmap
+
+1. **Now**: merge the lean-restructuring PR; freeze `requirements/` at a tag after review.
+2. **EDGE-1**: task instruction to structured task (EDG-REQ-0001) on the development GPU.
+3. **EDGE-2**: image to structured finding with abstention (EDG-REQ-0002).
+4. **EDGE-3**: latency and resource profiling of the models (EDG-REQ-0004).
+5. **EDGE-4**: placement policy and fallback on replayed scenarios (EDG-REQ-0005 to 0007).
+
+Each step adds code, tests and a requirement update in the same change. See
+[edge_inference/README.md](edge_inference/README.md) for the module structure.
+
+## Conventions
+
+NED navigation frame, body frame x forward, y right, z down. SI units. Quaternions
+are scalar-first Hamilton, rotating body vectors into the navigation frame.
+Simulation truth is never an estimator or controller input after initialization.
