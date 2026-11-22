@@ -1,0 +1,1695 @@
+[DOCUMENT]
+TITLE: EDGE candidate modular architecture (S2 review)
+UID: EDGE-ARCHITECTURE
+
+[GRAMMAR]
+ELEMENTS:
+- TAG: REQUIREMENT
+  PROPERTIES:
+    IS_COMPOSITE: False
+  FIELDS:
+  - TITLE: UID
+    TYPE: String
+    REQUIRED: True
+  - TITLE: TITLE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATUS
+    TYPE: String
+    REQUIRED: True
+  - TITLE: KIND
+    TYPE: String
+    REQUIRED: True
+  - TITLE: MODULES
+    TYPE: String
+    REQUIRED: False
+  - TITLE: SIGNATURE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: FIELDS
+    TYPE: String
+    REQUIRED: False
+  - TITLE: TIME
+    TYPE: String
+    REQUIRED: False
+  - TITLE: FAILURE
+    TYPE: String
+    REQUIRED: False
+  - TITLE: LABELS
+    TYPE: String
+    REQUIRED: False
+  - TITLE: SOURCE
+    TYPE: String
+    REQUIRED: True
+  - TITLE: STATEMENT
+    TYPE: String
+    REQUIRED: True
+  - TITLE: ACCEPTANCE
+    TYPE: String
+    REQUIRED: False
+
+[REQUIREMENT]
+UID: EDGE-ARC-SCOPE
+TITLE: Candidate status and composition
+STATUS: proposed
+KIND: design scope
+SOURCE: EDG-REQ-0001 through EDG-REQ-0033
+STATEMENT: >>>
+This is a proposed architecture, not a new requirement set or approval to migrate code. Requirement authority remains edge.sdoc; all its 33 entries are proposed.
+Design input: allocation schema edge-allocation-draft/v1, SHA256 A8B95CE1AF2C2DC2E74DB432A0F54D8DCFE0B7B28ED1AFF2E8637AB598A6646E.
+Requirement bytes SHA256 22D995CB07DEFF45D31868669A5B6B851EB8CD4696A0675C497D9A4F7D86C028 at parent commit e4b598c8ae76163532ff052f3d3b94de00c6e7b1.
+Eleven logical modules are not eleven deployments or mandatory packages. Existing run entry points compose PAR -> INF -> DEC and submit artifacts to EVA and REC. The entry point passes image/task/config, never labels, to runtime components. EVA alone receives references for offline scoring/calibration.
+RPL is the replay composition root: it loads fixed traces, tasks, recorded outputs, profiles and configuration; assembles each DecisionInputs at current event time; calls POL; applies fallback and logs all requests. IF-11 denotes profile provenance, not a live MEA-to-POL call; profiles always enter POL through RPL's IF-13. IF-19's DAT role is artifact validation/packaging, not recomputing findings. Runtime and artifact cycles are not source-import dependencies.
+No B0 module dependency, hardware inference, raw dataset endpoint access or test-set use is authorised here. All integration checks below are planned, not run. v2 instructions are not an evaluation source for this architecture; do not read or score them. A future independent v3 or a format-only downgrade is a separate decision.
+S2 produces a reviewable draft; S3 requires Owner approval and explicit decisions on open items. No threshold defaults, code migration, PR merge or freeze tags.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-TYPES
+TITLE: Shared signature notation and field types
+STATUS: proposed
+KIND: interface type dictionary
+SOURCE: EDG-REQ-0001 0002 0003 0008 0018 0021
+STATEMENT: >>>
+Signatures are Python typing notation for design, not executable declarations. Fields below are exhaustive logical records, with Optional denoted by | None. Named types are immutable; collections are tuples; no hidden globals. Tagged unions retain distinct failure, invalid and abstain states. Identifiers are nonempty str; hashes are 64 hexadecimal characters; bool is never accepted as int. Floats are finite. Unit-bearing suffixes are normative for this draft; no numerical performance limits are set.
+ArtifactRef(path: str, sha256: str, format_version: str): path is a caller-authorised local artifact, no network fetch, hash is verified before use. Path containment and symlink policy are checked by composition.
+SchemaRef(id: str, sha256: str, vocabulary: tuple[str, ...]): nonempty versioned closed sets.
+ValidationResult(valid: bool, errors: tuple[str, ...]): valid iff errors empty; no silent coercion.
+Failure(request_id: str, kind: Literal['reject','execution_error','timeout','unsupported'], reason: str, raw_ref: ArtifactRef | None): infrastructure failure is not an abstention.
+TaskRecord(target_element: str, location_tag: str, defect_classes: tuple[str, ...], required_views: tuple[str, ...]): target/location/views are validated against pinned task schema; defects/views nonempty and unique. Mapping to dataset classes is explicit, never string similarity.
+ParseArtifact(instruction_id: str, status: Literal['task','rejected'], task: TaskRecord | None, reason: str | None, raw_ref: ArtifactRef, parser_config: ArtifactRef, schema: SchemaRef): task iff status task; rejection has reason and no task.
+TaskEnvelope(request_id: str, instruction_id: str, task: TaskRecord, task_sha256: str, schema: SchemaRef).
+ImageMeta(image_id: str, width_px: int, height_px: int, capture: CaptureStamp): positive dimensions, top-left origin.
+ImageRef(artifact: ArtifactRef, meta: ImageMeta, split_id: str, source_inventory: ArtifactRef).
+ImageInput(meta: ImageMeta, pixels: bytes, content_sha256: str, format: str): decoded bytes interpretation declared by format; no annotation fields.
+TransformMeta(source: ImageMeta, processed_width_px: int, processed_height_px: int, transform_id: str, forward_parameters: tuple[float, ...], inverse_parameters: tuple[float, ...]): positive dimensions, finite and invertible for declared crop/resize convention; no implicit clipping. Exact pixel-edge convention must be in config before evaluation.
+Box(x_min_px: float, y_min_px: float, x_max_px: float, y_max_px: float): source-pixel edge coordinates, 0 <= xmin < xmax <= width and 0 <= ymin < ymax <= height. Bounds derive from image dimensions, not acceptance thresholds.
+Finding(class_id: str, box: Box, confidence: float): closed dataset-version class, confidence in [0,1] per 0018.
+FindingRecord(status: Literal['findings','no_finding','abstain','invalid'], entries: tuple[Finding, ...], reason: str | None): findings has nonempty entries; other statuses empty entries; abstain/invalid require reason. no_finding is a valid claim, not automatically correct.
+FindingArtifact(request_id: str, image: ImageMeta, record: FindingRecord | None, failure: Failure | None, raw_ref: ArtifactRef, decode_config: ArtifactRef): exactly one of record/failure. Never includes reference labels.
+DecodeConfig(artifact: ArtifactRef, vocabulary: SchemaRef, transform_policy: str, confidence_rule: str, abstention_rule: str, parameter_values: tuple[tuple[str, float | str], ...], calibration_manifest: ArtifactRef, frozen: bool): parameter values require Owner resolution then calibration-only determination; no runnable default in this draft.
+InferenceRequest(task: TaskEnvelope, image: ImageInput, model: ModelConfig, decode_contract: ArtifactRef).
+ModelConfig(model_id: str, revision: str, precision: str, libraries: tuple[tuple[str,str], ...], device_id: str, prompt: ArtifactRef, processor: ArtifactRef, generation: ArtifactRef): pinned identifiers, no selection after test.
+RawArtifact(request_id: str, raw_ref: ArtifactRef, model: ModelConfig, transform: TransformMeta, runtime_signals: tuple[tuple[str,float], ...], events: tuple[MeasurementEvent, ...], failure: Failure | None): signals are actually available outputs, not reference correctness.
+DeviceRequest(device_id: str, precision: str).
+DeviceInfo(device_id: str, host_id: str, host_type: Literal['development-host'], supported_precision: tuple[str,...], available_memory_mib: float | None, libraries: tuple[tuple[str,str], ...]): memory nonnegative or unknown.
+ProbeRequest(device_id: str, tool_id: str, channels: tuple[str,...]).
+HostSample(host_id: str, device_id: str, host_type: Literal['development-host'], stamp: HostStamp, tool_id: str, power_w: float | None, memory_mib: float | None, clock_mode: str | None): available readings nonnegative, absence explicit. No claim of instantaneous peak from polling.
+DeviceProfile(profile_id: str, location: Literal['onboard','edge','cloud','split'], source: Literal['measured','declared','modelled'], artifact: ArtifactRef, latency_s: float, energy_j: float | None, memory_mib: float | None, measurement_boundary: str): nonnegative costs; location is a hypothetical replay placement, not host identity; source preserved per field in artifact.
+StampedProfile(profile: DeviceProfile, available_at: ReplayStamp).
+Placement = Literal['onboard','edge','cloud','split'].
+StampedValue(value: float | str | bool, stamp: ReplayStamp, source: ArtifactRef): generic scalar, units defined by named field.
+DecisionInputs(request_id: str, task: TaskRecord, now: ReplayStamp, capture: CaptureStamp, profiles: tuple[StampedProfile,...], link: LinkSample, time_budget_ticks: int, energy_budget_j: float | None, input_freshness_ticks: int, result_freshness_ticks: int, completed_quality: QualitySignal | None, seed: int, policy_config: ArtifactRef): nonnegative time/energy budgets; freshness limits positive; all policies use identical declared inputs. Numeric values remain undecided.
+LinkSample(stamp: ReplayStamp, available_at: ReplayStamp, state: Literal['up','degraded','lost'], latency_ticks: int | None, source: ArtifactRef): nonnegative delay or unavailable; no reading of live hardware.
+QualitySignal(value: float, completed_at: ReplayStamp, available_at: ReplayStamp, generation_cost: CostEntry, source: ArtifactRef): actual recorded completed local step only, cost charged once via unique entry ID.
+PlacementDecision(request_id: str, action: Literal['place','reject','abstain'], placement: Placement | None, reasons: tuple[str,...], input_digest: str): placement only for place; no hidden policy state. Feasibility order fixed by task class in policy config.
+TraceEvent(event_id: str, stamp: ReplayStamp, available_at: ReplayStamp, sequence: int, kind: str, payload: LinkSample | StampedValue | RecordedResult): nonnegative stable sequence and immutable payload; tie order belongs to clock/event design.
+FixedTrace(artifact: ArtifactRef, seed: int, model: ArtifactRef, clock: ReplayClock, events: tuple[TraceEvent,...]).
+RecordedResult(request_id: str, completed_at: ReplayStamp | None, available_at: ReplayStamp | None, finding: FindingArtifact | None, cost: tuple[CostEntry,...]): missing completion stays None; completion and delivery are distinct.
+ReplayBundle(artifact: ArtifactRef, tasks: tuple[TaskEnvelope,...], captures: tuple[CaptureStamp,...], trace: FixedTrace, results: tuple[RecordedResult,...], profiles: tuple[DeviceProfile,...], config: ArtifactRef): identity joins must be unique and total, no labels and no GPU regeneration.
+CostEntry(entry_id: str, category: str, duration_ticks: int, energy_j: float | None, source: Literal['measured','declared','modelled'], source_ref: ArtifactRef): nonnegative values, each incurred category retained including discarded results, retries, queue and policy overhead.
+RequestOutcome(request_id: str, submitted_at: ReplayStamp, deadline: ReplayStamp, completed_at: ReplayStamp | None, classification: Literal['on_time','late','not_completed'], costs: tuple[CostEntry,...], discarded_results: tuple[str,...]): all submissions appear exactly once; event history retained.
+OutcomeLog(artifact: ArtifactRef, clock: ReplayClock, requests: tuple[RequestOutcome,...], input_refs: tuple[ArtifactRef,...], events: ArtifactRef).
+ReplayAnalysisConfig(artifact: ArtifactRef, completion_boundary: str, equality_rule: str, observation_horizon: ReplayStamp): values fixed before run after Owner review, no default equality rule silently selected.
+ReplayReport(provenance: EvaluationContext, submitted: int, on_time: int, late: int, not_completed: int, miss_rate: float | None, completed_percentiles_s: tuple[tuple[str,float | None],...], costs: ArtifactRef): counts nonnegative, sum equals submitted; miss=(late+not_completed)/submitted or N/A for zero submitted; completed percentiles conditional, no invented completion time.
+MeasurementEvent(name: str, stamp: HostStamp).
+MeasurementRecord(run_ref: ArtifactRef, host: DeviceInfo, state: Literal['cold','warm'], start: HostStamp, end: HostStamp | None, output_length: int | None, network_included: bool, warmup_count: int, repetition_index: int, tool_id: str, memory_mib: float | None, energy_j: float | None, outcome: Literal['completed','failed','timeout']): counts nonnegative; unsupported energy stays None. Clock/power mode retained in linked raw samples.
+MeasurementReport(provenance: EvaluationContext, raw: ArtifactRef, boundary: str, percentiles_s: tuple[tuple[str,float | None],...], failures: int, cold_warm_separated: bool): required 50/95/99 percentiles come from 0022, not new targets; missing/failed intervals reported explicitly, never fabricated durations.
+EvaluationPhase = Literal['training_development','calibration','frozen_test'].
+SplitManifest(artifact: ArtifactRef, source: ArtifactRef, licence: ArtifactRef, split_id: str, phase: EvaluationPhase, groups: ArtifactRef, leakage_check: ArtifactRef): author original source only; unresolved groups excluded from heldout evaluation.
+ReferenceFact(fact_id: str, image_id: str, class_id: str, region: Box | None, evidence: Literal['present','labelled_absent','unlabelled'], source: ArtifactRef): no absence inferred from omitted annotations.
+ReferenceSet(manifest: SplitManifest, facts: tuple[ReferenceFact,...]): permitted only inside EVA offline path.
+FreezePermit(config_sha256: str, split_refs: tuple[ArtifactRef,...], phase: EvaluationPhase, authorised: bool): approval metadata, not proof by itself; composition validates against retained approval.
+EvaluationContext(run_record: ArtifactRef, inputs: tuple[ArtifactRef,...], protocol: ArtifactRef, reference_manifest: ArtifactRef | None, host_type: Literal['development-host'], phase: EvaluationPhase): used only offline; never forward reference_manifest to prediction components.
+ScoreProtocol(artifact: ArtifactRef, family: str, parameters: tuple[tuple[str,float | str],...], matching_rule: str, aggregation_rule: str, unresolved: tuple[str,...]): any unresolved field blocks evaluation.
+ScoreReport(provenance: EvaluationContext, submitted: int, accepted: int, accepted_scoreable: int, errors: int, unscoreable: int, malformed: int, failed: int, abstained: int, fact_counts: ArtifactRef, per_item: ArtifactRef, coverage: float | None, selective_risk: float | None): counts nonnegative; 0 <= errors <= accepted_scoreable <= accepted <= submitted. Unscoreable is a scoreability axis, not necessarily a mutually exclusive execution outcome. Coverage=accepted/submitted; selective risk=errors/accepted_scoreable; zero denominator => None/N/A.
+RunSubmission(code_revision: str, config_hash: str, seed: int | None, seed_applicability: str, host_id: str, host_type: Literal['development-host'], device_id: str, model_id: str | None, precision: str | None, library_versions: tuple[tuple[str,str],...], raw_artifact: ArtifactRef, analysis_command: str, outcome: str): model-specific fields mandatory for inference, explicit not-applicable for non-inference; no fabricated model/seed. This is proposed record typing, not a requirement text edit.
+RecordReceipt(record_ref: ArtifactRef, validated: bool).
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-TIME
+TITLE: Clock mapping and event boundary design
+STATUS: proposed
+KIND: time contract
+SOURCE: EDG-REQ-0007 0020 0021 0022 0024 0026 0032
+STATEMENT: >>>
+ReplayClock(clock_id: str, tick_period_s: Fraction, origin_id: str); ReplayStamp(clock_id: str, tick: int); CaptureStamp(image_id: str, original_clock_id: str, original_time_s: Fraction, mapping_ref: ArtifactRef, replay: ReplayStamp); HostStamp(clock_id: str, monotonic_ns: int). Integer ticks nonnegative; tick_period_s is positive rational and UNDECIDED by Owner (D-TIME-01). Nanoseconds in HostStamp describe the host counter representation, not a chosen replay resolution.
+Mappings are explicit affine maps t_replay_s = a * t_source_s + b, with a positive rational (dimensionless), b rational seconds, source/target clock IDs and provenance. Maps are fixed before replay; no measured live drift correction during replay. Map all captures, trajectory samples, result availability and decisions onto the same clock. Require mapped_time / tick_period_s to be an exact integer; reject nonrepresentable inputs. Do not round timestamps silently. Owner selects resolution or revises the input design before execution.
+Freshness comes from capture time in the fixed request/image bundle, not network delay alone: age_ticks = decision.tick - capture.replay.tick. Network trace determines delivery/availability, not a replacement capture timestamp. Future capture or cross-clock subtraction is rejected. Fresh iff age_ticks < result_freshness_ticks; equality is stale per 0024. A delivered stale result is discarded, retained and costed. Input signal age is checked separately using its own timestamp and declared freshness.
+Event timestamps and availability timestamps are distinct. POL receives only entries with available_at <= current decision time and already-completed quality signals. Deterministic ordering is the predeclared tuple (tick, event_priority, sequence, event_id). Event priorities, same-tick arrival versus timeout ordering and deadline equality convention remain Owner decisions (D-TIME-02); absent policy blocks execution. No wall-clock ordering enters replay.
+A timeout is a recorded event, not a completion. A late result can arrive after a timeout: record both events, charge its cost, and apply freshness independently. At the fixed observation horizon, classify every request once: completed at the declared end-to-end boundary -> on_time or late according to fixed deadline comparison; otherwise not_completed. A request timed out earlier but later completed within the observation horizon is not counted twice. Computational completion, delivery, usability and terminal action are distinct fields/events; Owner selects the request completion boundary and observation horizon (D-TIME-03).
+No completion timestamp is written for not_completed requests. Completed-request percentiles exclude them and accompany not-completed/miss rates. These are replay outcomes, not actual inference timing claims.
+Synthetic dimensional example (not run, no budget or threshold selected): let q=tick_period_s, capture=(C,10), trace sample=(C,12), delivery=(C,14), decision=(C,15). With identity source mapping, age=5*q seconds. For symbolic positive integer freshness F, fresh iff 5 < F; F=5 illustrates the existing equality-is-stale rule, not a selected operating value. With symbolic deadline D, completion at tick C_end is classified by the pending equality convention; if absent at horizon H, completed_at=None, regardless of a timeout event at D. The example uses no GPU or dataset and sets no clock resolution.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-SCORE
+TITLE: Offline matching families and undecided scoring parameters
+STATUS: proposed
+KIND: scoring design
+SOURCE: EDG-REQ-0002 0013 0015 0016 0019 0030 0033
+STATEMENT: >>>
+No family or numeric threshold is selected here. All scoring and reference processing is confined to EVA's offline evaluation/calibration paths. Runtime predictions and abstentions are produced before reference lookup.
+Family A: class-consistent spatial matching, using source-coordinate region overlap (box IoU, polygon overlap or another explicitly specified measure). Preconditions: reliable class and geometric references, fixed conversion of annotation polygons to scoring geometry, same source-image coordinates. One-to-one matching avoids duplicate credit. Candidate deterministic matching is maximum-weight bipartite assignment among eligible same-class pairs, with stable ID tie-breaking; greedy matching is an alternative with order sensitivity to disclose. Eligibility threshold and algorithm are Owner decisions. Box envelopes of polygons may overstate overlap; annotation incompleteness remains.
+Family B: image-level class presence matching. Preconditions: reliable image-level positive/negative facts for the target classes. Ignores location accuracy and cannot by itself satisfy spatial finding evaluation under 0002/0018; useful as separately labelled auxiliary analysis. A missing annotation is not a negative image.
+Family C: explicitly adjudicated finding/fact matching, using predeclared evidence-backed correspondence and scoreability. Preconditions: independent labelled facts, adjudication procedure and traceable decisions. It can handle partial labelling but adds adjudication work and must not be used to select favourable examples.
+For all families: matched reliable positives support detections; unmatched reliable positives support missed-defect counts. An unmatched prediction is false only where reliable negative evidence refutes its class/region claim. No reliable negative evidence means undeterminable, not automatically false and not automatically correct. Unlabelled regions do not enter complete fabrication-rate claims. A valid no_finding can be refuted by a reliable relevant positive, supported by reliable absence evidence, or unscoreable when neither is sufficient.
+Execution categories: valid findings/no_finding => accepted; abstain, invalid/malformed and execution failure => not accepted. Each submission remains in coverage denominator. Scoreability is a separate axis. ReferenceFact counts (present, labelled_absent, unlabelled, undeterminable) are retained per class. Partial scoreability and aggregation to an item error are explicit pending design choices: do not conflate fact-level errors with the accepted-item denominator of 0013. A definite supported error may establish item error; mixed supported/unknown facts require a predeclared aggregation policy, not arbitrary correct credit.
+Parameters pending Owner decision: matching family, geometric representation, overlap measure and threshold, assignment/tie rule, duplicate treatment, per-item aggregation and partial-scoreability policy, no_finding support rule, abstention/confidence calibration method and thresholds, calibration objectives, policy feasibility/freshness/time/energy budgets and retries where used. No defaults or numeric choices are supplied.
+Family/method choices and calibration procedure must be approved before test access. Any tunable numeric value in this scoring/threshold design is determined only on the isolated calibration split under that predeclared procedure; fitting/model/prompt selection remains training/development per 0019/0033. The test split is never used to choose a family, parameter, scorer or baseline; all hashes and unresolved decisions must be closed before its single evaluation. Describing a rule family now is not permission to calibrate or score.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-REC
+TITLE: REC Run record
+STATUS: proposed
+KIND: module
+MODULES: REC
+SOURCE: EDG-REQ-0008 EDG-REQ-0009 EDG-REQ-0003 EDG-REQ-0004 EDG-REQ-0007 EDG-REQ-0019 EDG-REQ-0027
+STATEMENT: >>>
+utility, used by all modules
+Primary: EDG-REQ-0008, EDG-REQ-0009.
+Collaborating: EDG-REQ-0003, EDG-REQ-0004, EDG-REQ-0007, EDG-REQ-0019, EDG-REQ-0027.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-SCH
+TITLE: SCH Structure contracts
+STATUS: proposed
+KIND: module
+MODULES: SCH
+SOURCE: EDG-REQ-0018 EDG-REQ-0001 EDG-REQ-0002 EDG-REQ-0005 EDG-REQ-0010
+STATEMENT: >>>
+task and finding schemas
+Primary: EDG-REQ-0018.
+Collaborating: EDG-REQ-0001, EDG-REQ-0002, EDG-REQ-0005, EDG-REQ-0010.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-PAR
+TITLE: PAR Instruction parser
+STATUS: proposed
+KIND: module
+MODULES: PAR
+SOURCE: EDG-REQ-0001
+STATEMENT: >>>
+parser interface; rule baseline first
+Primary: EDG-REQ-0001.
+Collaborating: none.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-DAT
+TITLE: DAT Dataset
+STATUS: proposed
+KIND: module
+MODULES: DAT
+SOURCE: EDG-REQ-0015 EDG-REQ-0028 EDG-REQ-0029 EDG-REQ-0030 EDG-REQ-0010 EDG-REQ-0019 EDG-REQ-0033
+STATEMENT: >>>
+source inventory, groups, duplicates, leakage
+Primary: EDG-REQ-0015, EDG-REQ-0028, EDG-REQ-0029, EDG-REQ-0030.
+Collaborating: EDG-REQ-0010, EDG-REQ-0019, EDG-REQ-0033.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-INF
+TITLE: INF Inference
+STATUS: proposed
+KIND: module
+MODULES: INF
+SOURCE: EDG-REQ-0003 EDG-REQ-0002 EDG-REQ-0011 EDG-REQ-0016 EDG-REQ-0019
+STATEMENT: >>>
+validate image/task inputs, preprocess with retained coordinate transform, run fixed model, return raw output; no reference labels
+Primary: EDG-REQ-0003.
+Collaborating: EDG-REQ-0002, EDG-REQ-0011, EDG-REQ-0016, EDG-REQ-0019.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-DEC
+TITLE: DEC Decoder
+STATUS: proposed
+KIND: module
+MODULES: DEC
+SOURCE: EDG-REQ-0002 EDG-REQ-0013 EDG-REQ-0016 EDG-REQ-0018 EDG-REQ-0019
+STATEMENT: >>>
+parse output, restore source-pixel coordinates, handle confidence and frozen abstention rules; never read reference labels at runtime
+Primary: EDG-REQ-0002.
+Collaborating: EDG-REQ-0013, EDG-REQ-0016, EDG-REQ-0018, EDG-REQ-0019.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-EVA
+TITLE: EVA Evaluation
+STATUS: proposed
+KIND: module
+MODULES: EVA
+SOURCE: EDG-REQ-0013 EDG-REQ-0014 EDG-REQ-0016 EDG-REQ-0017 EDG-REQ-0019 EDG-REQ-0032 EDG-REQ-0033 EDG-REQ-0001 EDG-REQ-0009 EDG-REQ-0012 EDG-REQ-0015 EDG-REQ-0022 EDG-REQ-0027 EDG-REQ-0030 EDG-REQ-0031
+STATEMENT: >>>
+scoring, risk-coverage, comparison protocol
+Primary: EDG-REQ-0013, EDG-REQ-0014, EDG-REQ-0016, EDG-REQ-0017, EDG-REQ-0019, EDG-REQ-0032, EDG-REQ-0033.
+Collaborating: EDG-REQ-0001, EDG-REQ-0009, EDG-REQ-0012, EDG-REQ-0015, EDG-REQ-0022, EDG-REQ-0027, EDG-REQ-0030, EDG-REQ-0031.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-MEA
+TITLE: MEA Measurement
+STATUS: proposed
+KIND: module
+MODULES: MEA
+SOURCE: EDG-REQ-0004 EDG-REQ-0022 EDG-REQ-0023 EDG-REQ-0005 EDG-REQ-0009 EDG-REQ-0011 EDG-REQ-0021 EDG-REQ-0027
+STATEMENT: >>>
+latency and resource capture, wraps INF
+Primary: EDG-REQ-0004, EDG-REQ-0022, EDG-REQ-0023.
+Collaborating: EDG-REQ-0005, EDG-REQ-0009, EDG-REQ-0011, EDG-REQ-0021, EDG-REQ-0027.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-POL
+TITLE: POL Placement policy
+STATUS: proposed
+KIND: module
+MODULES: POL
+SOURCE: EDG-REQ-0005 EDG-REQ-0020 EDG-REQ-0021 EDG-REQ-0006 EDG-REQ-0012 EDG-REQ-0016 EDG-REQ-0019 EDG-REQ-0025
+STATEMENT: >>>
+deterministic function of declared inputs
+Primary: EDG-REQ-0005, EDG-REQ-0020, EDG-REQ-0021.
+Collaborating: EDG-REQ-0006, EDG-REQ-0012, EDG-REQ-0016, EDG-REQ-0019, EDG-REQ-0025.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-RPL
+TITLE: RPL Replay, fallback and cost
+STATUS: proposed
+KIND: module
+MODULES: RPL
+SOURCE: EDG-REQ-0006 EDG-REQ-0007 EDG-REQ-0012 EDG-REQ-0024 EDG-REQ-0025 EDG-REQ-0026 EDG-REQ-0027 EDG-REQ-0031 EDG-REQ-0014 EDG-REQ-0016 EDG-REQ-0021 EDG-REQ-0022 EDG-REQ-0032
+STATEMENT: >>>
+event simulation, fallback, cost log
+Primary: EDG-REQ-0006, EDG-REQ-0007, EDG-REQ-0012, EDG-REQ-0024, EDG-REQ-0025, EDG-REQ-0026, EDG-REQ-0027, EDG-REQ-0031.
+Collaborating: EDG-REQ-0014, EDG-REQ-0016, EDG-REQ-0021, EDG-REQ-0022, EDG-REQ-0032.
+Reserved ports: none.
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-MOD-PLT
+TITLE: PLT Platform
+STATUS: proposed
+KIND: module
+MODULES: PLT
+SOURCE: EDG-REQ-0003 EDG-REQ-0004 EDG-REQ-0006 EDG-REQ-0009 EDG-REQ-0011 EDG-REQ-0023
+STATEMENT: >>>
+compute, power and link ports; development-host adapter only
+Primary: none; supporting module is allowed.
+Collaborating: EDG-REQ-0003, EDG-REQ-0004, EDG-REQ-0006, EDG-REQ-0009, EDG-REQ-0011, EDG-REQ-0023.
+Reserved ports: PORT-COMPUTE (device id, memory budget, clock mode); PORT-POWER (energy sample stream); PORT-LINK (link state, latency sample).
+Ports are design-only, not board adapters, not EDG-REQ-0034. Software decomposition belongs to S4; no relocation is authorised in S2.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-01
+TITLE: IF-01 TaskRecord
+STATUS: proposed
+KIND: type_dependency
+MODULES: SCH -> PAR
+SIGNATURE: validate_task(task: TaskRecord, schema: SchemaRef) -> ValidationResult
+FIELDS: >>>
+Task schema version, target element, location tag, defect classes, views
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0001 EDG-REQ-0010
+STATEMENT: >>>
+Provider SCH; consumer PAR. Schema/type dependency, not production of a concrete task or result.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-02
+TITLE: IF-02 FindingRecord
+STATUS: proposed
+KIND: type_dependency
+MODULES: SCH -> DEC
+SIGNATURE: validate_finding(record: FindingRecord, schema: SchemaRef, image: ImageMeta) -> ValidationResult
+FIELDS: >>>
+Finding schema version, four statuses, entries(class, source bbox, confidence)
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0018 EDG-REQ-0002
+STATEMENT: >>>
+Provider SCH; consumer DEC. Schema/type dependency, not production of a concrete task or result.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-03
+TITLE: IF-03 TaskRecord, FindingRecord
+STATUS: proposed
+KIND: type_dependency
+MODULES: SCH -> EVA
+SIGNATURE: validate_evaluation_inputs(tasks: tuple[TaskRecord, ...], findings: tuple[FindingRecord, ...], schemas: tuple[SchemaRef, ...]) -> ValidationResult
+FIELDS: >>>
+Task and finding schema definitions, no actual records
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0001 EDG-REQ-0013 EDG-REQ-0018
+STATEMENT: >>>
+Provider SCH; consumer EVA. Schema/type dependency, not production of a concrete task or result.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-04
+TITLE: IF-04 ParseResult
+STATUS: proposed
+KIND: data_artifact
+MODULES: PAR -> EVA
+SIGNATURE: accept_parse_result(result: ParseArtifact) -> ValidationResult
+FIELDS: >>>
+instruction_id, task or rejection, raw output reference, parser config hash
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0001 EDG-REQ-0008
+STATEMENT: >>>
+Provider PAR; consumer EVA. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-05
+TITLE: IF-05 RawOutput
+STATUS: proposed
+KIND: data_artifact
+MODULES: INF -> DEC
+SIGNATURE: decode(raw: RawArtifact, config: DecodeConfig) -> FindingArtifact
+FIELDS: >>>
+request_id, raw output or execution failure, model/config hash, source dimensions, preprocessing transform, available runtime confidence signals
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0002 EDG-REQ-0018 EDG-REQ-0019
+STATEMENT: >>>
+Provider INF; consumer DEC. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-06
+TITLE: IF-06 ComputeDevicePort
+STATUS: proposed
+KIND: runtime_call
+MODULES: PLT -> INF
+SIGNATURE: get_compute_device(request: DeviceRequest) -> DeviceInfo | Failure
+FIELDS: >>>
+device selection request; device_id, precision support, available memory or explicit unknown, library versions
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0009
+STATEMENT: >>>
+Provider PLT; consumer INF. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-07
+TITLE: IF-07 RunPort (wrapped)
+STATUS: proposed
+KIND: runtime_call
+MODULES: INF -> MEA
+SIGNATURE: run(request: InferenceRequest) -> RawArtifact | Failure
+FIELDS: >>>
+validated image/task/config request; raw output/error and execution events
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+development-host monotonic start/end with explicit measurement boundary
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0004 EDG-REQ-0022 EDG-REQ-0023
+STATEMENT: >>>
+Provider INF; consumer MEA. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-08
+TITLE: IF-08 PowerPort, ClockPort
+STATUS: proposed
+KIND: runtime_call
+MODULES: PLT -> MEA
+SIGNATURE: read_host_sample(request: ProbeRequest) -> HostSample | Failure
+FIELDS: >>>
+clock identity, power tool, timestamped samples or unsupported
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+development-host monotonic seconds; clock mapping declared
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Unsupported power measurement is unavailable, not modelled energy or zero; retain errors.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0004 EDG-REQ-0009 EDG-REQ-0023
+STATEMENT: >>>
+Provider PLT; consumer MEA. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-09
+TITLE: IF-09 FindingRecord (unscored)
+STATUS: proposed
+KIND: data_artifact
+MODULES: DEC -> EVA
+SIGNATURE: score_findings(predictions: tuple[FindingArtifact, ...], references: ReferenceSet, protocol: ScoreProtocol, provenance: EvaluationContext) -> ScoreReport | Failure
+FIELDS: >>>
+request_id, unscored FindingRecord or retained failure, raw output reference, threshold hash
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+Prediction artifact carries no labels; references are a separate EVA offline-only argument. DEC cannot import, receive or read ReferenceSet.
+<<<
+SOURCE: EDG-REQ-0002 EDG-REQ-0013 EDG-REQ-0018 EDG-REQ-0030
+STATEMENT: >>>
+Provider DEC; consumer EVA. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-10
+TITLE: IF-10 SplitManifest, LabelSet
+STATUS: proposed
+KIND: data_artifact
+MODULES: DAT -> EVA
+SIGNATURE: load_references(manifest: SplitManifest, phase: EvaluationPhase) -> ReferenceSet | Failure
+FIELDS: >>>
+source/licence hashes, split/group manifest, class map, present/absent/unlabelled reference facts
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+offline EVA only; training/development or calibration for selection; frozen test scoring only after gate
+<<<
+SOURCE: EDG-REQ-0015 EDG-REQ-0019 EDG-REQ-0028 EDG-REQ-0029 EDG-REQ-0030 EDG-REQ-0033
+STATEMENT: >>>
+Provider DAT; consumer EVA. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-11
+TITLE: IF-11 ProfileTable
+STATUS: proposed
+KIND: data_artifact
+MODULES: MEA -> POL
+SIGNATURE: bind_profiles(profiles: tuple[DeviceProfile, ...], now: ReplayStamp) -> tuple[StampedProfile, ...] | Failure
+FIELDS: >>>
+pinned profile table: location, measured/declared source, timing boundary, cost and memory, source artifact hash
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Profile metadata retained; runtime availability timestamps supplied by replay composition, not live MEA calls
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0005 EDG-REQ-0021
+STATEMENT: >>>
+Provider MEA; consumer POL. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-12
+TITLE: IF-12 TaskRecord
+STATUS: proposed
+KIND: type_dependency
+MODULES: SCH -> POL
+SIGNATURE: validate_policy_task(task: TaskRecord, schema: SchemaRef) -> ValidationResult
+FIELDS: >>>
+TaskRecord type definition only; actual task is in IF-13 input
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0005 EDG-REQ-0021
+STATEMENT: >>>
+Provider SCH; consumer POL. Schema/type dependency, not production of a concrete task or result.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-13
+TITLE: IF-13 PlacementDecision
+STATUS: proposed
+KIND: runtime_call
+MODULES: POL -> RPL
+SIGNATURE: decide(inputs: DecisionInputs) -> PlacementDecision | Failure
+FIELDS: >>>
+input: task, fixed profiles, link estimate, time/energy budget, freshness limits, completed quality signal with charged cost, explicit seed; output: placement or terminal action and reasons
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+All inputs carry replay-relative seconds and source; only information available at current decision time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0005 EDG-REQ-0006 EDG-REQ-0020 EDG-REQ-0021 EDG-REQ-0025
+STATEMENT: >>>
+Provider POL; consumer RPL. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-14
+TITLE: IF-14 FixedTraceAdapter (offline only)
+STATUS: proposed
+KIND: data_artifact
+MODULES: PLT -> RPL
+SIGNATURE: load_fixed_trace(ref: ArtifactRef, clock: ReplayClock) -> FixedTrace | Failure
+FIELDS: >>>
+fixed network/battery trace file reference, seed, model and hash; offline adapter only
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+replay-relative seconds, no live clocks/link/battery reads
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing/mismatched trace blocks replay; no live-platform fallback.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0007 EDG-REQ-0012 EDG-REQ-0026
+STATEMENT: >>>
+Provider PLT; consumer RPL. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-15
+TITLE: IF-15 OutcomeLog
+STATUS: proposed
+KIND: data_artifact
+MODULES: RPL -> EVA
+SIGNATURE: analyse_outcomes(log: OutcomeLog, protocol: ReplayAnalysisConfig) -> ReplayReport | Failure
+FIELDS: >>>
+every request, events, outcomes, cost categories, discarded/late/retry events, input hashes
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+replay-relative seconds; incomplete completion_time is null, not timeout
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0014 EDG-REQ-0022 EDG-REQ-0031 EDG-REQ-0032
+STATEMENT: >>>
+Provider RPL; consumer EVA. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-16
+TITLE: IF-16 Validated task
+STATUS: proposed
+KIND: data_artifact
+MODULES: PAR -> INF
+SIGNATURE: accept_task(result: ParseArtifact) -> TaskEnvelope | Failure
+FIELDS: >>>
+validated task or rejection with instruction_id, task hash; supplied by composition
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0001 EDG-REQ-0002
+STATEMENT: >>>
+Provider PAR; consumer INF. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-17
+TITLE: IF-17 Image input without labels
+STATUS: proposed
+KIND: data_artifact
+MODULES: DAT -> INF
+SIGNATURE: load_image(ref: ImageRef) -> ImageInput | Failure
+FIELDS: >>>
+image bytes reference/hash, image_id, source dimensions, permitted split, capture timestamp provenance; no labels
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+capture timestamp plus declared clock mapping; synthetic/replay captures explicitly labelled
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0002 EDG-REQ-0015 EDG-REQ-0018 EDG-REQ-0028
+STATEMENT: >>>
+Provider DAT; consumer INF. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-18
+TITLE: IF-18 Offline-frozen runtime configuration
+STATUS: proposed
+KIND: data_artifact
+MODULES: EVA -> DEC
+SIGNATURE: load_decode_config(ref: ArtifactRef, permit: FreezePermit) -> DecodeConfig | Failure
+FIELDS: >>>
+frozen decoding/abstention config, threshold, label vocabulary, calibration provenance hash; no reference answers
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Unfrozen or mismatched config blocks evaluation, never recalibrate on test.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0002 EDG-REQ-0019 EDG-REQ-0033
+STATEMENT: >>>
+Provider EVA; consumer DEC. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-19
+TITLE: IF-19 Fixed replay input bundle
+STATUS: proposed
+KIND: data_artifact
+MODULES: DAT -> RPL
+SIGNATURE: load_replay_bundle(ref: ArtifactRef, clock: ReplayClock) -> ReplayBundle | Failure
+FIELDS: >>>
+fixed tasks, capture times, recorded findings/quality signals and availability/cost events; no labels
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+replay-relative timestamps; future signals inaccessible until their events
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0007 EDG-REQ-0012 EDG-REQ-0021 EDG-REQ-0024 EDG-REQ-0026 EDG-REQ-0031
+STATEMENT: >>>
+Provider DAT; consumer RPL. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-20
+TITLE: IF-20 Fixed profiles
+STATUS: proposed
+KIND: data_artifact
+MODULES: MEA -> RPL
+SIGNATURE: load_profile_artifact(ref: ArtifactRef) -> tuple[DeviceProfile, ...] | Failure
+FIELDS: >>>
+fixed measured or declared profile artifacts and hashes, source and cost boundaries
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+Static/versioned artifact unless overridden; wall clock is provenance only, never a replay decision input.
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0004 EDG-REQ-0007 EDG-REQ-0027
+STATEMENT: >>>
+Provider MEA; consumer RPL. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-21
+TITLE: IF-21 Raw measurements
+STATUS: proposed
+KIND: data_artifact
+MODULES: MEA -> EVA
+SIGNATURE: summarise_measurements(raw: tuple[MeasurementRecord, ...], context: EvaluationContext) -> MeasurementReport | Failure
+FIELDS: >>>
+raw measurement artifact, per-run timing/memory/energy, failures, host, cold/warm and measurement configuration
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+development-host monotonic intervals; wall-clock metadata separate
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Reject malformed or mismatched input, retain reason and request/run identity; do not silently drop or substitute.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+forbidden
+<<<
+SOURCE: EDG-REQ-0004 EDG-REQ-0009 EDG-REQ-0022 EDG-REQ-0023 EDG-REQ-0027
+STATEMENT: >>>
+Provider MEA; consumer EVA. Provider supplies a retained artifact through the integration entry point; no implied live service call.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R01
+TITLE: IF-R01 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> SCH
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer SCH. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R02
+TITLE: IF-R02 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> PAR
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer PAR. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R03
+TITLE: IF-R03 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> DAT
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer DAT. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R04
+TITLE: IF-R04 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> INF
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer INF. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R05
+TITLE: IF-R05 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> DEC
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer DEC. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R06
+TITLE: IF-R06 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> EVA
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer EVA. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R07
+TITLE: IF-R07 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> MEA
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer MEA. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R08
+TITLE: IF-R08 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> POL
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer POL. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R09
+TITLE: IF-R09 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> RPL
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer RPL. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IF-R10
+TITLE: IF-R10 Record submission
+STATUS: proposed
+KIND: runtime_call
+MODULES: REC -> PLT
+SIGNATURE: submit_record(record: RunSubmission) -> RecordReceipt | Failure
+FIELDS: >>>
+record submission: revision, config hash, seed/applicability, host_type, device_id, raw artifact path/hash, analysis command, success/failure; response: validated record reference or explicit rejection
+Typed field expansion: EDGE-ARC-TYPES. Identity joins must be exact; no ordering-based joins.
+<<<
+TIME: >>>
+wall-clock provenance separate from monotonic measurement and replay-relative time
+Use EDGE-ARC-TIME; metadata/version interfaces have no decision clock. Runtime host probes use HostStamp; replay consumes ReplayStamp only.
+<<<
+FAILURE: >>>
+Missing required provenance rejects record/report acceptance; original raw failure retained.
+Reject invalid input with Failure(kind='reject'); explicit execution errors/timeouts are retained. Abstain is a DEC FindingRecord or POL terminal action, never a substitute for an infrastructure error. Discard applies only to retained stale results in RPL; downgrade/fallback is only the fixed ordered policy, never silent substitution.
+<<<
+LABELS: >>>
+references/hashes only; no label payload passed to runtime modules
+<<<
+SOURCE: EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0009
+STATEMENT: >>>
+Provider REC; consumer PLT. Consumer invokes provider through this contract.
+All named fields and their types, units and ranges are defined in EDGE-ARC-TYPES; clocks in EDGE-ARC-TIME. No interface accepts undeclared keys or reference-label payloads outside the EVA offline path.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-REC
+TITLE: REC applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: REC
+SOURCE: EDG-REQ-0003 EDG-REQ-0004 EDG-REQ-0007 EDG-REQ-0008 EDG-REQ-0009 EDG-REQ-0011 EDG-REQ-0019 EDG-REQ-0027
+STATEMENT: >>>
+EDG-REQ-0003: responsible REC (collaborating/applicable); Validate mandatory run metadata. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0004: responsible REC (collaborating/applicable); Retain raw latency/memory and supported measured energy, with timing boundary and repeat configuration. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0007: responsible REC (collaborating/applicable); Replay fixed artifacts deterministically; do not re-run inference. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible REC (primary); Validate provenance fields and raw artifact references. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0009: responsible REC (primary); Enforce host_type in run records. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible REC (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible REC (collaborating/applicable); Retain hashes and first-use evidence. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0027: responsible REC (collaborating/applicable); Retain model source, parameters and units. Evidence: record-validator fixtures, rejected records, retained raw artifact references. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-SCH
+TITLE: SCH applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: SCH
+SOURCE: EDG-REQ-0001 EDG-REQ-0002 EDG-REQ-0005 EDG-REQ-0008 EDG-REQ-0010 EDG-REQ-0011 EDG-REQ-0018
+STATEMENT: >>>
+EDG-REQ-0001: responsible SCH (collaborating/applicable); Produce valid tasks or retained rejection; retain raw outputs and per-field evaluation evidence. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0002: responsible SCH (collaborating/applicable); Produce image findings with runtime-only confidence/abstention and offline reference-based evaluation. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0005: responsible SCH (collaborating/applicable); Choose placement using only declared current inputs; compare on identical replay. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible SCH (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0010: responsible SCH (collaborating/applicable); Civil task vocabulary. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible SCH (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0018: responsible SCH (primary); Enforce four finding statuses, closed classes and source-pixel boxes. Evidence: schema fixtures and validation-error records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-PAR
+TITLE: PAR applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: PAR
+SOURCE: EDG-REQ-0001 EDG-REQ-0008 EDG-REQ-0010 EDG-REQ-0011
+STATEMENT: >>>
+EDG-REQ-0001: responsible PAR (primary); Produce valid tasks or retained rejection; retain raw outputs and per-field evaluation evidence. Evidence: synthetic instruction input/output and raw-output provenance. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible PAR (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: synthetic instruction input/output and raw-output provenance. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0010: responsible PAR (collaborating/applicable); Reject out-of-scope instructions. Evidence: synthetic instruction input/output and raw-output provenance. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible PAR (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: synthetic instruction input/output and raw-output provenance. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-DAT
+TITLE: DAT applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: DAT
+SOURCE: EDG-REQ-0008 EDG-REQ-0010 EDG-REQ-0011 EDG-REQ-0015 EDG-REQ-0019 EDG-REQ-0028 EDG-REQ-0029 EDG-REQ-0030 EDG-REQ-0033
+STATEMENT: >>>
+EDG-REQ-0008: responsible DAT (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0010: responsible DAT (collaborating/applicable); Inspect source, licence and civil classes. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible DAT (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0015: responsible DAT (primary); Record source/licence and grouping; unknown relations cannot establish heldout independence. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible DAT (collaborating/applicable); Provide isolated split manifests. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0028: responsible DAT (primary); Require source URL/version/licence text hash for every dataset. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0029: responsible DAT (primary); Check group leakage before evaluation; exclude unassignable items from heldout. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0030: responsible DAT (primary); Separate positive/negative/unlabelled/undeterminable evidence, preserving reliable positive scoring. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0033: responsible DAT (collaborating/applicable); Keep fitting/selection in training-development, predeclared calibration in calibration, test untouched. Evidence: synthetic inventories/group fixtures for S4; licensed real package/split/leakage artifacts only at separately authorised S5. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-INF
+TITLE: INF applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: INF
+SOURCE: EDG-REQ-0002 EDG-REQ-0003 EDG-REQ-0008 EDG-REQ-0010 EDG-REQ-0011 EDG-REQ-0016 EDG-REQ-0019
+STATEMENT: >>>
+EDG-REQ-0002: responsible INF (collaborating/applicable); Produce image findings with runtime-only confidence/abstention and offline reference-based evaluation. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0003: responsible INF (primary); Pin model, precision and library versions; execute on declared development GPU. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible INF (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0010: responsible INF (collaborating/applicable); Use only authorised civil or synthetic inputs. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible INF (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0016: responsible INF (collaborating/applicable); Implement fixed-model and visual-classifier execution adapters. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible INF (collaborating/applicable); Pin model and prompts before test. Evidence: fixed synthetic input/model metadata, raw output and runtime input-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-DEC
+TITLE: DEC applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: DEC
+SOURCE: EDG-REQ-0002 EDG-REQ-0008 EDG-REQ-0011 EDG-REQ-0013 EDG-REQ-0016 EDG-REQ-0018 EDG-REQ-0019
+STATEMENT: >>>
+EDG-REQ-0002: responsible DEC (primary); Produce image findings with runtime-only confidence/abstention and offline reference-based evaluation. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible DEC (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible DEC (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0013: responsible DEC (collaborating/applicable); Report accepted/submitted coverage and errors/accepted-scoreable risk, with explicit N/A and separate failure categories. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0016: responsible DEC (collaborating/applicable); Implement threshold and rule-verification baselines. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0018: responsible DEC (collaborating/applicable); Enforce four finding statuses, closed classes and source-pixel boxes. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible DEC (collaborating/applicable); Consume frozen thresholds, no test-time fitting. Evidence: synthetic raw outputs, coordinate inverse cases and denied-label-access audit. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-EVA
+TITLE: EVA applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: EVA
+SOURCE: EDG-REQ-0001 EDG-REQ-0008 EDG-REQ-0009 EDG-REQ-0010 EDG-REQ-0011 EDG-REQ-0012 EDG-REQ-0013 EDG-REQ-0014 EDG-REQ-0015 EDG-REQ-0016 EDG-REQ-0017 EDG-REQ-0019 EDG-REQ-0022 EDG-REQ-0027 EDG-REQ-0030 EDG-REQ-0031 EDG-REQ-0032 EDG-REQ-0033
+STATEMENT: >>>
+EDG-REQ-0001: responsible EVA (collaborating/applicable); Produce valid tasks or retained rejection; retain raw outputs and per-field evaluation evidence. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible EVA (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0009: responsible EVA (collaborating/applicable); Preserve development-host labels in every result presentation; no board or flight claim. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0010: responsible EVA (collaborating/applicable); Keep claims within civil scope. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible EVA (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0012: responsible EVA (collaborating/applicable); Report replay scope, not live-link, flight or hardware-in-loop evidence. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0013: responsible EVA (primary); Report accepted/submitted coverage and errors/accepted-scoreable risk, with explicit N/A and separate failure categories. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0014: responsible EVA (primary); Account all costs; report deadline misses and conditional completed tail latency. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0015: responsible EVA (collaborating/applicable); Record source/licence and grouping; unknown relations cannot establish heldout independence. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0016: responsible EVA (primary); Own comparison protocol, equal visible information and cost rules. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0017: responsible EVA (primary); Retain negative findings and their conditions. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible EVA (primary); Fix evaluation and calibration protocol before test access. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0022: responsible EVA (collaborating/applicable); Define timing boundaries; do not treat timeout as completion. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0027: responsible EVA (collaborating/applicable); Label each modelled energy value; never present as measured. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0030: responsible EVA (collaborating/applicable); Separate positive/negative/unlabelled/undeterminable evidence, preserving reliable positive scoring. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0031: responsible EVA (collaborating/applicable); Log complete per-request cost categories and retain failed/discarded work. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0032: responsible EVA (primary); Assign each request exactly one completion outcome and reconstruct total denominator. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0033: responsible EVA (primary); Keep fitting/selection in training-development, predeclared calibration in calibration, test untouched. Evidence: synthetic reference/adjudication cases, per-item count reconstruction and report-label inspection. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-MEA
+TITLE: MEA applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: MEA
+SOURCE: EDG-REQ-0004 EDG-REQ-0005 EDG-REQ-0008 EDG-REQ-0009 EDG-REQ-0011 EDG-REQ-0021 EDG-REQ-0022 EDG-REQ-0023 EDG-REQ-0027
+STATEMENT: >>>
+EDG-REQ-0004: responsible MEA (primary); Retain raw latency/memory and supported measured energy, with timing boundary and repeat configuration. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0005: responsible MEA (collaborating/applicable); Choose placement using only declared current inputs; compare on identical replay. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible MEA (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0009: responsible MEA (collaborating/applicable); Attach identity to each measurement. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible MEA (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0021: responsible MEA (collaborating/applicable); Timestamp and source every input; exclude future information and charge quality signals. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0022: responsible MEA (primary); Define timing boundaries; do not treat timeout as completion. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0023: responsible MEA (primary); Separate cold/warm states and retain available clock/power-mode evidence. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0027: responsible MEA (collaborating/applicable); Separate measured inputs from estimates. Evidence: development-host raw event/clock/resource records with declared unsupported signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-POL
+TITLE: POL applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: POL
+SOURCE: EDG-REQ-0005 EDG-REQ-0006 EDG-REQ-0008 EDG-REQ-0011 EDG-REQ-0012 EDG-REQ-0016 EDG-REQ-0019 EDG-REQ-0020 EDG-REQ-0021 EDG-REQ-0025
+STATEMENT: >>>
+EDG-REQ-0005: responsible POL (primary); Choose placement using only declared current inputs; compare on identical replay. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0006: responsible POL (collaborating/applicable); Execute fixed fallback or terminal reject/abstain; charge all attempts and bound retries. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible POL (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible POL (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0012: responsible POL (collaborating/applicable); Pure function of replay-provided inputs. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0016: responsible POL (collaborating/applicable); Implement placement baselines. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0019: responsible POL (collaborating/applicable); Pin baseline parameters before test. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0020: responsible POL (primary); Pure policy with no hidden history or randomness. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0021: responsible POL (primary); Timestamp and source every input; exclude future information and charge quality signals. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0025: responsible POL (collaborating/applicable); Select first feasible ordered fallback, retaining skipped reasons. Evidence: fixed pure input/output fixtures including reordered independent requests and forbidden future signals. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-RPL
+TITLE: RPL applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: RPL
+SOURCE: EDG-REQ-0006 EDG-REQ-0007 EDG-REQ-0008 EDG-REQ-0011 EDG-REQ-0012 EDG-REQ-0014 EDG-REQ-0016 EDG-REQ-0021 EDG-REQ-0022 EDG-REQ-0024 EDG-REQ-0025 EDG-REQ-0026 EDG-REQ-0027 EDG-REQ-0031 EDG-REQ-0032
+STATEMENT: >>>
+EDG-REQ-0006: responsible RPL (primary); Execute fixed fallback or terminal reject/abstain; charge all attempts and bound retries. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0007: responsible RPL (primary); Replay fixed artifacts deterministically; do not re-run inference. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible RPL (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible RPL (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0012: responsible RPL (primary); Consume only fixed replay inputs; never execute GPU inference. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0014: responsible RPL (collaborating/applicable); Account all costs; report deadline misses and conditional completed tail latency. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0016: responsible RPL (collaborating/applicable); Execute all placement baselines against identical fixed replay inputs. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0021: responsible RPL (collaborating/applicable); Timestamp and source every input; exclude future information and charge quality signals. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0022: responsible RPL (collaborating/applicable); Define timing boundaries; do not treat timeout as completion. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0024: responsible RPL (primary); Use capture-to-decision age; equality to freshness limit is stale. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0025: responsible RPL (primary); Select first feasible ordered fallback, retaining skipped reasons. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0026: responsible RPL (primary); Pin seeded trace generation model and hashes; reject mismatches. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0027: responsible RPL (primary); Own modelled energy calculation and parameters. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0031: responsible RPL (primary); Log complete per-request cost categories and retain failed/discarded work. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0032: responsible RPL (collaborating/applicable); Assign each request exactly one completion outcome and reconstruct total denominator. Evidence: fixed synthetic traces, event/outcome/cost logs and two-run canonical hash comparison. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-PLT
+TITLE: PLT applicable obligations
+STATUS: proposed
+KIND: obligation table
+MODULES: PLT
+SOURCE: EDG-REQ-0003 EDG-REQ-0004 EDG-REQ-0006 EDG-REQ-0008 EDG-REQ-0009 EDG-REQ-0011 EDG-REQ-0023
+STATEMENT: >>>
+EDG-REQ-0003: responsible PLT (collaborating/applicable); Supply actual device identity; unavailable readings remain unavailable. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0004: responsible PLT (collaborating/applicable); Retain raw latency/memory and supported measured energy, with timing boundary and repeat configuration. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0006: responsible PLT (collaborating/applicable); Execute fixed fallback or terminal reject/abstain; charge all attempts and bound retries. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0008: responsible PLT (collaborating/applicable); Enforce complete provenance and reject deficient result records. Every result producer supplies revision, configuration, seed or explicit non-applicability, host, raw artifact and analysis command; no omitted failure records. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0009: responsible PLT (collaborating/applicable); Provide host/device identity. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0011: responsible PLT (collaborating/applicable); Keep model/profiling acceptance independent of B0 and test without B0 installed. No B0 control dependency for EDGE acceptance; no dependency on B0 results. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+EDG-REQ-0023: responsible PLT (collaborating/applicable); Separate cold/warm states and retain available clock/power-mode evidence. Evidence: development-host identity/readout fixtures and unsupported-capability records. Check stage: S2 design review; S3 migration compatibility where code exists; S4 module tests; S5 integrated evidence. None executed by this document.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-OB-XC
+TITLE: Owner integration accountability for XC
+STATUS: proposed
+KIND: obligation table
+MODULES: XC / Owner
+SOURCE: EDG-REQ-0010 EDG-REQ-0011
+STATEMENT: >>>
+XC is a cross-cutting classification, not a functional module. Responsible integration person: Owner. PA may organise checks and supply evidence but cannot self-approve architecture or scope expansion.
+0010: inspect synthetic civil vocabulary/fixtures at S4 and licensed data/application use at S5; evidence is scope inspection plus out-of-scope rejection records (IT-01).
+0011: run model and measurement tests in an environment without B0 control modules installed at S5; record environment, dependency inventory, exact commands, outputs and raw artifacts (IT-02). Merely proving imports do not mention B0 is insufficient.
+Owner reviews these evidence items before integrated acceptance. Tests are planned, not executed.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-01
+TITLE: IT-01 Civil scope
+STATUS: proposed
+KIND: integration test plan
+MODULES: PAR SCH DAT EVA
+SOURCE: IF-01 IF-04 EDG-REQ-0010
+STATEMENT: >>>
+Responsible modules: PAR SCH DAT EVA. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic civil and out-of-scope instructions/vocabulary/source manifests.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Civil inputs conform; out-of-scope rejected and retained; no disallowed classes; Owner inspects scope.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-02
+TITLE: IT-02 No B0 installation
+STATUS: proposed
+KIND: integration test plan
+MODULES: INF MEA PLT REC
+SOURCE: IF-06 IF-07 IF-08 EDG-REQ-0011
+STATEMENT: >>>
+Responsible modules: INF MEA PLT REC. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Fixed synthetic image/task and isolated environment with B0 absent.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Model and profiling tests complete without B0 imports/install; environment and commands retained; no model performance claim.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-03
+TITLE: IT-03 Runtime label isolation
+STATUS: proposed
+KIND: integration test plan
+MODULES: INF DEC EVA DAT
+SOURCE: IF-05 IF-09 IF-10 IF-18 EDG-REQ-0002 0019
+STATEMENT: >>>
+Responsible modules: INF DEC EVA DAT. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic predictions/config and separately guarded reference store.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+DEC and INF denied reference-store access; supplying reference fields to runtime input is rejected; only offline EVA reads references.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-04
+TITLE: IT-04 Offline replay
+STATUS: proposed
+KIND: integration test plan
+MODULES: RPL PLT POL
+SOURCE: IF-13 IF-14 IF-19 IF-20 EDG-REQ-0007 0012
+STATEMENT: >>>
+Responsible modules: RPL PLT POL. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Pinned synthetic task/trace/profile/output bundle; live network/battery/GPU entry points replaced by fail-on-access guards.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Replay completes only from fixed artifacts; zero live link, battery or inference calls; missing fixed input rejects rather than live fallback.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-05
+TITLE: IT-05 Deterministic replay
+STATUS: proposed
+KIND: integration test plan
+MODULES: RPL POL REC
+SOURCE: IF-13 IF-15 EDG-REQ-0007 0020 0026
+STATEMENT: >>>
+Responsible modules: RPL POL REC. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Same synthetic fixed bundle and seed twice, separately recorded wall times/run IDs.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Canonical event hashes equal; only wall_clock_s/run_id removed, event order/decision fields retained; trace hash mismatch rejected.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-06
+TITLE: IT-06 Timeout and late completion
+STATUS: proposed
+KIND: integration test plan
+MODULES: RPL EVA
+SOURCE: IF-15 EDG-REQ-0022 0024 0032
+STATEMENT: >>>
+Responsible modules: RPL EVA. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic on-time, late-after-timeout, never-completed and boundary events using approved symbolic clock configuration.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Exactly one final outcome per submitted request; timeout remains event not completion; no double-count late-after-timeout; not_completed completion None; stale results discarded/costed.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-07
+TITLE: IT-07 Required record fields
+STATUS: proposed
+KIND: integration test plan
+MODULES: REC INF MEA EVA
+SOURCE: IF-R01 through IF-R10 EDG-REQ-0003 0008 0009
+STATEMENT: >>>
+Responsible modules: REC INF MEA EVA. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic complete and one-field-missing records for inference and non-inference kinds.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Valid records accepted; missing mandatory fields rejected with reason; development-host enforced; nonapplicable fields explicit rather than fabricated.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-08
+TITLE: IT-08 Schema and coordinates
+STATUS: proposed
+KIND: integration test plan
+MODULES: SCH INF DEC
+SOURCE: IF-01 IF-02 IF-03 IF-05 IF-16 IF-17 EDG-REQ-0018
+STATEMENT: >>>
+Responsible modules: SCH INF DEC. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic image dimensions, declared invertible transforms, four statuses and malformed raw outputs.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Source coordinate roundtrip obeys declared precision convention; invalid bounds/nonfinite confidence/unknown class rejected, no silent clipping; failures retained.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-09
+TITLE: IT-09 Offline scoring denominators
+STATUS: proposed
+KIND: integration test plan
+MODULES: EVA DAT DEC
+SOURCE: IF-09 IF-10 EDG-REQ-0013 0030
+STATEMENT: >>>
+Responsible modules: EVA DAT DEC. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic positive, reliable absence, unlabelled, mixed-scoreability and all-abstain examples.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Expected fact matches follow Owner-selected rule; positive misses remain scoreable; unknown prediction not automatically FP; accepted-scoreable zero yields N/A; exact denominators reconstruct.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-10
+TITLE: IT-10 Leakage and calibration isolation
+STATUS: proposed
+KIND: integration test plan
+MODULES: DAT EVA INF DEC POL
+SOURCE: IF-10 IF-18 EDG-REQ-0015 0019 0028 0029 0033
+STATEMENT: >>>
+Responsible modules: DAT EVA INF DEC POL. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic split manifests with duplicate group, missing licence, wrong hash and frozen/unfrozen parameters.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Bad manifest blocks evaluation; no test IDs in selection/calibration; unresolved ScoreProtocol rejects; v2 never used by this test.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-11
+TITLE: IT-11 Temporal policy inputs
+STATUS: proposed
+KIND: integration test plan
+MODULES: POL RPL
+SOURCE: IF-11 IF-12 IF-13 IF-19 EDG-REQ-0021 0024 0025
+STATEMENT: >>>
+Responsible modules: POL RPL. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic current/stale/future/cross-clock inputs, fixed ordered fallback and no-feasible case.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+POL sees only current event's explicit input; future/stale input not silently used; first feasible fallback or terminal action; no hidden state.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-12
+TITLE: IT-12 Cost and energy provenance
+STATUS: proposed
+KIND: integration test plan
+MODULES: RPL MEA EVA REC
+SOURCE: IF-15 IF-20 IF-21 EDG-REQ-0014 0027 0031
+STATEMENT: >>>
+Responsible modules: RPL MEA EVA REC. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic retries, failed uploads, discarded results, quality calls and measured/modelled/unknown energy.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+All incurred categories logged once by entry ID; missing field blocks acceptance; every modelled value labelled; no unavailable energy converted to zero.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-13
+TITLE: IT-13 Host measurement boundary
+STATUS: proposed
+KIND: integration test plan
+MODULES: MEA PLT INF EVA
+SOURCE: IF-06 IF-07 IF-08 IF-21 EDG-REQ-0004 0009 0022 0023
+STATEMENT: >>>
+Responsible modules: MEA PLT INF EVA. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic host events/readouts plus separately authorised fixed smoke artifacts.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Cold/warm separated; clock/boundary/network inclusion clear; unsupported readings explicit; completed duration from actual start/end; no timeout completion substitution; report development-host.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-14
+TITLE: IT-14 Clock mapping and ties
+STATUS: proposed
+KIND: integration test plan
+MODULES: RPL POL DAT
+SOURCE: IF-13 IF-14 IF-19 EDGE-ARC-TIME EDG-REQ-0007 0024 0026
+STATEMENT: >>>
+Responsible modules: RPL POL DAT. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic rational source times, mismatched clock IDs, nonrepresentable times and same-tick arrival/timeout.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+Exact affine mapping produces integer ticks or rejection; no implicit rounding; fixed Owner-approved tie order reproducible; no arithmetic across unrelated clocks.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-IT-15
+TITLE: IT-15 Baseline fairness and negative reporting
+STATUS: proposed
+KIND: integration test plan
+MODULES: EVA INF DEC POL RPL
+SOURCE: IF-09 IF-13 IF-15 IF-18 EDG-REQ-0016 0017 0033
+STATEMENT: >>>
+Responsible modules: EVA INF DEC POL RPL. Integration accountability: Owner; execution may be delegated after design approval.
+Input type: Synthetic equal-information baseline configurations and intentionally non-improving outcomes.
+Stage: S4 fixture/specification review, S5 authorised execution. S3 migrated-code tests are compatibility checks only.
+Execution status: not run. No live data or evaluation dataset is authorised by this test list.
+<<<
+ACCEPTANCE: >>>
+All declared arms receive permitted inputs and full costs; negative outcome retained; no method ranking or real performance inferred from fixtures.
+<<<
+
+[REQUIREMENT]
+UID: EDGE-ARC-DECISIONS
+TITLE: Owner decisions before S3 and later evaluation
+STATUS: proposed
+KIND: open decisions
+SOURCE: EDG-REQ-0019 0021 0022 0024 0025 0033
+STATEMENT: >>>
+D-TIME-01: positive rational replay tick resolution and any allowed source-clock mapping constants. No numeric resolution selected.
+D-TIME-02: deadline equality convention and same-tick event priorities (arrival/timeout/decision ordering). Freshness equality already fixed as stale by 0024 and is not reopened.
+D-TIME-03: exact end-to-end request completion boundary, observation horizon and handling of events beyond horizon; not-completed remains without completion timestamp.
+D-SCORE-01: select scoring family/geometry/matching algorithm and duplicate/tie handling.
+D-SCORE-02: item-level aggregation and partial-scoreability/no_finding evidence policy.
+D-CAL-01: calibration method/objective and overlap/abstention/confidence parameter values. All unresolved; determine numerical scoring parameters only on calibration under approved procedure, never test.
+D-BUDGET-01: per-class freshness/time/energy budgets and fixed retry counts. No values selected. These are run design choices, not additions to edge.sdoc.
+D-SCHEMA-01: approve candidate typed record evolution (kind-specific optional model/seed fields, provenance wrappers) for S3 implementation; no current code changed.
+D-BASELINE-01: approve candidate architecture and whether/when to freeze requirements and architecture together. No tags created.
+D-DATA-01: v2 is not read or scored here. Future independent v3 or format-only use requires a separate decision; no new dataset is authored here.
+XC integration accountability is Owner as already decided; confirm in architecture review. No requirement text change is currently necessary to express these candidate contracts. If review identifies one, stop migration and present a separate change proposal.
+This draft can be reviewed with explicit open choices; unresolved timing/scoring decisions prevent a claim of S3 execution readiness. No automatic migration on document export success.
+<<<

@@ -8,6 +8,7 @@ used for requirements, status and traceability.
 |---|---|
 | [b0.sdoc](b0.sdoc) | B0-REQ-0001 to B0-REQ-0030: attitude estimation and cascaded control |
 | [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to EDG-REQ-0033: distributed edge AI for bridge inspection (all proposed, not frozen) |
+| [edge_architecture.sdoc](edge_architecture.sdoc) | Proposed S2 module/interface architecture; Owner decisions pending, no migration or freeze authorised |
 
 ## Field definitions
 
