@@ -3,6 +3,20 @@ import time
 import numpy as np
 
 
+def letterbox_tensor(frame, ih, iw):
+    """Shared inference/calibration transform from decoded BGR pixels."""
+    import cv2
+    h, w = frame.shape[:2]
+    scale = min(iw / w, ih / h)
+    nw, nh = round(w * scale), round(h * scale)
+    resized = cv2.resize(frame, (nw, nh))
+    left, top = (iw - nw) // 2, (ih - nh) // 2
+    canvas = np.full((ih, iw, 3), 114, dtype=np.uint8)
+    canvas[top:top+nh, left:left+nw] = resized
+    tensor = np.ascontiguousarray(canvas[:, :, ::-1].transpose(2, 0, 1)[None], dtype=np.float32) / 255.0
+    return tensor, scale, left, top
+
+
 class EdgeDefectDetector:
     def __init__(self, model, provider='cpu', threads=4, backend='onnx', confidence=0.25, iou=0.45):
         if provider not in ('cpu', 'cuda') or threads < 1:
@@ -55,13 +69,7 @@ class EdgeDefectDetector:
         if len(shape) != 4 or not isinstance(shape[2], int) or not isinstance(shape[3], int):
             raise ValueError('ONNX input must have fixed NCHW height and width')
         ih, iw = shape[2:4]
-        scale = min(iw / w, ih / h)
-        nw, nh = round(w * scale), round(h * scale)
-        resized = cv2.resize(frame, (nw, nh))
-        left, top = (iw - nw) // 2, (ih - nh) // 2
-        canvas = np.full((ih, iw, 3), 114, dtype=np.uint8)
-        canvas[top:top+nh, left:left+nw] = resized
-        tensor = np.ascontiguousarray(canvas[:, :, ::-1].transpose(2, 0, 1)[None], dtype=np.float32) / 255.0
+        tensor, scale, left, top = letterbox_tensor(frame, ih, iw)
         t1 = time.perf_counter_ns()
         outputs = self.session.run(None, {self.input.name: tensor})
         t2 = time.perf_counter_ns()
