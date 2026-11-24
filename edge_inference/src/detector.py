@@ -21,7 +21,10 @@ class EdgeDefectDetector:
             options.intra_op_num_threads = threads
             if provider == 'cpu':
                 options.inter_op_num_threads = 1
-            self.session = ort.InferenceSession(str(model), sess_options=options, providers=[name])
+            # CUDA EP defaults to reduced-mantissa TF32 on Ampere+. Keep the
+            # development FP32 baseline explicit (ORT >= 1.18).
+            providers = [(name, {'use_tf32': 0})] if provider == 'cuda' else [name]
+            self.session = ort.InferenceSession(str(model), sess_options=options, providers=providers)
             if self.session.get_providers()[0] != name:
                 raise RuntimeError('requested provider was not selected')
             self.input = self.session.get_inputs()[0]
@@ -81,7 +84,9 @@ class EdgeDefectDetector:
         detections = []
         for c in np.unique(cls):
             indices = np.flatnonzero(cls == c)
-            selected = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [float(scores[i]) for i in indices], self.confidence, self.iou)
+            # Scores already passed the inclusive >= confidence filter. Avoid
+            # OpenCV's second, strict > score threshold dropping equality at .15.
+            selected = cv2.dnn.NMSBoxes([boxes[i] for i in indices], [float(scores[i]) for i in indices], 0.0, self.iou)
             for j in np.asarray(selected).reshape(-1):
                 i = indices[j]; x, y, bw, bh = boxes[i]
                 if bw > 0 and bh > 0:

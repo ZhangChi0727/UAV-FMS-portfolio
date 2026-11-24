@@ -74,6 +74,34 @@ def test_cpu_thread_options(monkeypatch):
     assert captured['options'].inter_op_num_threads == 1
 
 
+def test_cuda_fp32_disables_tf32(monkeypatch):
+    from types import SimpleNamespace
+    captured = {}
+    def session(model, sess_options, providers):
+        captured['providers'] = providers
+        return SimpleNamespace(get_providers=lambda: ['CUDAExecutionProvider'],
+                               get_inputs=lambda: [SimpleNamespace(type='tensor(float)')])
+    monkeypatch.setitem(sys.modules, 'onnxruntime', SimpleNamespace(
+        preload_dlls=lambda: None, get_available_providers=lambda: ['CUDAExecutionProvider'],
+        SessionOptions=SimpleNamespace, InferenceSession=session))
+    EdgeDefectDetector('unused.onnx', provider='cuda')
+    assert captured['providers'] == [('CUDAExecutionProvider', {'use_tf32': 0})]
+
+
+def test_onnx_retains_score_at_gate_floor():
+    from types import SimpleNamespace
+    raw = np.zeros((1, 5, 10), dtype=np.float32)
+    raw[0, :, 0] = [4,4,4,4,.15]
+    detector = EdgeDefectDetector.__new__(EdgeDefectDetector)
+    detector.backend = 'onnx'
+    detector.confidence, detector.iou = float(np.float32(.15)), .45
+    detector.input = SimpleNamespace(shape=[1,3,8,8], name='images')
+    detector.session = SimpleNamespace(run=lambda *a: [raw])
+    result = detector.infer(np.zeros((8,8,3), dtype=np.uint8))
+    assert len(result['detections']) == 1
+    assert result['detections'][0]['confidence'] == detector.confidence
+
+
 def test_ultralytics_adapter_does_not_import_cv2(monkeypatch):
     from types import SimpleNamespace
     import builtins

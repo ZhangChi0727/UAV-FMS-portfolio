@@ -7,6 +7,9 @@ psutil==7.2.2
 opencv-python-headless==4.11.0.86
 onnxruntime-gpu==1.21.1
 onnx==1.23.2
+onnxslim==0.1.82
+# Compatible with torch 2.6; newer onnxslim requires incompatible SymPy.
+sympy==1.13.1
 matplotlib==3.11.2
 pyyaml==6.0.4
 # Official headless distribution exposes the same `ultralytics` import.
