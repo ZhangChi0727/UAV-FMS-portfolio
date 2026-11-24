@@ -268,6 +268,8 @@ def prepare(raw, output, exclude_unannotated=False, exclude_ambiguous=False,
     annotations = {n: p for n, p in annotations.items() if n not in ambiguous and n not in dimension_mismatches}
     groups = {k: [n for n in names if n in annotations] for k, names in groups.items()}
     groups = {k: names for k, names in groups.items() if names}
+    # [TRACEABILITY] EDG-REQ-0035: split admitted image groups after annotation
+    # and geometry checks; missing XML is not evidence of a negative image.
     splits = split_groups(groups)
     manifest = {'seed': 42, 'classes': CLASSES, 'raw': str(raw.resolve()),
                 'inclusion_note': f'{len(annotations):,} annotated images included; {len(missing)} images without XML excluded (unannotated for object detection, not treated as verified negatives)',

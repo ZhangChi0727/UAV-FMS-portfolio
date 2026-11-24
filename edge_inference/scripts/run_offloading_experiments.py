@@ -70,6 +70,8 @@ def main():
         if (len(inp.frames)!=104 or sum(len(v.boxes) for v in inp.references.values())!=864
                 or any(v.complete or v.has_ignore_regions for v in inp.references.values())):
             raise ValueError('unexpected reference inventory')
+        # [TRACEABILITY] offload_sim_spec.md: replay cached inputs; incomplete
+        # references permit separate descriptive scores, not full-image accuracy.
         grid = sim.sweep(inp)
         cache = {}
         for p in points(grid):

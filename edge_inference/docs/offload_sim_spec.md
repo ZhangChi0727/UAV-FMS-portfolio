@@ -2,9 +2,10 @@
 
 ## 1. Purpose and interpretation
 
-This document specifies the planned Day 3-4 `src/offload_sim.py` interface and
-analytical model; it does not implement or execute the simulator. It is a design
-input, not an additional requirements, verification or status authority:
+This document specifies the interface and analytical model implemented in
+[`src/offload_sim.py`](../src/offload_sim.py). The [Day 3–4 replay log](../logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md)
+records the results obtained from cached CODEBRIM traces. This specification
+is not an additional requirements, verification or status authority:
 `requirements/*.sdoc` remains the sole systems-engineering source.
 
 All system latency and energy parameters are used in a **parametric analytical

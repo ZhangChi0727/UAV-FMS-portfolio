@@ -77,6 +77,8 @@ def figures(data):
                     else:
                         ax.scatter(x,y,facecolors=color if policy=='all_edge' else 'none',
                             edgecolors=color,marker=mark,s=20,linewidths=.75)
+            # [TRACEABILITY] EDG-REQ-0041: draw the nondominated subset of these
+            # cached latency/score pairs; the line is not a new operating point.
             fx,fy=zip(*frontier(xy))
             ax.plot(fx,fy,color='#333333',lw=.85,ls='--',zorder=0)
             ax.set_xscale('log')

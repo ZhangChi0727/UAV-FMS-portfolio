@@ -2,8 +2,8 @@
 application/
 edge_inference/data/*
 !edge_inference/data/.gitkeep
-edge_inference/models/*.pt
-edge_inference/models/*.onnx
+*.pt
+*.onnx
 edge_inference/models/*.engine
 edge_inference/docs/*.json
 edge_inference/runs/

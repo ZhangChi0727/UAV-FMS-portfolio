@@ -44,6 +44,11 @@ The remaining **1,040** geometrically consistent images (EXIF orientation metada
 - **Static QDQ INT8 Quantization (`INT8`, `Pruned-INT8`):** Post-training static `MinMax` QDQ quantization (`QUInt8` activations, per-channel `QInt8` weights on `Conv` operators) calibrated strictly on 100 deterministic `train` images.
 - **Scope & Evaluation Disclaimers:** Latency traces (`CPU4` intra-op 4 threads vs. `RTX 4060` CUDA reference) are **development-host** measurements, not embedded ARM/Jetson or flight telemetry. Because CODEBRIM XML annotations do not guarantee exhaustive whole-image negative coverage (`complete=false`), accuracy metrics below are reported explicitly as **annotation-relative descriptive metrics** (`greedy-101point-v1`).
 
+In `offload-sim-codebrim-results.json`, `accuracy.available` is intentionally
+`false` when reference coverage is incomplete (`complete=false`). Full-frame
+replay records store the descriptive scores separately under `annotation_relative`.
+The ROI sensitivity changes payload size only and has no crop accuracy score.
+
 ---
 
 ## 3. Quantitative Results and Systems Analysis
@@ -81,7 +86,7 @@ The remaining **1,040** geometrically consistent images (EXIF orientation metada
 
 **Key Systems Insights (see Figures `01-accuracy-latency-frontiers.pdf` and `02-energy-and-byte-savings.pdf`):**
 1. **Why Full-Image Binary Offloading Bottlenecks on High-Resolution Inspection:** Although `CGAO (τ=0.35)` restores `crack` recall from `0.0902` back to the `0.1373` cloud baseline, the admitted test images average 5.31 MB of encoded payload and 8.3 XML class-box rows per image (not necessarily distinct or overlapping defects). Across the four variants, 81.7%–88.5% of frames contain at least one uncertain candidate in $[0.15, 0.35)$, causing full-payload serialization to dominate latency (mean end-to-end latency of 1.84–2.03 s across the four variants at 20 Mbps; Pruned-FP32 alone takes 1,998.8 ms versus 81.2 ms locally).
-2. **ROI Cropping Sensitivity ($\alpha_{\text{roi}} = 0.35$):** Under a communication-only sensitivity sweep that scales transmitted bytes to 35% without encoding or scoring any crops, `Pruned-FP32` ($\tau = 0.35$) increases byte-weighted bandwidth savings $\eta_{\text{bw}}$ from **11.0% to 68.8%** (saving **319.75 MB across 104 frames**). The modeled **TX energy saving per submitted frame** is **3.69 J** at 20 Mbps or **73.79 J** at 1 Mbps.
+2. **ROI Cropping Sensitivity ($\alpha_{\text{roi}} = 0.35$):** Scaling the modeled payload to 35%, without encoding or scoring crops, increases byte-weighted bandwidth savings for `Pruned-FP32` ($\tau = 0.35$) from **11.0% to 68.8%**, saving **319.75 MB across the 92 offloaded frames**. The modeled TX energy saving averaged across **all 104 frames** is **3.69 J** at 20 Mbps and **73.79 J** at 1 Mbps (or **4.17 J** and **83.41 J per offloaded frame**, respectively).
 3. **False-Negative Blind Spot of Confidence Banding:** Frames with zero local detections above $\tau_{\text{low}} = 0.15$ are accepted locally without offloading, so this gate cannot request a second opinion for a missed crack on such a frame.
 
 ---
@@ -94,4 +99,4 @@ The remaining **1,040** geometrically consistent images (EXIF orientation metada
 
 ## Evidence and reproduction
 
-See the [simulator specification](offload_sim_spec.md), [Day 1 dataset audit](../logs/2026-11-24_day1_yolov8n_fp32_baseline.md), [Day 2–3 compression profiles](../logs/2026-11-24_day2_3_pruning_int8_compression.md), and [Day 3–4 replay tables and artifact hashes](../logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md). With the cached replay JSON available, run `python -m edge_inference.scripts.plot_offloading_results figures` from the repository root to generate the two figures locally without inference or simulation. The footer-only correction does not change the source data; the original log records the pre-correction Figure 1 hashes.
+See the [simulator specification](offload_sim_spec.md), [Day 1 dataset audit](../logs/2026-11-24_day1_yolov8n_fp32_baseline.md), [Day 2–3 compression profiles](../logs/2026-11-24_day2_3_pruning_int8_compression.md), and [Day 3–4 replay tables and artifact hashes](../logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md). With the cached replay JSON available, run `python -m edge_inference.scripts.plot_offloading_results figures` from the repository root to generate the two figures locally without inference or simulation. The Day 3–4 log retains the original Figure 1 hashes; its [Correction Addendum](../logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md#correction-addendum--2026-11-24) records the PDF, PNG and SVG hashes after the footer-only correction. The replay data did not change.

@@ -264,7 +264,7 @@ RELATIONS:
 UID: EDG-REQ-0034
 TITLE: Standardized detector interface
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The detector shall expose an infer(frame) interface independent of ROS 2 and flight-control middleware.
 <<<
@@ -274,13 +274,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 A synthetic input is checked against the declared output schema without middleware dependencies.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/src/detector.py; edge_inference/tests/test_detector_scaffold.py (synthetic frames and adapter output).
 
 [REQUIREMENT]
 UID: EDG-REQ-0035
 TITLE: Lightweight detector baseline
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The system shall establish a lightweight bridge-defect detector baseline using YOLOv8n or YOLO11n and an appropriately licensed public concrete-defect dataset.
 <<<
@@ -290,13 +290,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Report model, dataset version, licence, split, and per-class detection metrics with retained raw outputs.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/scripts/train_baseline.py; edge_inference/scripts/prepare_codebrim.py; edge_inference/tests/test_prepare_codebrim.py; edge_inference/logs/2026-11-24_day1_yolov8n_fp32_baseline.md (split and model); Day 3-4 per-class scores are annotation-relative.
 
 [REQUIREMENT]
 UID: EDG-REQ-0036
 TITLE: Structured pruning
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The system shall provide a structured channel pruning pipeline with configurable sparsity ratios.
 <<<
@@ -306,13 +306,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record the pruning configuration, model identity and resulting architecture; verify supported models.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/scripts/compress_pruning.py; edge_inference/tests/test_compression_pipeline.py (test_c2f_slim_is_physical_and_trainable). Implemented configuration: two-thirds target width rounded to multiples of four; other ratios are not exposed as a run setting.
 
 [REQUIREMENT]
 UID: EDG-REQ-0037
 TITLE: ONNX and static INT8 quantization
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The system shall export supported models to ONNX and support static INT8 post-training quantization using a declared calibration set.
 <<<
@@ -322,13 +322,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record calibration provenance and export configuration; compare outputs on fixed inputs and retain failures.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/scripts/export_fp32_trace.py; edge_inference/scripts/quantize_int8.py; edge_inference/tests/test_compression_pipeline.py (train-only calibration membership and static QDQ round trip).
 
 [REQUIREMENT]
 UID: EDG-REQ-0038
 TITLE: Stage latency profiling
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The profiling pipeline shall measure preprocessing, inference and postprocessing latency, and report mean, P95 and P99.
 <<<
@@ -338,7 +338,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Retain per-run timing, host identity, warm-up and repetitions; derive summaries from the raw measurements.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/src/benchmark.py; edge_inference/tests/test_detector_scaffold.py (synthetic stage samples and CLI record); edge_inference/scripts/eval_compression_variants.py (development-host profiles).
 
 [REQUIREMENT]
 UID: EDG-REQ-0039

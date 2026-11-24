@@ -1,12 +1,17 @@
 # EDGE: bridge inspection model compression
 
-The active proposed requirements are EDG-REQ-0034–0041. These files are scaffolding,
-not a trained detector, functional compression pipeline, or benchmark. No accuracy,
-latency, board or flight results are claimed.
+The Day 1–4 pipeline covers CODEBRIM data preparation, YOLOv8n training,
+compression, development-host profiling and cached-trace replay. The
+[technical note](docs/technical_note_uav_edge_offloading.md) reports the four
+variants and the limits of the comparison. EDG-REQ-0034–0041 remain proposed
+requirements; the results are not board or flight measurements.
 
 - configs/baseline.yaml: CLI defaults for image size, warmup, runs and CPU threads.
 - src/detector.py: ONNX raw YOLOv8 detection-head adapter and Ultralytics adapter.
-- src/benchmark.py: synthetic-input timing runner.
+- src/benchmark.py: stage timings on synthetic inputs, with a dummy workload or an ONNX model.
+- scripts/prepare_codebrim.py, train_baseline.py and export_fp32_trace.py: audit and split the annotated images, train the FP32 baseline, and export its trace.
+- scripts/compress_pruning.py, quantize_int8.py and eval_compression_variants.py: physically prune channels, calibrate static INT8 on training images and profile the four variants.
+- src/offload_sim.py and scripts/run_offloading_experiments.py: apply offload policies to fixed traces and score full-frame predictions against available annotations. scripts/plot_offloading_results.py renders tables and figures from cached results.
 - logs/TEMPLATE.md: experiment record template.
 - data/ and models/: local artifacts, not committed.
 
