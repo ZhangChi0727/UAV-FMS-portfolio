@@ -6,7 +6,7 @@ Two independent tracks are maintained:
   Component acceptance is not whole-system or flight acceptance. Historical
   closed-loop material is retained in tag pre-surgery-2026-11-22.
 - EDGE (Planned / Ready for Day-1 implementation): proposed civil bridge-defect detection, model compression and
-  development-host profiling, traced to EDG-REQ-0034–0041. This is a scaffold,
+  development-host profiling, traced to EDG-REQ-0034-0041. This is a scaffold,
   not a validated model or embedded-device performance claim. See
   [EDGE README](edge_inference/README.md).
 

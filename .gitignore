@@ -5,6 +5,7 @@ edge_inference/data/*
 edge_inference/models/*.pt
 edge_inference/models/*.onnx
 edge_inference/models/*.engine
+edge_inference/docs/*.json
 __pycache__/
 *.py[cod]
 *.pyo

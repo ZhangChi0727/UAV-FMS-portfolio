@@ -1,0 +1,7 @@
+# Day-1 development dependencies; versions are not yet qualified.
+numpy
+psutil
+opencv-python-headless
+onnxruntime
+ultralytics
+# For CUDA use a compatible onnxruntime-gpu installation in place of onnxruntime.

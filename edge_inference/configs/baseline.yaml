@@ -1,0 +1,6 @@
+model_name: yolov8n
+imgsz: 640
+warmup_runs: 20
+benchmark_runs: 100
+cpu_threads: 4
+bridge_defect_classes: [crack, spallation, efflorescence, exposed_bar, corrosion_stain]
