@@ -83,3 +83,5 @@ Thumbs.db
 CMakeUserPresets.json
 *.suo
 *.user
+# Private Obsidian research vault (local only; never push raw research notes/ideas/PDFs)
+/research_notes/
