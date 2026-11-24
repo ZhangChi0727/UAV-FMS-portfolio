@@ -78,7 +78,7 @@ Annotation-relative descriptive metrics on the 104 admitted test images (864 XML
 
 Same gates, 35% of full transmitted bytes; no ROI accuracy/timing measurement. TX energy saved per submitted frame, not percent total energy.
 
-| Model | τ | η full → ROI | MB saved / 104 | TX mJ saved @1 | @5 | @20 |
+| Model | τ | η full → ROI | Total MB saved (104 frames) | TX mJ saved @1 | @5 | @20 |
 |---|---|---|---|---|---|---|
 | Pruned FP32 | 0.25 | 0.184 → 0.714 | 293.04 | 67624.3 | 13524.9 | 3381.2 |
 | Pruned FP32 | 0.35 | 0.110 → 0.688 | 319.75 | 73789.3 | 14757.9 | 3689.5 |
@@ -121,6 +121,14 @@ Figure source preflight: 13 pass, 1 warning (PNG preview rather than TIFF), 0 fa
 Regression: project Python `-m pytest tests -q` in EDGE: 100 passed; `-m pytest -q` in B0 simulation / estimation / integration: 25 / 52 / 165 passed, respectively. Synthetic tests cover the separate scoring contract, absence of ground-truth mutation and Pareto ties. No runtime data staged.
 
 ## Correction Addendum — 2026-11-24
+
+**CPU4 comparison denominator.** The standalone Day 1 FP32 profile measured
+29.91 ms mean / 31.44 ms P95. The Day 2–3 four-variant batch measured
+60.76 / 94.46 ms for FP32 and 45.16 / 66.01 ms for Pruned-FP32 on the same
+validation frame with the same warm-up and repetition counts. The 25.7% mean
+latency reduction uses that batch's FP32 control. Neither the temperature nor
+OS scheduling was established as identical, so the separate Day 1 session is
+not a compression control. Neither profile supplies per-frame replay timings.
 
 Figure 1 was regenerated after removing a stray quote from its footer. The
 earlier hashes above identify the pre-correction exports. The following SHA-256

@@ -64,6 +64,13 @@ The ROI sensitivity changes payload size only and has no crop accuracy score.
 
 *Annotation-relative descriptive metrics on the 104 admitted test images (864 XML reference rows); not exhaustive whole-image ground-truth coverage (`complete=false`).* The CPU4 profile used 20 warm-ups and 100 calls on one fixed validation image. GFLOPs are source-architecture estimates; RSS excludes GPU memory.
 
+The standalone Day 1 FP32 CPU4 profile measured **29.91 ms mean / 31.44 ms P95**.
+The Day 2–3 four-variant batch measured **60.76 / 94.46 ms** for its FP32 control
+and **45.16 / 66.01 ms** for Pruned-FP32 using the same frame and timing protocol.
+The **25.7%** reduction compares means within that batch, not across sessions.
+Host temperature and OS scheduling were not controlled or shown to be identical;
+the cause of the baseline difference is unknown.
+
 **Key Findings:**
 1. **Pruning Accelerates CPU Execution; QDQ Shrinks Storage Footprint:** Physical channel pruning reduces `CPU4` mean latency by **25.7%** (45.16 ms vs. 60.76 ms) with a small decrease in overall descriptive `mAP@50` (`0.2982` vs. `0.2997`). Conversely, `Pruned-INT8` compresses disk footprint by **80.4%** (2.50 MB), but its mean latency (58.83 ms) exceeds Pruned-FP32’s, and descriptive `mAP@50:95` falls to `0.1208`. No operator-level timing isolated the cause.
 2. **Fine-Grained Crack Sensitivity:** Pruned-FP32 scores higher on `spallation` AP50 but lower on its recall than baseline FP32; `crack` recall drops from `0.1373` to `0.0902` (`Pruned-FP32`), creating a natural use case for selective cloud escalation.

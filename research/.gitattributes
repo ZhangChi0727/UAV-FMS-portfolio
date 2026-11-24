@@ -1,4 +1,6 @@
 # Retained evidence is hash-pinned; keep bytes unchanged on every platform.
+*.py text eol=lf
+*.md text eol=lf
 **/evidence/** -text
 external_transfer/service/** -text
 *.csv -text

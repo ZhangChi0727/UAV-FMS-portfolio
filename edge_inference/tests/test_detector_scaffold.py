@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.detector import EdgeDefectDetector
+from src.detector import EdgeDefectDetector, letterbox_tensor
 from src.benchmark import EDGE_ROOT, SyntheticDetector, load_config, main, run
 
 
@@ -88,18 +88,61 @@ def test_cuda_fp32_disables_tf32(monkeypatch):
     assert captured['providers'] == [('CUDAExecutionProvider', {'use_tf32': 0})]
 
 
-def test_onnx_retains_score_at_gate_floor():
+def raw_head_detector(raw, confidence=.25):
     from types import SimpleNamespace
-    raw = np.zeros((1, 5, 10), dtype=np.float32)
-    raw[0, :, 0] = [4,4,4,4,.15]
     detector = EdgeDefectDetector.__new__(EdgeDefectDetector)
     detector.backend = 'onnx'
-    detector.confidence, detector.iou = float(np.float32(.15)), .45
+    detector.confidence, detector.iou = confidence, .45
     detector.input = SimpleNamespace(shape=[1,3,8,8], name='images')
     detector.session = SimpleNamespace(run=lambda *a: [raw])
+    return detector
+
+
+def test_onnx_retains_score_at_gate_floor():
+    raw = np.zeros((1, 5, 10), dtype=np.float32)
+    raw[0, :, 0] = [4,4,4,4,.15]
+    detector = raw_head_detector(raw, confidence=float(np.float32(.15)))
     result = detector.infer(np.zeros((8,8,3), dtype=np.uint8))
     assert len(result['detections']) == 1
     assert result['detections'][0]['confidence'] == detector.confidence
+
+
+@pytest.mark.parametrize('hw,offset', [((2, 4), (0, 1)), ((4, 2), (1, 0))])
+def test_letterbox_padding_and_rgb_planes(hw, offset):
+    # 4x2 -> 6x3 (or transpose); odd spare pixels belong on the bottom/right.
+    frame = np.full((*hw, 3), (10, 50, 200), dtype=np.uint8)
+    tensor, scale, left, top = letterbox_tensor(frame, 6, 6)
+    assert (scale, left, top) == (1.5, *offset)
+    expected = np.full((1, 3, 6, 6), 114, dtype=np.float32)
+    height, width = (3, 6) if hw == (2, 4) else (6, 3)
+    expected[0, :, top:top+height, left:left+width] = np.array([200, 50, 10])[:, None, None]
+    np.testing.assert_array_equal(tensor, expected / 255)
+
+
+def test_onnx_unprojects_box_to_original_pixels():
+    # A 4x2 frame becomes 8x4 with two rows of padding above and below.
+    raw = np.zeros((1, 5, 10), dtype=np.float32)
+    raw[0, :, 0] = [4, 4, 4, 2, .75]
+    boxes = raw_head_detector(raw).infer(np.zeros((2, 4, 3), np.uint8))['detections']
+    assert boxes == [{'xyxy': [1, .5, 3, 1.5], 'confidence': .75, 'class_id': 0}]
+
+
+def test_nms_suppresses_only_within_class():
+    raw = np.zeros((1, 6, 10), dtype=np.float32)
+    raw[0, :, 0] = [4, 4, 4, 4, .875, 0]
+    raw[0, :, 1] = [4, 4, 4, 4, .625, 0]
+    raw[0, :, 2] = [4, 4, 4, 4, 0, .75]
+    boxes = raw_head_detector(raw).infer(np.zeros((8, 8, 3), np.uint8))['detections']
+    assert sorted((b['class_id'], b['confidence']) for b in boxes) == [(0, .875), (1, .75)]
+
+
+@pytest.mark.parametrize('field,value', [(0, np.nan), (4, np.inf), (3, -np.inf)])
+def test_nonfinite_head_rejects_entire_frame(field, value):
+    raw = np.zeros((1, 5, 10), dtype=np.float32)
+    raw[0, :, 0] = [4, 4, 4, 4, .875]
+    raw[0, field, 1] = value  # even a corrupt low-confidence anchor invalidates the frame
+    with pytest.raises(ValueError, match='non-finite'):
+        raw_head_detector(raw).infer(np.zeros((8, 8, 3), np.uint8))
 
 
 def test_ultralytics_adapter_does_not_import_cv2(monkeypatch):
@@ -113,8 +156,11 @@ def test_ultralytics_adapter_does_not_import_cv2(monkeypatch):
     monkeypatch.setattr(builtins, '__import__', guarded)
     detector = EdgeDefectDetector.__new__(EdgeDefectDetector)
     detector.backend, detector.provider = 'ultralytics', 'cpu'
-    detector.model = SimpleNamespace(predict=lambda *a, **kw: [SimpleNamespace(
-        boxes=None, speed=dict(preprocess=0, inference=0, postprocess=0))])
+    detector.confidence, detector.iou = .37, .62
+    def predict(frame, *, device, conf, iou, verbose):
+        assert (device, conf, iou, verbose) == ('cpu', .37, .62, False)
+        return [SimpleNamespace(boxes=None, speed=dict(preprocess=0, inference=0, postprocess=0))]
+    detector.model = SimpleNamespace(predict=predict)
     assert detector.infer(np.zeros((4, 4, 3), dtype=np.uint8))['detections'] == []
 
 

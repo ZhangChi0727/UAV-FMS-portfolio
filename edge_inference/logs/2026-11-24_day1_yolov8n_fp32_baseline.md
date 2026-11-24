@@ -71,8 +71,11 @@ Split-list SHA-256 values are retained in that manifest.
 
 The admitted files comprise 755 MPO multi-picture JPEG containers and 285 JPEGs.
 Inference decodes the first view; payload bytes include the entire prepared file.
-Nine JPEGs had trailing bytes after their last EOI marker. Only those trailing
-bytes were removed in working copies, with exact OpenCV decoded-pixel equality
+Only nine single-stream JPEGs had bytes stripped after their last end-of-image
+(EOI) marker. No MPO container was tail-stripped: all 755 prepared MPOs retain
+a second JPEG view, and 646 of the 755 do not end in an EOI marker. Truncating
+at the first view's EOI would discard the secondary view. The nine JPEGs were
+trimmed only in working copies, with exact OpenCV decoded-pixel equality
 checked before writing (no JPEG re-encoding). Both source and prepared image
 hashes, format, and removed byte counts are retained per image in the manifest.
 Fifty-seven files also have non-identity EXIF orientation (29 at 3, 16 at 6,

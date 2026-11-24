@@ -156,7 +156,7 @@ def tables(d):
             diff=s['transmitted_bytes']-r['transmitted_bytes']
             rows.append([NAMES[v],pf['config']['tau'],f"{s['bandwidth_saving']:.3f} → {r['bandwidth_saving']:.3f}",
                 f'{diff/1e6:.2f}',*[f'{3*8*diff/(1000*b*104):.1f}' for b in BWS]])
-    table(['Model','τ','η full → ROI','MB saved / 104','TX mJ saved @1','@5','@20'],rows)
+    table(['Model','τ','η full → ROI','Total MB saved (104 frames)','TX mJ saved @1','@5','@20'],rows)
 
 
 if __name__=='__main__':

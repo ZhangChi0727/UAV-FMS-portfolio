@@ -296,7 +296,7 @@ EVIDENCE: edge_inference/scripts/train_baseline.py; edge_inference/scripts/prepa
 UID: EDG-REQ-0036
 TITLE: Structured pruning
 STATUS: proposed
-STATE: implemented
+STATE: partial
 STATEMENT: >>>
 The system shall provide a structured channel pruning pipeline with configurable sparsity ratios.
 <<<
@@ -344,7 +344,7 @@ EVIDENCE: edge_inference/src/benchmark.py; edge_inference/tests/test_detector_sc
 UID: EDG-REQ-0039
 TITLE: Resource footprint
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The pipeline shall report peak RSS, parameter count, GFLOPs and serialized model size where available.
 <<<
@@ -354,13 +354,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record measurement method, units and unsupported quantities without inventing values.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/src/benchmark.py and edge_inference/scripts/eval_compression_variants.py record sampled peak process RSS and serialized size; edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md reports these alongside source-architecture parameters and estimated GFLOPs. RSS is not an instantaneous peak or GPU memory.
 
 [REQUIREMENT]
 UID: EDG-REQ-0040
 TITLE: Thread-constrained CPU profile
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The pipeline shall support a declared thread-constrained CPU profile alongside GPU benchmarking.
 <<<
@@ -370,13 +370,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Report actual host, provider, thread settings and raw timing; do not claim embedded-device performance.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/src/detector.py and edge_inference/scripts/eval_compression_variants.py implement the development-host CPU4 profile (ORT intra-op 4, inter-op 1); edge_inference/tests/test_detector_scaffold.py checks thread options and CLI overrides.
 
 [REQUIREMENT]
 UID: EDG-REQ-0041
 TITLE: Accuracy and cost frontier
 STATUS: proposed
-STATE: planned
+STATE: implemented
 STATEMENT: >>>
 The pipeline shall generate Pareto comparisons of mAP, P95 latency and model size.
 <<<
@@ -386,4 +386,4 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Generate from traceable, comparable raw results and record configurations and missing metrics.
 <<<
-EVIDENCE: none yet
+EVIDENCE: edge_inference/src/offload_sim.py supplies replay latency; edge_inference/scripts/plot_offloading_results.py generates nondominated descriptive score versus latency curves, including P95. edge_inference/docs/technical_note_uav_edge_offloading.md reports model size alongside scores and latency, not a joint three-dimensional frontier.

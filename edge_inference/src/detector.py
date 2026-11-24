@@ -56,7 +56,8 @@ class EdgeDefectDetector:
         t0 = time.perf_counter_ns()
         if self.backend == 'ultralytics':
             # Ultralytics owns the three stages; its reported speed values are used.
-            result = self.model.predict(frame, device=0 if self.provider == 'cuda' else 'cpu', verbose=False)[0]
+            result = self.model.predict(frame, device=0 if self.provider == 'cuda' else 'cpu',
+                                        conf=self.confidence, iou=self.iou, verbose=False)[0]
             boxes = result.boxes
             detections = [] if boxes is None else [{'xyxy': b.xyxy[0].tolist(), 'confidence': float(b.conf[0]), 'class_id': int(b.cls[0])} for b in boxes]
             speed = result.speed
@@ -81,10 +82,12 @@ class EdgeDefectDetector:
         raw = outputs[0][0]
         if raw.shape[0] < 5 or raw.shape[0] >= raw.shape[1]:
             raise ValueError('unsupported detection head layout')
+        if not np.isfinite(raw).all():
+            raise ValueError('non-finite value in raw ONNX detection head')
         rows = raw.T
         cls = np.argmax(rows[:, 4:], axis=1)
         scores = rows[np.arange(len(rows)), 4 + cls]
-        keep = np.isfinite(rows).all(axis=1) & (scores >= self.confidence)
+        keep = scores >= self.confidence
         rows, scores, cls = rows[keep], scores[keep], cls[keep]
         boxes = []
         for row in rows:
