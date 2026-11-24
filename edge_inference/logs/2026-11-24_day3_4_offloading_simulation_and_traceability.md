@@ -28,7 +28,7 @@ Annotation-relative descriptive metrics on the 104 admitted test images (864 XML
 
 Annotation-relative descriptive metrics on the 104 admitted test images (864 XML reference rows); not exhaustive whole-image ground-truth coverage (`complete=false`).
 
-| Model | Mbps | Policy | ρ | η (bytes) | Mean / P95 / P99 ms | mJ/frame | mAP50 | Crack R |
+| Model | Mbps | Policy | Frames offloaded (fraction) | Transmitted bytes saved (fraction) | Mean / P95 / P99 ms | mJ/frame | mAP50 | Crack recall |
 |---|---|---|---|---|---|---|---|---|
 | FP32 | all | all_edge | 0.000 | 1.000 | 100.0 / 137.1 / 154.3 | 1000.4 | 0.2997 | 0.1373 |
 | shared | 1 | all_cloud | 1.000 | 0.000 | 42526.8 / 82837.7 / 86299.9 | 127493.9 | 0.2997 | 0.1373 |
@@ -76,9 +76,9 @@ Annotation-relative descriptive metrics on the 104 admitted test images (864 XML
 
 ## Table 3. ROI communication sensitivity only
 
-Same gates, 35% of full transmitted bytes; no ROI accuracy/timing measurement. TX energy saved per submitted frame, not percent total energy.
+Same gates, 35% of full transmitted bytes; no ROI accuracy/timing measurement. Modeled TX energy savings are averaged over all 104 frames; frames not offloaded contribute zero.
 
-| Model | τ | η full → ROI | Total MB saved (104 frames) | TX mJ saved @1 | @5 | @20 |
+| Model | Confidence threshold | Bytes saved (fraction): full vs ROI | Total MB saved (104 frames) | Mean TX saving (mJ/frame, all 104) at 1 Mbps | Mean TX saving (mJ/frame, all 104) at 5 Mbps | Mean TX saving (mJ/frame, all 104) at 20 Mbps |
 |---|---|---|---|---|---|---|
 | Pruned FP32 | 0.25 | 0.184 → 0.714 | 293.04 | 67624.3 | 13524.9 | 3381.2 |
 | Pruned FP32 | 0.35 | 0.110 → 0.688 | 319.75 | 73789.3 | 14757.9 | 3689.5 |

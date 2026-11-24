@@ -47,3 +47,10 @@ strictdoc export requirements --output-dir requirements/build
 ```
 
 The generated HTML is written to `requirements/build/html` and is not committed.
+
+The tracked [compact view](../overview.html) is a rendering of the root README
+and the requirement titles, states and evidence in this directory, not a second
+specification. After editing those sources, run `python requirements/render_overview.py`
+from the repository root and commit the updated page with the sources. Use
+`python requirements/render_overview.py --check` to detect stale output without
+writing files. Changes to underlying implementation evidence belong in StrictDoc first.

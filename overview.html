@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UAV FMS Portfolio | Requirements overview</title>
+<style>
+body{max-width:64rem;margin:2rem auto;padding:0 1rem;font:1rem/1.5 system-ui;color:#172b39}
+a{color:#075781}table{width:100%;border-collapse:collapse}th,td{text-align:left;vertical-align:top;
+padding:.45rem;border-bottom:1px solid #ccd5db}summary{cursor:pointer}section>details{margin:1rem 0;overflow:auto}
+</style><main>
+<h1>UAV FMS Portfolio</h1>
+<p>Two independent tracks are maintained:</p>
+<ul>
+<li>B0: historical component-level dynamics, estimator and C++17 controller evidence.
+Component acceptance is not whole-system or flight acceptance. Historical
+closed-loop material is retained in tag pre-surgery-2026-11-22.</li>
+<li>EDGE: the Day 1–4 pipeline trained a CODEBRIM detector, pruned and quantized it,
+profiled four variants on the development host, and replayed cached predictions.
+The <a href="edge_inference/docs/technical_note_uav_edge_offloading.md">technical note</a>
+separates annotation-relative scores and measured host latency from modeled
+network latency and energy. See the <a href="edge_inference/README.md">EDGE README</a>
+for the modules supporting EDG-REQ-0034-0041.</li>
+</ul>
+<p>Systems-engineering source is <a href="requirements/README.md">requirements</a>.
+The <a href="overview.html#requirements">compact requirements view</a> can be opened offline.
+Maintain NED/body conventions, SI units and scalar-first Hamilton quaternions;
+truth is excluded from controller and estimator inputs except initialization.</p>
+<p>Run pytest within each B0 track directory. Build and test the C++ controller
+using its CMake presets. Export requirements using
+<code>strictdoc export requirements --output-dir build/strictdoc-check</code>.
+Report actual host, commands and raw results for measurements.</p>
+<section id="requirements"><h2>Requirements</h2><p>Open a title to read its evidence. Implementation state is not system verification. <a href="requirements/README.md">Field definitions and full export instructions</a>.</p>
+<details open><summary>edge.sdoc · 20 requirements</summary><p><a href="requirements/edge.sdoc">StrictDoc source</a></p><table><thead><tr><th>ID</th><th>Title / evidence</th><th>Lifecycle</th><th>Implementation</th></tr></thead><tbody>
+<tr id="EDG-REQ-0001"><th scope="row">EDG-REQ-0001</th><td><details><summary>Instruction to structured task</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0002"><th scope="row">EDG-REQ-0002</th><td><details><summary>Image to structured finding</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0003"><th scope="row">EDG-REQ-0003</th><td><details><summary>Local GPU model execution</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0004"><th scope="row">EDG-REQ-0004</th><td><details><summary>Latency and resource profiling</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0005"><th scope="row">EDG-REQ-0005</th><td><details><summary>Task placement decision</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0006"><th scope="row">EDG-REQ-0006</th><td><details><summary>Fallback under link or budget violation</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0007"><th scope="row">EDG-REQ-0007</th><td><details><summary>Reproducible scenario replay</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0008"><th scope="row">EDG-REQ-0008</th><td><details><summary>Result provenance</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0009"><th scope="row">EDG-REQ-0009</th><td><details><summary>Development-host labelling</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0010"><th scope="row">EDG-REQ-0010</th><td><details><summary>Bridge inspection task scope</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0011"><th scope="row">EDG-REQ-0011</th><td><details><summary>Model execution and profiling scope</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0012"><th scope="row">EDG-REQ-0012</th><td><details><summary>Placement policy scope</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>
+<tr id="EDG-REQ-0034"><th scope="row">EDG-REQ-0034</th><td><details><summary>Standardized detector interface</summary><p>edge_inference/src/detector.py; edge_inference/tests/test_detector_scaffold.py (synthetic frames and adapter output).</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0035"><th scope="row">EDG-REQ-0035</th><td><details><summary>Lightweight detector baseline</summary><p>edge_inference/scripts/train_baseline.py; edge_inference/scripts/prepare_codebrim.py; edge_inference/tests/test_prepare_codebrim.py; edge_inference/logs/2026-11-24_day1_yolov8n_fp32_baseline.md (split and model); Day 3-4 per-class scores are annotation-relative.</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0036"><th scope="row">EDG-REQ-0036</th><td><details><summary>Structured pruning</summary><p>edge_inference/scripts/compress_pruning.py; edge_inference/tests/test_compression_pipeline.py (test_c2f_slim_is_physical_and_trainable). Implemented configuration: two-thirds target width rounded to multiples of four; other ratios are not exposed as a run setting.</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="EDG-REQ-0037"><th scope="row">EDG-REQ-0037</th><td><details><summary>ONNX and static INT8 quantization</summary><p>edge_inference/scripts/export_fp32_trace.py; edge_inference/scripts/quantize_int8.py; edge_inference/tests/test_compression_pipeline.py (train-only calibration membership and static QDQ round trip).</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0038"><th scope="row">EDG-REQ-0038</th><td><details><summary>Stage latency profiling</summary><p>edge_inference/src/benchmark.py; edge_inference/tests/test_detector_scaffold.py (synthetic stage samples and CLI record); edge_inference/scripts/eval_compression_variants.py (development-host profiles).</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0039"><th scope="row">EDG-REQ-0039</th><td><details><summary>Resource footprint</summary><p>edge_inference/src/benchmark.py and edge_inference/scripts/eval_compression_variants.py record sampled peak process RSS and serialized size; edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md reports these alongside source-architecture parameters and estimated GFLOPs. RSS is not an instantaneous peak or GPU memory.</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0040"><th scope="row">EDG-REQ-0040</th><td><details><summary>Thread-constrained CPU profile</summary><p>edge_inference/src/detector.py and edge_inference/scripts/eval_compression_variants.py implement the development-host CPU4 profile (ORT intra-op 4, inter-op 1); edge_inference/tests/test_detector_scaffold.py checks thread options and CLI overrides.</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="EDG-REQ-0041"><th scope="row">EDG-REQ-0041</th><td><details><summary>Accuracy and cost frontier</summary><p>edge_inference/src/offload_sim.py supplies replay latency; edge_inference/scripts/plot_offloading_results.py generates nondominated descriptive score versus latency curves, including P95. edge_inference/docs/technical_note_uav_edge_offloading.md reports model size alongside scores and latency, not a joint three-dimensional frontier.</p></details></td><td>proposed</td><td>partial</td></tr>
+</tbody></table></details>
+<details><summary>b0.sdoc · 30 requirements</summary><p><a href="requirements/b0.sdoc">StrictDoc source</a></p><table><thead><tr><th>ID</th><th>Title / evidence</th><th>Lifecycle</th><th>Implementation</th></tr></thead><tbody>
+<tr id="B0-REQ-0001"><th scope="row">B0-REQ-0001</th><td><details><summary>Bounded attitude experiment</summary><p>README.md (scope); integration runner archived at tag pre-surgery-2026-11-22</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0002"><th scope="row">B0-REQ-0002</th><td><details><summary>Deterministic configuration and replay</summary><p>01_simulation/b0/tests/test_components.py (component determinism); closed-loop replay archived at tag pre-surgery-2026-11-22</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0003"><th scope="row">B0-REQ-0003</th><td><details><summary>Runtime truth isolation</summary><p>02_estimation/b0/estimator.py and 03_control/b0/python/controller.py (interfaces); integrated negative test not in active tree</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0004"><th scope="row">B0-REQ-0004</th><td><details><summary>Shared frames units and quaternion convention</summary><p>01_simulation/b0/quaternion.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0005"><th scope="row">B0-REQ-0005</th><td><details><summary>Rigid-body rotational dynamics</summary><p>01_simulation/b0/plant.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0006"><th scope="row">B0-REQ-0006</th><td><details><summary>Quaternion plant state</summary><p>01_simulation/b0/plant.py; 01_simulation/b0/quaternion.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0007"><th scope="row">B0-REQ-0007</th><td><details><summary>Paired torque command</summary><p>03_control/b0/src/controller.cpp; 03_control/b0/python/controller.py; CTest b0_controller_cpp_tests</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0008"><th scope="row">B0-REQ-0008</th><td><details><summary>Limited-target actuator dynamics</summary><p>01_simulation/b0/actuator.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0009"><th scope="row">B0-REQ-0009</th><td><details><summary>Actuator feedback pairing</summary><p>01_simulation/b0/actuator.py (feedback fields not yet verified by a multi-rate test)</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0010"><th scope="row">B0-REQ-0010</th><td><details><summary>Gyroscope measurement</summary><p>01_simulation/b0/imu.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0011"><th scope="row">B0-REQ-0011</th><td><details><summary>Accelerometer specific force</summary><p>01_simulation/b0/imu.py; 01_simulation/b0/tests/test_components.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0012"><th scope="row">B0-REQ-0012</th><td><details><summary>Estimator propagation</summary><p>02_estimation/b0/estimator.py; 02_estimation/b0/tests/test_estimator.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0013"><th scope="row">B0-REQ-0013</th><td><details><summary>Roll and pitch fusion</summary><p>02_estimation/b0/estimator.py; 02_estimation/b0/tests/test_estimator.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0014"><th scope="row">B0-REQ-0014</th><td><details><summary>Yaw observability limitation</summary><p>02_estimation/b0/estimator.py (no magnetometer or absolute heading input)</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0015"><th scope="row">B0-REQ-0015</th><td><details><summary>Acceleration contamination handling</summary><p>02_estimation/b0/estimator.py (gating); dedicated contamination case not in active tree</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0016"><th scope="row">B0-REQ-0016</th><td><details><summary>Cascaded attitude and rate control</summary><p>03_control/b0/src/controller.cpp; 03_control/b0/tests/test_controller.cpp; CTest mutation tests</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0017"><th scope="row">B0-REQ-0017</th><td><details><summary>Unique controller saturation responsibility</summary><p>03_control/b0/src/controller.cpp; 03_control/b0/tests/test_controller.cpp</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0018"><th scope="row">B0-REQ-0018</th><td><details><summary>Anti-windup update</summary><p>03_control/b0/src/controller.cpp; CTest mutation tests (antiwindup_disabled, antiwindup_backcalculation_sign_reversed)</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0019"><th scope="row">B0-REQ-0019</th><td><details><summary>Invalid input rejection</summary><p>02_estimation/b0/tests/test_estimator.py; 03_control/b0/python/tests/test_adapter.py</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0020"><th scope="row">B0-REQ-0020</th><td><details><summary>Reset contract</summary><p>03_control/b0/python/tests/test_adapter.py (controller reset); integration-level reset tests archived at tag pre-surgery-2026-11-22</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0021"><th scope="row">B0-REQ-0021</th><td><details><summary>Deterministic scheduling and timestamps</summary><p>execution runner and scheduler archived at tag pre-surgery-2026-11-22 (05_integration/b0)</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0022"><th scope="row">B0-REQ-0022</th><td><details><summary>Approved scenario suite</summary><p>no scenario execution in active tree; saturation-reachability negative finding recorded in tag pre-surgery-2026-11-22 (RESULTS.md)</p></details></td><td>proposed</td><td>planned</td></tr>
+<tr id="B0-REQ-0023"><th scope="row">B0-REQ-0023</th><td><details><summary>Independent evaluation</summary><p>no evaluator in active tree</p></details></td><td>proposed</td><td>planned</td></tr>
+<tr id="B0-REQ-0024"><th scope="row">B0-REQ-0024</th><td><details><summary>Evidence provenance</summary><p>no result records in active tree</p></details></td><td>proposed</td><td>planned</td></tr>
+<tr id="B0-REQ-0025"><th scope="row">B0-REQ-0025</th><td><details><summary>Defect-detection demonstration</summary><p>03_control/b0/tests/test_controller.cpp and four mutation executables (CTest); quaternion-ordering and unit mutations not yet added</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0026"><th scope="row">B0-REQ-0026</th><td><details><summary>Implementation language boundary</summary><p>03_control/b0/CMakeLists.txt; 03_control/b0/python/controller_bindings.cpp</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0027"><th scope="row">B0-REQ-0027</th><td><details><summary>Clean-checkout reproduction</summary><p>pinned dependencies in requirements.txt and CMakePresets.json; clean-clone run not yet executed</p></details></td><td>proposed</td><td>planned</td></tr>
+<tr id="B0-REQ-0028"><th scope="row">B0-REQ-0028</th><td><details><summary>Legacy control disposition</summary><p>this file (requirements/b0.sdoc)</p></details></td><td>proposed</td><td>implemented</td></tr>
+<tr id="B0-REQ-0029"><th scope="row">B0-REQ-0029</th><td><details><summary>Invalid measurement handling</summary><p>02_estimation/b0/tests/test_estimator.py; integration-level injection archived at tag pre-surgery-2026-11-22</p></details></td><td>proposed</td><td>partial</td></tr>
+<tr id="B0-REQ-0030"><th scope="row">B0-REQ-0030</th><td><details><summary>B0 exclusion boundary</summary><p>README.md (scope and exclusions)</p></details></td><td>proposed</td><td>implemented</td></tr>
+</tbody></table></details>
+</section></main></html>

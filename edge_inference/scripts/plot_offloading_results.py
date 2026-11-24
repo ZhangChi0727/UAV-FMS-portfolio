@@ -145,10 +145,10 @@ def tables(d):
                     policy if policy!='cgao' else f"CGAO {c['tau']:.2f}",f"{s['offload_ratio']:.3f}",
                     f"{s['bandwidth_saving']:.3f}",' / '.join(f"{s['latency_ms'][k]:.1f}" for k in ('mean','p95','p99')),
                     f"{s['mean_energy_mj']:.1f}",f"{accuracy(p,'mAP50'):.4f}",f"{accuracy(p,'Crack recall'):.4f}"])
-    table(['Model','Mbps','Policy','ρ','η (bytes)','Mean / P95 / P99 ms','mJ/frame','mAP50','Crack R'],rows)
+    table(['Model','Mbps','Policy','Frames offloaded (fraction)','Transmitted bytes saved (fraction)','Mean / P95 / P99 ms','mJ/frame','mAP50','Crack recall'],rows)
     print('\n## Table 3. ROI communication sensitivity only\n')
     print('Same gates, 35% of full transmitted bytes; no ROI accuracy/timing measurement. '
-          'TX energy saved per submitted frame, not percent total energy.\n')
+          'Modeled TX energy savings are averaged over all 104 frames; frames not offloaded contribute zero.\n')
     rows=[]
     for v,g in d['roi'].items():
         for pf,pr in zip(cgao(d['primary'][v],1),cgao(g,1)):
@@ -156,7 +156,8 @@ def tables(d):
             diff=s['transmitted_bytes']-r['transmitted_bytes']
             rows.append([NAMES[v],pf['config']['tau'],f"{s['bandwidth_saving']:.3f} → {r['bandwidth_saving']:.3f}",
                 f'{diff/1e6:.2f}',*[f'{3*8*diff/(1000*b*104):.1f}' for b in BWS]])
-    table(['Model','τ','η full → ROI','Total MB saved (104 frames)','TX mJ saved @1','@5','@20'],rows)
+    table(['Model','Confidence threshold','Bytes saved (fraction): full vs ROI','Total MB saved (104 frames)',
+           *[f'Mean TX saving (mJ/frame, all 104) at {b} Mbps' for b in BWS]],rows)
 
 
 if __name__=='__main__':

@@ -376,7 +376,7 @@ EVIDENCE: edge_inference/src/detector.py and edge_inference/scripts/eval_compres
 UID: EDG-REQ-0041
 TITLE: Accuracy and cost frontier
 STATUS: proposed
-STATE: implemented
+STATE: partial
 STATEMENT: >>>
 The pipeline shall generate Pareto comparisons of mAP, P95 latency and model size.
 <<<

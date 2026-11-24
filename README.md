@@ -13,6 +13,7 @@ Two independent tracks are maintained:
   for the modules supporting EDG-REQ-0034-0041.
 
 Systems-engineering source is [requirements](requirements/README.md).
+The [compact requirements view](overview.html#requirements) can be opened offline.
 Maintain NED/body conventions, SI units and scalar-first Hamilton quaternions;
 truth is excluded from controller and estimator inputs except initialization.
 
