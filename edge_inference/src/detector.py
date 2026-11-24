@@ -71,6 +71,9 @@ class EdgeDefectDetector:
         ih, iw = shape[2:4]
         tensor, scale, left, top = letterbox_tensor(frame, ih, iw)
         t1 = time.perf_counter_ns()
+        # [TRACEABILITY] Spec/Req: EDG-REQ-0035/0038; Literature Basis: perception-control latency.
+        # Vault-ID: lit-20261124-perception-control-latency; Analytical/Engineering Scope:
+        # development-host synchronous inference boundary, not an aircraft response time.
         outputs = self.session.run(None, {self.input.name: tensor})
         t2 = time.perf_counter_ns()
         if len(outputs) != 1 or outputs[0].ndim != 3 or outputs[0].shape[0] != 1:

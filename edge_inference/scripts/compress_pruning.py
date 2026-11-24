@@ -35,6 +35,9 @@ def keep(scores):
 
 
 def l1(layer):
+    # [TRACEABILITY] Spec/Req: EDG-REQ-0036; Literature Basis: structured filter L1 ranking.
+    # Vault-ID: no dedicated pruning record supplied; Analytical/Engineering Scope:
+    # sum absolute weights per output channel; local slicing is not a learned importance proof.
     return layer.conv.weight.detach().abs().sum((1, 2, 3))
 
 

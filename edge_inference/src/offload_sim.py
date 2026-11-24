@@ -86,6 +86,9 @@ class TraceInputs:
 @dataclass(frozen=True)
 class SimulationConfig:
     policy: Policy = 'cgao'
+    # [TRACEABILITY] Spec/Req: offload_sim_spec §3–5; EDG-REQ-0038 (stage timings only).
+    # Literature Basis: resource-scheduling context; Vault-ID: lit-20261124-uav-edge-resource-survey.
+    # Analytical/Engineering Scope: bandwidth, RTT and power are scenario inputs, not measured constants.
     bandwidth_mbps: float = 5.0
     rtt_ms: float = 20.0
     tau_low: float = 0.15
@@ -171,6 +174,9 @@ def decide(edge_detections: Sequence[Detection], *, policy: Policy,
         _number(d.confidence, 'edge_detections.confidence', high=1)
     if policy != 'cgao':
         return policy == 'all_cloud'
+    # [TRACEABILITY] Spec/Req: offload_sim_spec §3.2; Literature Basis: confidence-gated scheduling.
+    # Vault-ID: concept-20261124-cgao-model; Analytical/Engineering Scope: any retained score
+    # in the half-open interval triggers uplink; no future cloud output or label is visible.
     return any(tau_low <= d.confidence < tau for d in edge_detections)
 
 
@@ -202,6 +208,9 @@ def _validate(traces, config):
         for key in ('width', 'height', 'payload_bytes'):
             _positive_int(getattr(f, key), f'{f.frame_id}.{key}')
         frames[f.frame_id] = f
+    # [TRACEABILITY] Spec/Req: offload_sim_spec §2; Literature Basis: latency-aware perception.
+    # Vault-ID: lit-20261124-perception-control-latency; Analytical/Engineering Scope:
+    # frame IDs bind observations, never infer a missing timing or payload.
     for name in ('edge_predictions', 'cloud_predictions', 'edge_timings', 'cloud_timings'):
         _ids(getattr(traces, name), set(frames), name)
     for fid, f in frames.items():
@@ -283,6 +292,9 @@ def evaluate(predictions: Mapping[str, Sequence[Detection]],
             support[d.class_id] += 1
         for d in predictions[fid]:
             _detection(d, ref.width, ref.height, config.classes, f'{fid}.predictions')
+    # [TRACEABILITY] Spec/Req: offload_sim_spec §6; Literature Basis: offline detection matching.
+    # Vault-ID: concept-20261124-cgao-model; Analytical/Engineering Scope: strict accuracy
+    # requires coverage, unlike a descriptive comparison to supplied rows.
     if any(not r.complete or r.has_ignore_regions for r in references.values()):
         return unavailable('incomplete labels or unsupported ignore regions; accuracy unavailable')
     if not any(support.values()):
@@ -317,6 +329,9 @@ def simulate(traces: TraceInputs, config: SimulationConfig) -> SimulationResult:
         edge_ms = 0.0 if config.policy == 'all_cloud' else edge.total
         scale = config.alpha_roi if config.policy == 'cgao' else 1.0
         sent = f.payload_bytes*scale if offload else 0.0
+        # [TRACEABILITY] Spec/Req: offload_sim_spec §4–5; Literature Basis: resource and latency accounting.
+        # Vault-ID: lit-20261124-uav-edge-resource-survey; Analytical/Engineering Scope:
+        # Bytes to bits, Mbps to ms; W times ms gives mJ. No measured network or battery.
         tx_ms = 8*sent/(1000*config.bandwidth_mbps)
         rtt_ms, cloud_ms = (config.rtt_ms, cloud.total) if offload else (0.0, 0.0)
         latency = edge_ms + tx_ms + rtt_ms + cloud_ms

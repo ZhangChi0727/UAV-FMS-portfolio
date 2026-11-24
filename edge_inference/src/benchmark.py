@@ -55,6 +55,9 @@ def run(detector, frame, warmup, runs):
         values = np.array([row[key] for row in rows], dtype=float)
         if not np.isfinite(values).all() or np.any(values < 0):
             raise ValueError('timing must be finite and nonnegative')
+        # [TRACEABILITY] Spec/Req: EDG-REQ-0035/0038; Literature Basis: latency-aware perception.
+        # Vault-ID: lit-20261124-perception-control-latency; Analytical/Engineering Scope:
+        # desktop P95/P99 describe tails, not control stability or a maximum inspection speed.
         summary[key] = {'mean': float(values.mean()), 'p95': float(np.percentile(values, 95)), 'p99': float(np.percentile(values, 99))}
     total = summary['total']['mean']
     return {'samples_ms': rows, 'summary_ms': summary, 'fps': 1000 / total if total else None, 'sampled_peak_rss_bytes': rss}

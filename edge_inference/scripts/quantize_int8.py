@@ -16,6 +16,9 @@ from edge_inference.src.detector import letterbox_tensor
 
 class Reader(CalibrationDataReader):
     def __init__(self, inventory, key):
+        # [TRACEABILITY] Spec/Req: EDG-REQ-0037; Literature Basis: static QDQ calibration.
+        # Vault-ID: no dedicated PTQ record supplied; Analytical/Engineering Scope:
+        # train-only MinMax observations; no use of test images for range selection.
         self.names = random.Random(42).sample(sorted(inventory['splits']['train']['files']),100)
         self.i, self.key, self.inventory = 0, key, inventory
 
