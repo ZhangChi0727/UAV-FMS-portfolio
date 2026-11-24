@@ -48,3 +48,17 @@
 - **笔记路径**：`edge_inference/logs/2026-11-24_concept_edge_ai_evaluation_framework.md`
 - **可直接用于 Technical Note 的评估方法学描述**：
   > "To ensure rigorous, apples-to-apples comparisons across compression stages, all model variants are evaluated under a unified four-dimensional profiling protocol tracking task accuracy (overall and per-class mAP/Recall), end-to-end stage latency (mean, P95, and P99 across preprocessing, inference, and NMS), resource footprint (serialized size and peak RSS memory), and Pareto efficiency under both GPU and thread-constrained CPU execution profiles."
+
+## 6. Trace-Driven Edge–Cloud Offloading Extension
+
+后续 Day 3–4 的轨迹驱动卸载模拟器设计见 [offload_sim_spec.md](../docs/offload_sim_spec.md)。本次仅保存设计，不实现 `offload_sim.py`，不运行训练。比较 All-Edge、直接上传且不支付端侧推理成本的 All-Cloud，以及先运行端侧检测器再按置信区间触发卸载的 CGAO。
+
+Day 1–3 评价准备需捕获或由固定轨迹派生以下五类指标，并保留帧 ID、来源哈希及配置：
+
+1. **`payload_bytes`**：实际拟传输的编码图像字节数，不以张量大小代替。
+2. **逐帧置信度轨迹**：端侧／GPU 参考模型的框、类别与分数；门控轨迹须保留低至 0.15 的候选，空检测集不会自动触发卸载。参考标签只供离线评分。
+3. **有效端到端时延**：由分阶段开发机计时轨迹与带宽、RTT 参数组合，报告 Mean、P95、P99；不是实测无线链路时延。
+4. **卸载率／带宽节省率**：分别按帧数和上传字节总量计算；帧大小不同时，字节节省率不等于 `1 - 卸载率`。
+5. **参数化机载动态能耗**：按功率参数与计算／传输时间估算 mJ，排除云端墙电和未建模的待机、接收、推进等能耗，不代表电池总消耗。
+
+以上是待构建的评价扩展，不是现有 `benchmark.py` 已完整输出的字段。所有系统时延与能耗参数属于轨迹驱动模拟的参数化解析模型；CPU 四线程和 RTX 4060 的实际计时输入也仅标注为 `development-host`，不得称为机载、云服务或飞行实测。默认 ROI 因子为 1.0；缩减字节却沿用全帧预测的情形只能作为通信敏感性分析，不能证明 ROI 的检测精度。
