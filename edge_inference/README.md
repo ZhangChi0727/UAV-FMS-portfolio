@@ -29,6 +29,32 @@ synthetic input. CPU thread limits do not emulate an ARM or Jetson device.
 Results are development-host measurements; no hardware or flight claim follows.
 Datasets and weights are not included; verify licences and class mappings first.
 
+## Analytical offloading replay (synthetic demonstration)
+
+From `edge_inference/`, run `python -m src.offload_sim --synthetic`.
+The ignored output is `docs/offload-sim-synthetic.json`, explicitly labeled
+`synthetic_not_measured`, `development-host`, and `analytical_simulation`.
+No model is loaded and no dataset or network service is accessed.
+The [design specification](docs/offload_sim_spec.md) defines the equations.
+
+The default sweep contains 21 CGAO points and two baseline families: All-Edge
+is evaluated once; All-Cloud has three bandwidth-dependent results (25 result
+records in total), with no redundant threshold runs. `--alpha-roi` changes only
+CGAO's modeled transmitted bytes. Non-unit ROI factors have no accuracy claim
+without corresponding ROI traces, so accuracy is explicitly unavailable.
+
+The Python API accepts typed `TraceInputs`, `FrameTrace`, `StageTiming` and
+`Detection` records joined by frame ID. Keep benchmark profile/source hashes,
+model/configuration, class mapping and timing-sample associations in provenance.
+The existing benchmark JSON alone is not a complete simulator input.
+Ground truth reaches only the offline evaluator, never `decide`.
+Evaluator v1 uses deterministic class-wise greedy matching and 101-point
+interpolated AP, without COCO area/maxDets/crowd handling. It is not a claim of
+COCO API parity. Missing/incomplete reference coverage yields unavailable
+accuracy; unsupported classes without GT support have null recall. The default
+recall operating point (score 0.25, IoU 0.5) is for synthetic demonstration;
+freeze real evaluation settings on training/calibration data before test use.
+
 ## Isolated Windows environment
 
 From the repository root (Python 3.11), create `.venv`; do not install into the
