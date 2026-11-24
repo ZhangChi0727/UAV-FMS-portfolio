@@ -11,11 +11,16 @@ class EdgeDefectDetector:
         self.confidence, self.iou = confidence, iou
         if backend == 'onnx':
             import onnxruntime as ort
+            if provider == 'cuda':
+                # Windows CUDA/cuDNN DLLs can be supplied by the PyTorch wheel.
+                ort.preload_dlls()
             name = 'CUDAExecutionProvider' if provider == 'cuda' else 'CPUExecutionProvider'
             if name not in ort.get_available_providers():
                 raise RuntimeError(f'{name} unavailable; refusing silent fallback')
             options = ort.SessionOptions()
             options.intra_op_num_threads = threads
+            if provider == 'cpu':
+                options.inter_op_num_threads = 1
             self.session = ort.InferenceSession(str(model), sess_options=options, providers=[name])
             if self.session.get_providers()[0] != name:
                 raise RuntimeError('requested provider was not selected')
@@ -31,7 +36,6 @@ class EdgeDefectDetector:
     def infer(self, frame: np.ndarray) -> dict:
         if not isinstance(frame, np.ndarray) or frame.dtype != np.uint8 or frame.ndim != 3 or frame.shape[2] != 3:
             raise ValueError('expected HWC uint8 BGR frame')
-        import cv2
         t0 = time.perf_counter_ns()
         if self.backend == 'ultralytics':
             # Ultralytics owns the three stages; its reported speed values are used.
@@ -42,6 +46,7 @@ class EdgeDefectDetector:
             times = {k: float(speed[k]) for k in ('preprocess', 'inference', 'postprocess')}
             times['total'] = (time.perf_counter_ns() - t0) / 1e6
             return {'detections': detections, 'timings_ms': times}
+        import cv2
         h, w = frame.shape[:2]
         shape = self.input.shape
         if len(shape) != 4 or not isinstance(shape[2], int) or not isinstance(shape[3], int):

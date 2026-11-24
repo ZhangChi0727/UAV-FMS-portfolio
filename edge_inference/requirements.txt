@@ -1,7 +1,15 @@
-# Day-1 development dependencies; versions are not yet qualified.
-numpy
-psutil
-opencv-python-headless
-onnxruntime
-ultralytics
-# For CUDA use a compatible onnxruntime-gpu installation in place of onnxruntime.
+# Development-host dependencies; not model/accuracy qualification.
+numpy==1.26.4
+# Install CUDA wheels first using the command in README.md.
+torch==2.6.0
+torchvision==0.21.0
+psutil==7.2.2
+opencv-python-headless==4.11.0.86
+onnxruntime-gpu==1.21.1
+onnx==1.23.2
+matplotlib==3.11.2
+pyyaml==6.0.4
+# Official headless distribution exposes the same `ultralytics` import.
+ultralytics-opencv-headless==8.4.218
+# Install in an isolated environment with the root requirements as constraints.
+# Do not install onnxruntime and onnxruntime-gpu together.
