@@ -85,7 +85,8 @@ def figures(data):
             if row==0: ax.set_title(f'{b} Mbps')
             ax.grid(axis='y',alpha=.18)
     fig.text(.05,.089,'Filled: all edge   ·   Open: CGAO (7 thresholds)   ·   Dashed: non-dominated observed points, not interpolation.',fontsize=7)
-    fig.text(.05,.055,fill(DISCLOSURE,115),fontsize=7)
+    # Matplotlib text is not Markdown: render the flag without code-span delimiters.
+    fig.text(.05,.055,fill(DISCLOSURE.replace('`complete=false`', 'complete=false'),115),fontsize=7)
     fig.text(.05,.015,'Development-host traces; analytical communication delay. Each point summarizes the same 104 frames.',fontsize=7)
     save(fig,'01-accuracy-latency-frontiers')
 
