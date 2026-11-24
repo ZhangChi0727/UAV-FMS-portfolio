@@ -38,7 +38,7 @@ ELEMENTS:
 [REQUIREMENT]
 UID: EDG-REQ-0001
 TITLE: Instruction to structured task
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The system shall convert a natural-language bridge inspection instruction into a task record with target element, location tag, defect classes and required views, and shall reject any output that does not conform to the task schema.
@@ -57,7 +57,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0002
 TITLE: Image to structured finding
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 Given an image and a task record, the system shall produce a structured finding containing defect class, image region, confidence and an explicit abstain flag.
@@ -76,7 +76,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0003
 TITLE: Local GPU model execution
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The system shall execute the selected vision-language or language models on the development GPU in PyTorch and record model identifier, precision, library versions and device identifier for every run.
@@ -95,7 +95,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0004
 TITLE: Latency and resource profiling
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The profiling harness shall measure inference latency distribution, peak memory and, where the platform exposes it, energy, using warm-up, repeated runs and raw per-run output.
@@ -114,7 +114,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0005
 TITLE: Task placement decision
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 Given a task record, device profiles and link state, the system shall select one placement from onboard, edge server, cloud or split inference, using a deterministic function of its declared inputs.
@@ -133,7 +133,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0006
 TITLE: Fallback under link or budget violation
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 When the link is degraded or lost, or a measured budget is exceeded, the system shall select a fallback placement and log the trigger and the decision.
@@ -152,7 +152,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0007
 TITLE: Reproducible scenario replay
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The system shall replay task streams with synthetic network and battery traces from recorded seeds, producing identical event logs for identical inputs.
@@ -171,7 +171,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0008
 TITLE: Result provenance
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 Every reported result shall identify code revision, configuration, seed, host or device identifier, raw artifact location and analysis command.
@@ -190,7 +190,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0009
 TITLE: Development-host labelling
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 Measurements taken on the development PC shall be labelled as development-host results and shall not be reported as onboard, edge-device or flight performance.
@@ -209,7 +209,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0010
 TITLE: Bridge inspection task scope
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The system shall be scoped to civil bridge inspection tasks and shall not include defence, surveillance or targeting functions.
@@ -225,7 +225,7 @@ EVIDENCE: none yet
 [REQUIREMENT]
 UID: EDG-REQ-0011
 TITLE: Model execution and profiling scope
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The model execution and profiling capability shall be treated as an optional extension of the platform and shall not depend on B0 control results for its own acceptance.
@@ -244,7 +244,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0012
 TITLE: Placement policy scope
-STATUS: proposed
+STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
 The placement policy shall be evaluated on replayed scenarios only; no flight, hardware-in-the-loop or live-link claim shall be made without a separately approved extension.
@@ -259,3 +259,131 @@ EVIDENCE: none yet
 RELATIONS:
 - TYPE: Parent
   VALUE: B0-REQ-0030
+
+[REQUIREMENT]
+UID: EDG-REQ-0034
+TITLE: Standardized detector interface
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The detector shall expose an infer(frame) interface independent of ROS 2 and flight-control middleware.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+A synthetic input is checked against the declared output schema without middleware dependencies.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0035
+TITLE: Lightweight detector baseline
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall establish a lightweight bridge-defect detector baseline using YOLOv8n or YOLO11n and an appropriately licensed public concrete-defect dataset.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Report model, dataset version, licence, split, and per-class detection metrics with retained raw outputs.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0036
+TITLE: Structured pruning
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall provide a structured channel pruning pipeline with configurable sparsity ratios.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Record the pruning configuration, model identity and resulting architecture; verify supported models.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0037
+TITLE: ONNX and static INT8 quantization
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The system shall export supported models to ONNX and support static INT8 post-training quantization using a declared calibration set.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Record calibration provenance and export configuration; compare outputs on fixed inputs and retain failures.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0038
+TITLE: Stage latency profiling
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The profiling pipeline shall measure preprocessing, inference and postprocessing latency, and report mean, P95 and P99.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Retain per-run timing, host identity, warm-up and repetitions; derive summaries from the raw measurements.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0039
+TITLE: Resource footprint
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The pipeline shall report peak RSS, parameter count, GFLOPs and serialized model size where available.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Record measurement method, units and unsupported quantities without inventing values.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0040
+TITLE: Thread-constrained CPU profile
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The pipeline shall support a declared thread-constrained CPU profile alongside GPU benchmarking.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Report actual host, provider, thread settings and raw timing; do not claim embedded-device performance.
+<<<
+EVIDENCE: none yet
+
+[REQUIREMENT]
+UID: EDG-REQ-0041
+TITLE: Accuracy and cost frontier
+STATUS: proposed
+STATE: planned
+STATEMENT: >>>
+The pipeline shall generate Pareto comparisons of mAP, P95 latency and model size.
+<<<
+RATIONALE: >>>
+Supports a reproducible civil bridge-inspection model-compression and profiling workflow.
+<<<
+ACCEPTANCE: >>>
+Generate from traceable, comparable raw results and record configurations and missing metrics.
+<<<
+EVIDENCE: none yet

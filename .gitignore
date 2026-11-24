@@ -1,4 +1,10 @@
 # === Python ===
+application/
+edge_inference/data/*
+!edge_inference/data/.gitkeep
+edge_inference/models/*.pt
+edge_inference/models/*.onnx
+edge_inference/models/*.engine
 __pycache__/
 *.py[cod]
 *.pyo
