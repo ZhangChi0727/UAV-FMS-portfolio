@@ -274,7 +274,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 A synthetic input is checked against the declared output schema without middleware dependencies.
 <<<
-EVIDENCE: edge_inference/src/detector.py; edge_inference/tests/test_detector_scaffold.py (synthetic frames and adapter output).
+EVIDENCE: edge_inference/src/detector.py; edge_inference/tests/test_detector_scaffold.py (synthetic frames and adapter output); edge_inference/README.md describes supported adapters.
 
 [REQUIREMENT]
 UID: EDG-REQ-0035
@@ -296,7 +296,7 @@ EVIDENCE: edge_inference/scripts/train_baseline.py; edge_inference/scripts/prepa
 UID: EDG-REQ-0036
 TITLE: Structured pruning
 STATUS: proposed
-STATE: partial
+STATE: implemented
 STATEMENT: >>>
 The system shall provide a structured channel pruning pipeline with configurable sparsity ratios.
 <<<
@@ -306,7 +306,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record the pruning configuration, model identity and resulting architecture; verify supported models.
 <<<
-EVIDENCE: edge_inference/scripts/compress_pruning.py; edge_inference/tests/test_compression_pipeline.py (test_c2f_slim_is_physical_and_trainable). Implemented configuration: two-thirds target width rounded to multiples of four; other ratios are not exposed as a run setting.
+EVIDENCE: edge_inference/scripts/compress_pruning.py exposes train --width-ratio and records the ratio and model costs. edge_inference/tests/test_compression_pipeline.py checks physical C2f/Detect widths, parameter counts and synthetic forward passes at 0.5 and 2/3; edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md records the measured default 2/3 model.
 
 [REQUIREMENT]
 UID: EDG-REQ-0037
@@ -322,7 +322,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record calibration provenance and export configuration; compare outputs on fixed inputs and retain failures.
 <<<
-EVIDENCE: edge_inference/scripts/export_fp32_trace.py; edge_inference/scripts/quantize_int8.py; edge_inference/tests/test_compression_pipeline.py (train-only calibration membership and static QDQ round trip).
+EVIDENCE: edge_inference/scripts/export_fp32_trace.py; edge_inference/scripts/quantize_int8.py; edge_inference/tests/test_compression_pipeline.py (train-only calibration membership and static QDQ round trip); edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md records the calibration and fixed-input comparison.
 
 [REQUIREMENT]
 UID: EDG-REQ-0038
@@ -338,7 +338,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Retain per-run timing, host identity, warm-up and repetitions; derive summaries from the raw measurements.
 <<<
-EVIDENCE: edge_inference/src/benchmark.py; edge_inference/tests/test_detector_scaffold.py (synthetic stage samples and CLI record); edge_inference/scripts/eval_compression_variants.py (development-host profiles).
+EVIDENCE: edge_inference/src/benchmark.py; edge_inference/tests/test_detector_scaffold.py (synthetic stage samples and CLI record); edge_inference/scripts/eval_compression_variants.py and edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md (development-host profiles and recorded summaries).
 
 [REQUIREMENT]
 UID: EDG-REQ-0039
@@ -354,7 +354,7 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Record measurement method, units and unsupported quantities without inventing values.
 <<<
-EVIDENCE: edge_inference/src/benchmark.py and edge_inference/scripts/eval_compression_variants.py record sampled peak process RSS and serialized size; edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md reports these alongside source-architecture parameters and estimated GFLOPs. RSS is not an instantaneous peak or GPU memory.
+EVIDENCE: edge_inference/src/benchmark.py and edge_inference/scripts/eval_compression_variants.py record sampled peak process RSS and serialized size; edge_inference/tests/test_detector_scaffold.py checks both fields. edge_inference/logs/2026-11-24_day2_3_pruning_int8_compression.md reports these alongside source-architecture parameters and estimated GFLOPs. RSS is not an instantaneous peak or GPU memory.
 
 [REQUIREMENT]
 UID: EDG-REQ-0040
@@ -370,13 +370,13 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Report actual host, provider, thread settings and raw timing; do not claim embedded-device performance.
 <<<
-EVIDENCE: edge_inference/src/detector.py and edge_inference/scripts/eval_compression_variants.py implement the development-host CPU4 profile (ORT intra-op 4, inter-op 1); edge_inference/tests/test_detector_scaffold.py checks thread options and CLI overrides.
+EVIDENCE: edge_inference/src/detector.py and edge_inference/scripts/eval_compression_variants.py implement the development-host CPU4 profile (ORT intra-op 4, inter-op 1); edge_inference/tests/test_detector_scaffold.py checks thread options and CLI overrides. edge_inference/logs/2026-11-24_day1_yolov8n_fp32_baseline.md records CPU and GPU reference runs.
 
 [REQUIREMENT]
 UID: EDG-REQ-0041
 TITLE: Accuracy and cost frontier
 STATUS: proposed
-STATE: partial
+STATE: implemented
 STATEMENT: >>>
 The pipeline shall generate Pareto comparisons of mAP, P95 latency and model size.
 <<<
@@ -386,4 +386,4 @@ Supports a reproducible civil bridge-inspection model-compression and profiling 
 ACCEPTANCE: >>>
 Generate from traceable, comparable raw results and record configurations and missing metrics.
 <<<
-EVIDENCE: edge_inference/src/offload_sim.py supplies replay latency; edge_inference/scripts/plot_offloading_results.py generates nondominated descriptive score versus latency curves, including P95. edge_inference/docs/technical_note_uav_edge_offloading.md reports model size alongside scores and latency, not a joint three-dimensional frontier.
+EVIDENCE: edge_inference/scripts/plot_offloading_results.py (pareto) compares cached all-edge descriptive mAP50, standalone CPU4 P95 and ONNX size jointly. edge_inference/tests/test_offloading_experiments.py covers dominance, ties and three-axis trade-offs. edge_inference/docs/technical_note_uav_edge_offloading.md section 3.1 records the four-variant result and coverage limits.

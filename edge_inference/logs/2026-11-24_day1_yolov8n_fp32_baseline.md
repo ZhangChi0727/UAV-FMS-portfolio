@@ -89,6 +89,11 @@ are retained. This is coordinate normalization, not label editing or augmentatio
 
 ### Completed FP32 baseline (development-host)
 
+Data source: Mundt et al., [CODEBRIM v1.0 (CVPR 2019)](https://zenodo.org/records/2620293),
+original-image archive. The authors' [dataset licence](https://zenodo.org/records/2620293/files/license.md)
+limits use to non-commercial research and education and restricts redistribution
+of images and derivatives. This repository does not supply the dataset or trained weights.
+
 Final attempt 03 completed all 50 epochs in 1,138.843 seconds (18.98 minutes).
 Only this attempt's validation results selected the checkpoint. The maximum
 validation mAP50-95 in `results.csv` is at epoch 45 (0.17170). The library's

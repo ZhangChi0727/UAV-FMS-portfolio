@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 from edge_inference.scripts.run_offloading_experiments import descriptive, sim
-from edge_inference.scripts.plot_offloading_results import frontier
+from edge_inference.scripts.plot_offloading_results import frontier, standalone_frontier
 
 
 def test_descriptive_matches_v1_without_mutating_coverage():
@@ -28,3 +28,20 @@ def test_descriptive_matches_v1_without_mutating_coverage():
 
 def test_frontier_rejects_ties_and_dominated_points():
     assert frontier([(1,.2),(1,.3),(1,.3),(2,.3),(3,.4)])==[(1,.3),(3,.4)]
+
+
+def test_standalone_frontier_dominance_and_ties():
+    points = dict(b=(.5, 2, 4), a=(.5, 2, 4), lower_score=(.4, 2, 4),
+                  slower=(.5, 3, 4), larger=(.5, 2, 5), worse_all=(.4, 3, 5))
+    assert standalone_frontier(points) == ['a', 'b']
+
+
+def test_standalone_frontier_trades_each_axis():
+    # Each variant wins on just one objective; ignoring any axis drops its winner.
+    points = dict(accurate=(.51, 3, 5), fast=(.5, 2, 5), small=(.5, 3, 4))
+    assert standalone_frontier(points) == ['accurate', 'fast', 'small']
+
+
+def test_standalone_frontier_refuses_nonfinite_objective():
+    with pytest.raises(ValueError, match='invalid'):
+        standalone_frontier({'unknown': (.5, float('nan'), 3)})

@@ -71,6 +71,24 @@ The **25.7%** reduction compares means within that batch, not across sessions.
 Host temperature and OS scheduling were not controlled or shown to be identical;
 the cause of the baseline difference is unknown.
 
+**Three-objective Pareto result (development-host CPU4).** Using unrounded
+annotation-relative mAP@50 (maximize), standalone total P95 in ms (minimize)
+and serialized ONNX MB (minimize), the non-dominated set is **FP32 Baseline,
+Pruned-FP32, Static INT8 and Pruned-INT8**. A variant dominates another only
+if no worse on any objective and strictly better on at least one. FP32 has
+the highest score; Pruned-FP32 has the lowest P95. Static INT8 is smaller
+than both, while Pruned-INT8 is smaller still but slower and lower-scoring
+than Static INT8. This is a comparison of observed points, not evidence that
+small score differences are significant or that field accuracy is known
+(`complete=false`).
+
+Reproduce with `python -m edge_inference.scripts.plot_offloading_results pareto`
+from the repository root. It checks the four Day 2–3 CPU4 profile hashes for
+latency and size, and the Day 3–4 result hash for standalone all-edge scores.
+It does not use replay latency, round the inputs, or run inference. The cached
+pruned models retain the original 2/3 width setting; the additional 0.5
+setting was checked with synthetic tensors only and is not a fifth measured variant.
+
 **Key Findings:**
 1. **Pruning Accelerates CPU Execution; QDQ Shrinks Storage Footprint:** Physical channel pruning reduces `CPU4` mean latency by **25.7%** (45.16 ms vs. 60.76 ms) with a small decrease in overall descriptive `mAP@50` (`0.2982` vs. `0.2997`). Conversely, `Pruned-INT8` compresses disk footprint by **80.4%** (2.50 MB), but its mean latency (58.83 ms) exceeds Pruned-FP32’s, and descriptive `mAP@50:95` falls to `0.1208`. No operator-level timing isolated the cause.
 2. **Fine-Grained Crack Sensitivity:** Pruned-FP32 scores higher on `spallation` AP50 but lower on its recall than baseline FP32; `crack` recall drops from `0.1373` to `0.0902` (`Pruned-FP32`), creating a natural use case for selective cloud escalation.

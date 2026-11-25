@@ -192,3 +192,5 @@ def test_model_receives_config_threads_and_cli_override(tmp_path, monkeypatch):
     assert calls == [('cpu', 2), ('cpu', 3)]
     report = json.loads((tmp_path / 'result.json').read_text())
     assert (report['warmup'], report['runs']) == (1, 2)
+    assert report['sampled_peak_rss_bytes'] > 0
+    assert report['model']['size_bytes'] == model.stat().st_size

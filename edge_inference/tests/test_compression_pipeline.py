@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 import onnx
 import onnxruntime as ort
 import torch
@@ -37,6 +38,32 @@ def test_c2f_slim_is_physical_and_trainable():
     assert net.model[0].cv1.conv.out_channels==2*net.model[0].c<32
     y.mean().backward()
     assert all(p.grad is not None for p in net.parameters())
+
+
+def test_configurable_width_c2f_and_detect(monkeypatch):
+    from copy import deepcopy
+    from ultralytics.nn.modules import C2f, Detect
+    monkeypatch.setattr(Detect, 'legacy', True)  # YOLOv8 detection tower layout
+    base = nn.Module()
+    base.model = nn.ModuleList([C2f(16, 32, n=2, shortcut=True), Detect(nc=5, ch=(32,))])
+    base.model[1].stride.fill_(8)
+    counts = []
+    for ratio, widths in [(0.5, (16, 32, 16)), (2/3, (24, 44, 20))]:
+        net = slim(deepcopy(base), ratio).eval()
+        body, head = net.model
+        assert tuple(layer.conv.weight.shape[0] for layer in
+                     (body.cv1, head.cv2[0][0], head.cv3[0][0])) == widths
+        with torch.no_grad():
+            decoded, _ = head([body(torch.ones(1, 16, 12, 12))])
+        assert decoded.shape == (1, 9, 144) and decoded.isfinite().all()
+        counts.append(sum(p.numel() for p in net.parameters()))
+    assert counts[0] < counts[1] < sum(p.numel() for p in base.parameters())
+
+
+@pytest.mark.parametrize('ratio', [0, 1, -0.1, 1.1, float('nan'), float('inf')])
+def test_invalid_ratio_rejected_before_pruning(ratio):
+    with pytest.raises(ValueError, match='width ratio'):
+        slim(nn.Module(), ratio)
 
 
 def test_static_qdq_roundtrip(tmp_path):

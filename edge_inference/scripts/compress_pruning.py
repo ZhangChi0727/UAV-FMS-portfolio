@@ -19,6 +19,7 @@ MANIFEST = '7321eaef3d7cd3526e7489e4c3872554f6f8741a2030e5ff45dcb5bf461adf84'
 BASE_PT = 'ffd8228000e0c5ca385b58389d212aba7a19a5b14a6a4f4e3b36209005e6f255'
 BASE_ONNX = '9ee091bd2a70a5b99ea3f93712d9f6774f02c65d1576f0e444d9b7f31d8fbc3e'
 SCRATCH = EDGE.parent / 'build/day23-recovery-data'
+DEFAULT_WIDTH_RATIO = 2 / 3
 
 
 def manifest():
@@ -28,9 +29,15 @@ def manifest():
     return json.loads(p.read_text())
 
 
-def keep(scores):
-    # Predeclared 2/3 width, rounded to the nearest multiple of four.
-    n = min(len(scores), max(4, 4 * round(len(scores) * 2 / 3 / 4)))
+def checked_ratio(value):
+    ratio = float(value)
+    if not 0 < ratio < 1:
+        raise ValueError('width ratio must be in (0, 1)')
+    return ratio
+
+
+def keep(scores, width_ratio: float = DEFAULT_WIDTH_RATIO):
+    n = min(len(scores), max(4, 4 * round(len(scores) * checked_ratio(width_ratio) / 4)))
     return scores.argsort(descending=True, stable=True)[:n].sort().values
 
 
@@ -64,7 +71,8 @@ def slice_conv(layer, inputs=None, outputs=None):
     conv.out_channels, conv.in_channels = w.shape[:2]
 
 
-def slim(model):
+def slim(model, width_ratio: float = DEFAULT_WIDTH_RATIO):
+    width_ratio = checked_ratio(width_ratio)
     from ultralytics.nn.modules import C2f, Detect
     for block in model.model:
         if isinstance(block, C2f):
@@ -72,17 +80,17 @@ def slim(model):
             scores = l1(block.cv1).reshape(2, c).sum(0)
             for bottleneck in block.m:
                 scores += l1(bottleneck.cv2)
-            idx = keep(scores)
+            idx = keep(scores, width_ratio)
             slice_conv(block.cv1, outputs=torch.cat((idx, idx+c)))
             for b in block.m:
-                inner = keep(l1(b.cv1))
+                inner = keep(l1(b.cv1), width_ratio)
                 slice_conv(b.cv1, idx, inner)
                 slice_conv(b.cv2, inner, idx)
             slice_conv(block.cv2, torch.cat([idx+j*c for j in range(2+len(block.m))]))
             block.c = len(idx)
         elif isinstance(block, Detect):
             for tower in [*block.cv2, *block.cv3]:
-                a, b = keep(l1(tower[0])), keep(l1(tower[1]))
+                a, b = keep(l1(tower[0]), width_ratio), keep(l1(tower[1]), width_ratio)
                 slice_conv(tower[0], outputs=a)
                 slice_conv(tower[1], a, b)
                 slice_conv(tower[2], b)
@@ -94,7 +102,8 @@ def costs(model):
     return dict(parameters=sum(p.numel() for p in model.parameters()), gflops=get_flops(model, 640))
 
 
-def train():
+def train(width_ratio: float = DEFAULT_WIDTH_RATIO):
+    width_ratio = checked_ratio(width_ratio)
     from ultralytics import YOLO
     from ultralytics.models.yolo.detect import DetectionTrainer
     if RUN.exists() or digest(BEST) != BASE_PT:
@@ -114,7 +123,7 @@ def train():
     cfg.write_text(yaml.safe_dump(dict(path=SCRATCH.as_posix(),train='images/train',val='images/val',names=m['classes'])))
     model = YOLO(BEST).model.float()
     before = costs(model)
-    slim(model)
+    slim(model, width_ratio)
     after = costs(model)
     if not all(0 < after[k] < before[k] for k in before):
         raise RuntimeError('physical reduction not verified')
@@ -124,7 +133,8 @@ def train():
         device=0, deterministic=True, plots=False, optimizer='AdamW', lr0=.001))
     tr.model = model
     write_json(RUN/'pruning.json',dict(before=before,after=after,source_sha256=BASE_PT,split_sha256=MANIFEST,
-        width_rule='nearest multiple of four to two-thirds; one prespecified candidate, best validation epoch'))
+        width_ratio=width_ratio, width_rule='retained width rounded to nearest multiple of four, '
+        'at least four and at most the original width; best validation epoch'))
     tr.train()
 
 
@@ -156,9 +166,15 @@ def export():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('stage', choices=('train','export'))
+    stages = parser.add_subparsers(dest='stage', required=True)
+    stages.add_parser('train').add_argument('--width-ratio', type=checked_ratio, default=DEFAULT_WIDTH_RATIO,
+        help='fraction of internal channels to retain before rounding (default: 2/3)')
+    stages.add_parser('export')
     args = parser.parse_args()
     os.environ['YOLO_CONFIG_DIR'] = str(EDGE.parent/'build/ultralytics-settings')
     os.environ['YOLO_AUTOINSTALL'] = 'false'
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
-    (train if args.stage=='train' else export)()
+    if args.stage == 'train':
+        train(args.width_ratio)
+    else:
+        export()

@@ -1,6 +1,7 @@
 """Cached-result figures and Markdown tables. No model or replay execution."""
 import argparse
 import json
+import math
 from textwrap import fill
 
 import matplotlib as mpl
@@ -8,7 +9,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from edge_inference.scripts.run_offloading_experiments import OUTPUT, EDGE, DISCLOSURE
+from edge_inference.scripts.run_offloading_experiments import OUTPUT, EDGE, DISCLOSURE, checked
 
 DEST = EDGE/'runs/offloading_figures'
 BWS = [1,5,20]
@@ -40,6 +41,44 @@ def frontier(points):
             result.append((x,y))
             best=y
     return result
+
+
+def standalone_frontier(points: dict[str, tuple[float, float, float]]) -> list[str]:
+    """(mAP50, CPU4 P95 ms, ONNX MB): maximize the first, minimize the rest.
+
+    Exact ties retain both named variants. Sort names, not rounded objectives.
+    """
+    for name, (score, ms, mb) in points.items():
+        if not (0 <= score <= 1 and 0 < ms < math.inf and 0 < mb < math.inf):
+            raise ValueError(f'{name}: invalid standalone objectives')
+
+    def dominates(a, b):
+        return a != b and a[0] >= b[0] and a[1] <= b[1] and a[2] <= b[2]
+
+    return sorted(name for name, point in points.items()
+                  if not any(dominates(other, point) for other in points.values()))
+
+
+def report_standalone_frontier():
+    # Exact caches from the Day 2–3 and Day 3–4 logs, not Day 1 or replay timing.
+    profiles = {
+        'fp32_baseline': 'a1f155b91844c92c1ab0c5bf5ca95ae39d6c204eb8c5711f077f39b63dbc4720',
+        'pruned_fp32': '207fbd5091b65d76c978e032d20571bfb6254d28ddb8bf843591f7a46ec45afc',
+        'int8': 'aefbe0bb10ea96c9e95682380237b2d962309687a904c6caeefca0b0bdfeabef',
+        'pruned_int8': '8e4d254ea6a44a816e8a5a757e2dfdd8bc7aa7bdb0362dba9d9ae5cf74e38062',
+    }
+    data = checked(OUTPUT, 'ae4e1c38c1383920f187fb1089ed562e1355eee569f8ccc8b3f9ba655e5c90ef')
+    points = {}
+    for name, sha in profiles.items():
+        profile = checked(OUTPUT.parent / f'profile-{name}-cpu4.json', sha)
+        if profile['variant'] != name:
+            raise ValueError(f'{name}: profile identity mismatch')
+        score = data['primary'][name]['baselines']['all_edge']['annotation_relative']['map50']
+        points[name] = (score, profile['summary_ms']['total']['p95'], profile['model_size_MB'])
+    print('Development-host CPU4; annotation-relative mAP50 (complete=false), P95 ms, ONNX MB')
+    for name, values in points.items():
+        print(name, *values)
+    print('Non-dominated:', ', '.join(standalone_frontier(points)))
 
 
 def save(fig,name):
@@ -162,7 +201,10 @@ def tables(d):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser()
-    p.add_argument('mode',choices=['figures','tables'])
+    p.add_argument('mode',choices=['figures','tables','pareto'])
     mode=p.parse_args().mode
-    data=json.loads(OUTPUT.read_text(encoding='utf-8'))
-    (figures if mode=='figures' else tables)(data)
+    if mode == 'pareto':
+        report_standalone_frontier()
+    else:
+        data=json.loads(OUTPUT.read_text(encoding='utf-8'))
+        (figures if mode=='figures' else tables)(data)
