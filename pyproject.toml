@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uav-b0"
+version = "0.2.0"
+description = "Editable Python access to the B0 component checkout"
+requires-python = ">=3.11"
+dependencies = ["numpy"]
+
+[tool.setuptools]
+packages = ["uav_b0", "uav_b0.simulation", "uav_b0.estimation", "uav_b0.control", "uav_b0.integration", "b0"]
+package-dir = {b0 = "01_simulation/b0"}
+
+[tool.pytest.ini_options]
+# For direct per-track pytest without installing the editable distribution.
+pythonpath = [".", "01_simulation"]

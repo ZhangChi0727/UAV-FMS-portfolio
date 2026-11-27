@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+from importlib.machinery import ExtensionFileLoader, PathFinder
 import importlib.util
 import json
 import math
@@ -11,6 +12,8 @@ import numbers
 import os
 import sys
 from pathlib import Path
+
+from uav_b0.paths import repository_root
 
 
 class ControllerConfigurationError(ValueError):
@@ -80,12 +83,9 @@ def _required_attribute(value, name):
 def _load_g1_contract(repo: Path):
     package_dir = (repo / "01_simulation/b0").resolve()
     package_file = package_dir / "__init__.py"
-    package_parent = str(package_dir.parent)
-    if package_parent not in sys.path:
-        sys.path.insert(0, package_parent)
     try:
-        package = importlib.import_module("b0")
-        contract = importlib.import_module("b0.contract")
+        package = importlib.import_module("uav_b0.simulation")
+        contract = importlib.import_module("uav_b0.simulation.contract")
     except (ImportError, OSError) as exc:
         raise ControllerConfigurationError("G1 public package is unavailable") from exc
     package_origin = getattr(package, "__file__", None)
@@ -107,6 +107,26 @@ def _canonical(data: bytes) -> bytes:
     return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
+def _load_binding(directory=None):
+    """Load the selected native extension without modifying global import paths."""
+    directory = directory or os.environ.get("B0_CONTROLLER_MODULE_DIR")
+    if not directory:
+        return importlib.import_module("b0_controller")
+    directory = Path(directory).resolve()
+    spec = PathFinder.find_spec("b0_controller", [str(directory)])
+    if spec is None or not isinstance(spec.loader, ExtensionFileLoader):
+        raise ControllerConfigurationError(f"native b0_controller unavailable in {directory}")
+    loaded = sys.modules.get(spec.name)
+    if loaded is not None:
+        if Path(loaded.__file__).resolve() != Path(spec.origin).resolve():
+            raise ControllerConfigurationError("native controller binding identity mismatch")
+        return loaded
+    loaded = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(loaded)
+    sys.modules[spec.name] = loaded
+    return loaded
+
+
 def _canonical_file(path: Path, label: str) -> bytes:
     try:
         return _canonical(path.read_bytes())
@@ -122,8 +142,8 @@ def _json(path: Path):
 
 
 def load_controller_parameters(module=None, track: Path | None = None):
-    track = (track or Path(__file__).resolve().parents[1]).resolve()
-    repo = track.parents[1]
+    repo = repository_root(track or __file__)
+    track = (track or repo / "03_control/b0").resolve()
     design_path = track / "configs/b0_g2_controller.v1.json"
     approval_path = track / "configs/b0_g2_controller_approval.v1.json"
     g0_path = repo / "05_integration/b0/configs/b0_g0_contract.v2.json"
@@ -162,12 +182,7 @@ def load_controller_parameters(module=None, track: Path | None = None):
     except Exception as exc:
         raise ControllerConfigurationError("authoritative G0 validation failed") from exc
     if module is None:
-        module_dir = os.environ.get("B0_CONTROLLER_MODULE_DIR")
-        if module_dir:
-            import sys
-
-            sys.path.insert(0, module_dir)
-        module = importlib.import_module("b0_controller")
+        module = _load_binding()
     p = module.ControllerParameters()
     control, actuator, timing = (
         g0["controller_contract"],
@@ -200,11 +215,11 @@ def load_controller_parameters(module=None, track: Path | None = None):
 
 class ControllerAdapter:
     def __init__(self, module=None):
-        self.module = module or importlib.import_module("b0_controller")
+        self.module = module or _load_binding()
         self.parameters = load_controller_parameters(self.module)
         self.core = self.module.CascadedController(self.parameters)
         self.epoch_id = None
-        repo = Path(__file__).resolve().parents[3]
+        repo = repository_root(__file__)
         self.g1_contract = _load_g1_contract(repo)
 
     def _to_g1(self, output):

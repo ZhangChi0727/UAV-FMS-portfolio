@@ -9,7 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from estimator import (
+from uav_b0.paths import repository_root
+from uav_b0.estimation.estimator import (
     AttitudeEstimator,
     EstimatorContractError,
     EstimatorInitialState,
@@ -20,8 +21,8 @@ from estimator import (
 )
 
 
-TRACK = Path(__file__).resolve().parents[1]
-REPO = TRACK.parents[1]
+REPO = repository_root(__file__)
+TRACK = REPO / "02_estimation/b0"
 Q_TOL = 1e-12
 
 

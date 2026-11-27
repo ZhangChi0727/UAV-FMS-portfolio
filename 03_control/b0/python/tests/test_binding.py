@@ -1,7 +1,5 @@
 import importlib
 import math
-import os
-import sys
 import warnings
 from fractions import Fraction
 from pathlib import Path
@@ -9,10 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-module_dir = Path(os.environ["B0_CONTROLLER_MODULE_DIR"]).resolve()
-sys.path.insert(0, str(module_dir))
 c = importlib.import_module("b0_controller")
-assert module_dir in Path(c.__file__).resolve().parents
 
 
 def parameters():
@@ -100,7 +95,7 @@ def snapshot_value(snapshot):
     )
 
 
-def test_cpp_python_parity_and_module_identity():
+def test_cpp_python_parity_and_module_identity(expected_binding_dir):
     controller = c.CascadedController(parameters())
     held = reset(controller, epoch=7, time=10.0)
     angle = 0.1
@@ -111,7 +106,7 @@ def test_cpp_python_parity_and_module_identity():
     assert output.requested_torque_body_Nm[0] == pytest.approx(expected, rel=0.0, abs=1e-12)
     assert output.timestamp_s == 10.005
     assert output.epoch_id == 7
-    assert Path(c.__file__).resolve().parent == module_dir
+    assert Path(c.__file__).resolve().parent == expected_binding_dir
 
 
 def test_complete_diagnostics_and_snapshot_are_read_only_copies():

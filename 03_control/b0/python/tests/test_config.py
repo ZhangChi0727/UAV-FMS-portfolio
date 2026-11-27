@@ -1,20 +1,15 @@
 import hashlib
-import importlib.util
 import json
-import os
 import shutil
 from pathlib import Path
 
 import pytest
 
-module_dir = Path(os.environ["B0_CONTROLLER_MODULE_DIR"]).resolve()
-track = Path(__file__).resolve().parents[2]
-repo = track.parents[1]
-spec = importlib.util.spec_from_file_location(
-    "g2b_controller_adapter", track / "python/controller.py"
-)
-adapter = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(adapter)
+from uav_b0.control import controller as adapter
+from uav_b0.paths import repository_root
+
+repo = repository_root(__file__)
+track = repo / "03_control/b0"
 
 
 def canonical(data):
@@ -80,7 +75,7 @@ def test_line_endings_and_authoritative_validation(tmp_path, newline):
 @pytest.mark.parametrize("case", ["missing", "changed", "wrong_version", "bad_gain"])
 def test_configuration_fail_closed_for_g0(tmp_path, case):
     temporary_track = fixture_repo(tmp_path)
-    g0_path = temporary_track.parents[1] / "05_integration/b0/configs/b0_g0_contract.v2.json"
+    g0_path = repository_root(temporary_track) / "05_integration/b0/configs/b0_g0_contract.v2.json"
     if case == "missing":
         g0_path.unlink()
     elif case == "changed":

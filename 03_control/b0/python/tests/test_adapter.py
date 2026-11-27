@@ -1,26 +1,12 @@
-import importlib.util
-import os
-import sys
 from dataclasses import dataclass
 from fractions import Fraction
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-repo = Path(os.environ["B0_CONTROLLER_REPO"]).resolve()
-sys.path.insert(0, os.environ["B0_CONTROLLER_MODULE_DIR"])
-sys.path.insert(0, str(repo / "01_simulation"))
-sys.path.insert(0, str(repo / "02_estimation/b0"))
-
-from b0 import Actuator, ActuatorInitialState, TorqueCommand  # noqa: E402
-from estimator import ResetEpoch, StateEstimate  # noqa: E402
-
-spec = importlib.util.spec_from_file_location(
-    "g2b_controller_adapter", repo / "03_control/b0/python/controller.py"
-)
-adapter_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(adapter_module)
+from uav_b0.simulation import Actuator, ActuatorInitialState, TorqueCommand
+from uav_b0.estimation.estimator import ResetEpoch, StateEstimate
+from uav_b0.control import controller as adapter_module
 
 
 @dataclass

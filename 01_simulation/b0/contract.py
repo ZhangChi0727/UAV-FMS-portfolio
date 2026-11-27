@@ -453,7 +453,8 @@ def load_g1_parameters(config_path: str | Path | None = None) -> G1Parameters:
     """Load and validate the plant/actuator/IMU values from G0 v2."""
 
     if config_path is None:
-        config_path = Path(__file__).resolve().parents[2] / "05_integration/b0/configs/b0_g0_contract.v2.json"
+        from uav_b0.paths import repository_root
+        config_path = repository_root(__file__) / "05_integration/b0/configs/b0_g0_contract.v2.json"
     path = Path(config_path)
     try:
         with path.open(encoding="utf-8") as handle:
@@ -491,15 +492,11 @@ def load_g1_parameters(config_path: str | Path | None = None) -> G1Parameters:
 def _validate_with_authority(config_path: Path) -> None:
     """Run the repository's single authoritative G0 validator before extraction."""
 
-    import importlib.util
-
-    validator_path = Path(__file__).resolve().parents[2] / "05_integration/b0/validate_config.py"
     try:
-        spec = importlib.util.spec_from_file_location("b0_g0_authoritative_validator", validator_path)
-        if spec is None or spec.loader is None:
-            raise ContractValidationError("cannot load authoritative G0 validator")
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        from uav_b0.integration import validate_config as module
+        from uav_b0.paths import repository_root
+        if Path(module.__file__).resolve() != repository_root(__file__) / "05_integration/b0/validate_config.py":
+            raise ContractValidationError("wrong authoritative G0 validator origin")
         document = module.load_config(config_path)
         module.validate_config(document)
     except ContractValidationError:

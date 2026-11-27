@@ -14,7 +14,10 @@ import re
 from pathlib import Path
 from typing import Any
 
-REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+# Also valid when this standalone authority is copied into an isolated fixture.
+_SOURCE = Path(__file__).resolve()
+REPOSITORY_ROOT = next(root for root in _SOURCE.parents
+                       if root / "05_integration/b0/validate_config.py" == _SOURCE)
 LEGACY_APPROVAL_SOURCE = "07_docs/b0/g0_approval_decision.md"
 MIGRATED_APPROVAL_TARGET = Path("systems_engineering/reports/b0/g0_approval_decision.md")
 

@@ -9,8 +9,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from actuator import Actuator
-from contract import (
+from uav_b0.simulation.actuator import Actuator
+from uav_b0.simulation.contract import (
     ActuatorInitialState,
     ContractValidationError,
     G1Parameters,
@@ -20,9 +20,9 @@ from contract import (
     TorqueCommand,
     load_g1_parameters,
 )
-from imu import IMU
-from plant import Plant
-from quaternion import (
+from uav_b0.simulation.imu import IMU
+from uav_b0.simulation.plant import Plant
+from uav_b0.simulation.quaternion import (
     normalize_quaternion,
     quaternion_distance_rad,
     quaternion_from_axis_angle,

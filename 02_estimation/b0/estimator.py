@@ -205,7 +205,8 @@ class EstimatorParameters:
 
 
 def _authoritative_validate(g0_path: Path) -> dict[str, Any]:
-    validator_path = g0_path.parents[1] / "validate_config.py"
+    from uav_b0.paths import repository_root
+    validator_path = repository_root(g0_path) / "05_integration/b0/validate_config.py"
     spec = importlib.util.spec_from_file_location("b0_g0_estimator_validator", validator_path)
     if spec is None or spec.loader is None:
         raise EstimatorContractError("cannot load authoritative G0 validator")
@@ -234,7 +235,8 @@ def load_estimator_parameters(config_path: str | Path | None = None) -> Estimato
             raise EstimatorContractError("estimator configuration differs from the design-accepted bytes")
         authority = candidate["authority"]
         choices = candidate["implementation_choices"]
-        repo = track.parents[1]
+        from uav_b0.paths import repository_root
+        repo = repository_root(track)
         g0_path = repo / authority["g0_config_path"]
         if _canonical_lf_digest(g0_path) != authority["g0_canonical_lf_sha256"]:
             raise EstimatorContractError("loaded G0 configuration canonical digest mismatch")

@@ -6,16 +6,12 @@ import copy
 import json
 import os
 from pathlib import Path
-import sys
 
 import pytest
 
 
-TRACK_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(TRACK_ROOT))
-
-import validate_config as validator  # noqa: E402
-from validate_config import (  # noqa: E402
+from uav_b0.integration import validate_config as validator
+from uav_b0.integration.validate_config import (
     ROOT_REQUIRED,
     ContractValidationError,
     load_config,
@@ -24,6 +20,7 @@ from validate_config import (  # noqa: E402
 )
 
 
+TRACK_ROOT = Path(validator.__file__).resolve().parent
 CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v1.json"
 V2_CONFIG_PATH = TRACK_ROOT / "configs" / "b0_g0_contract.v2.json"
 SCHEMA_PATH = TRACK_ROOT / "schema" / "b0_g0_contract.schema.json"
@@ -147,7 +144,7 @@ def test_v2_historical_approval_source_resolves_to_migrated_target() -> None:
     record = approved_config()["contract_status"]["approval_record"]
     resolved = validator._resolve_approval_record_source(record["decision_source"])
     assert resolved == (
-        TRACK_ROOT.parents[1] / validator.MIGRATED_APPROVAL_TARGET
+        validator.REPOSITORY_ROOT / validator.MIGRATED_APPROVAL_TARGET
     ).resolve()
     assert resolved.is_file()
 
