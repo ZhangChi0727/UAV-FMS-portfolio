@@ -6,6 +6,8 @@ compression, development-host profiling and cached-trace replay. The
 variants and the limits of the comparison. EDG-REQ-0034–0041 are approved
 prototype requirements; the results are not board or flight measurements.
 
+[Review the archived run records](logs/evidence/2026-11-24/README.md): interrupted and completed training, exports, quantization and the environment check, with SHA-256 hashes for all 18 files.
+
 - configs/baseline.yaml: CLI defaults for image size, warmup, runs and CPU threads.
 - src/detector.py: ONNX raw YOLOv8 detection-head adapter and Ultralytics adapter.
 - src/benchmark.py: stage timings on synthetic inputs, with a dummy workload or an ONNX model.

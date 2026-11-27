@@ -1,5 +1,7 @@
 # Day 1: CODEBRIM detection preparation and FP32 baseline
 
+[Public copies of the original consoles, audit and environment records](evidence/2026-11-24/README.md). References to `build/` below preserve the paths used during the run.
+
 ## Objective
 
 Prepare an image-disjoint CODEBRIM detection split, train YOLOv8n, and retain

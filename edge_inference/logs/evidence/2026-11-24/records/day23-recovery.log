@@ -1,0 +1,1331 @@
+{'parameters': 3138975, 'gflops': 8.7542912} {'parameters': 2064091, 'gflops': 5.4528928}
+Ultralytics 8.4.218  Python-3.11.5 torch-2.6.0+cu124 CUDA:0 (NVIDIA GeForce RTX 4060 Laptop GPU, 8188MiB)
+[34m[1mengine\trainer: [0magnostic_nms=False, amp=False, angle=1.0, augment=False, auto_augment=randaugment, batch=16, bgr=0.0, box=7.5, cache=False, cfg=None, channels_last=None, classes=None, close_mosaic=10, cls=0.5, cls_pw=0.0, cls_remap=True, compile=False, conf=None, copy_paste=0.0, copy_paste_mode=flip, cos_lr=False, cutmix=0.0, data=E:\Project\uav-fms-portfolio\build\day23-recovery-data\data.yaml, degrees=0.0, deterministic=True, device=0, dfl=1.5, dgrad=0.5, dis=6.0, distill_model=None, dlam=1.0, dlog=1.0, dnn=False, dropout=0.0, dynamic=False, embed=None, epochs=20, erasing=0.4, exist_ok=False, fliplr=0.5, flipud=0.0, format=torchscript, fraction=1.0, freeze=None, hsv_h=0.015, hsv_s=0.7, hsv_v=0.4, imgsz=640, iou=None, kobj=1.0, line_width=None, lr0=0.001, lrf=0.01, mask_ratio=4, max_det=300, mixup=0.0, mode=train, model=E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_fp32_baseline\weights\best.pt, momentum=0.937, mosaic=1.0, multi_scale=0.0, name=yolov8n_pruned, nbs=64, nms=None, opset=None, optimize=False, optimizer=AdamW, overlap_mask=True, patience=100, perspective=0.0, plots=False, pose=12.0, pretrained=True, profile=False, project=E:\Project\uav-fms-portfolio\edge_inference\runs, quantize=None, rect=False, resume=False, retina_masks=False, rle=1.0, save=True, save_conf=False, save_crop=False, save_dir=E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned, save_frames=False, save_json=False, save_period=-1, save_txt=False, scale=0.5, seed=42, shear=0.0, show=False, show_boxes=True, show_conf=True, show_labels=True, simplify=True, single_cls=False, source=None, split=val, stream_buffer=False, task=detect, tile=False, tile_overlap=0.2, time=None, tracker=tracktrack.yaml, translate=0.1, val=True, verbose=True, vid_stride=1, visualize=False, warmup_bias_lr=0.1, warmup_epochs=3.0, warmup_momentum=0.8, weight_decay=0.0005, workers=4, workspace=None
+WARNING setting 'requires_grad=True' for frozen layer 'model.0.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.0.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.0.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.1.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.1.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.1.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.2.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.2.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.3.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.3.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.3.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.4.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.4.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.5.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.5.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.5.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.6.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.6.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.7.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.7.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.7.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.8.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.8.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv1.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv1.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv1.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv2.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.9.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.12.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.12.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.15.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.15.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.16.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.16.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.16.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.18.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.18.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.19.conv.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.19.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.19.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.21.cv2.bn.weight'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.21.cv2.bn.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv2.0.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv2.1.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv2.2.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv3.0.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv3.1.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+WARNING setting 'requires_grad=True' for frozen layer 'model.22.cv3.2.2.bias'. See ultralytics.engine.trainer for customization of frozen layers.
+Freezing layer 'model.22.dfl.conv.weight'
+[34m[1mtrain: [0mFast image access  (ping: 0.1±0.0 ms, read: 1799.9±524.0 MB/s, size: 4243.1 KB)
+
+[K[34m[1mtrain: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train... 191 images, 12 backgrounds, 0 corrupt: 22% ━━╸───────── 191/832 554.1it/s 0.1s<1.2s
+[K[34m[1mtrain: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train... 399 images, 15 backgrounds, 0 corrupt: 47% ━━━━━╸────── 399/832 972.0it/s 0.2s<0.4s
+[K[34m[1mtrain: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train... 589 images, 19 backgrounds, 0 corrupt: 70% ━━━━━━━━──── 589/832 1.2Kit/s 0.3s<0.2s
+[K[34m[1mtrain: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train... 768 images, 22 backgrounds, 0 corrupt: 92% ━━━━━━━━━━━─ 768/832 1.4Kit/s 0.4s<0.0s
+[K[34m[1mtrain: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train... 832 images, 23 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 832/832 1.9Kit/s 0.4s
+[34m[1mtrain: [0mNew cache created: E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\train.cache
+[34m[1mval: [0mFast image access  (ping: 0.1±0.0 ms, read: 2354.2±323.7 MB/s, size: 4802.7 KB)
+
+[K[34m[1mval: [0mScanning E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\val... 104 images, 1 backgrounds, 0 corrupt: 100% ━━━━━━━━━━━━ 104/104 1.6Kit/s 0.1s
+[34m[1mval: [0mNew cache created: E:\Project\uav-fms-portfolio\build\day23-recovery-data\labels\val.cache
+[34m[1moptimizer:[0m AdamW(lr=0.001, momentum=0.937) with parameter groups 57 weight(decay=0.0), 64 weight(decay=0.0005), 63 bias(decay=0.0)
+Using 832 train, 104 val images for fraction=1.0 at imgsz=640
+Using 4 dataloader workers
+Logging results to [1mE:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned[0m
+Starting training for 20 epochs...
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       1/20      3.55G      3.101      4.048      2.556        212        640: 0% ──────────── 0/52  13.5s
+[K       1/20      3.55G      3.066      3.788      2.535        153        640: 1% ──────────── 1/52 1.4it/s 13.8s<35.3s
+[K       1/20      3.55G       2.98      3.585      2.475        295        640: 3% ──────────── 2/52 2.4it/s 14.0s<20.7s
+[K       1/20      3.55G      2.938       3.39      2.429        200        640: 5% ╸─────────── 3/52 3.1it/s 14.2s<16.0s
+[K       1/20      3.55G        2.9      3.338      2.414        211        640: 7% ╸─────────── 4/52 3.6it/s 14.4s<13.3s
+[K       1/20      3.55G      2.862      3.296       2.38        184        640: 9% ━─────────── 5/52 4.0it/s 14.6s<11.8s
+[K       1/20      3.55G      2.844       3.25       2.37        236        640: 11% ━─────────── 6/52 4.3it/s 14.8s<10.7s
+[K       1/20      3.55G      2.821      3.237      2.362        155        640: 13% ━╸────────── 7/52 4.5it/s 15.0s<10.1s
+[K       1/20      3.55G      2.797      3.165      2.345        273        640: 15% ━╸────────── 8/52 3.6it/s 15.7s<12.3s
+[K       1/20      3.55G      2.786      3.144      2.334        240        640: 17% ━━────────── 9/52 3.9it/s 15.9s<10.9s
+[K       1/20      3.55G       2.77      3.119      2.325        212        640: 19% ━━────────── 10/52 4.2it/s 16.1s<10.0s
+[K       1/20      3.55G      2.733      3.075       2.31        259        640: 21% ━━╸───────── 11/52 4.4it/s 16.3s<9.3s
+[K       1/20      3.56G      2.726      3.055      2.308        244        640: 23% ━━╸───────── 12/52 3.4it/s 17.1s<11.7s
+[K       1/20      3.56G      2.722       3.02      2.304        260        640: 25% ━━━───────── 13/52 3.9it/s 17.3s<10.1s
+[K       1/20      3.56G      2.709      2.993        2.3        329        640: 26% ━━━───────── 14/52 4.1it/s 17.5s<9.2s
+[K       1/20      3.56G      2.694      2.976      2.294        243        640: 28% ━━━───────── 15/52 4.4it/s 17.7s<8.5s
+[K       1/20      3.56G      2.682      2.961      2.284        212        640: 30% ━━━╸──────── 16/52 3.5it/s 18.4s<10.3s
+[K       1/20      3.56G      2.673      2.959      2.277        249        640: 32% ━━━╸──────── 17/52 3.4it/s 18.8s<10.3s
+[K       1/20      3.56G      2.671      2.938      2.273        297        640: 34% ━━━━──────── 18/52 3.9it/s 19.0s<8.8s
+[K       1/20      3.56G      2.669       2.92      2.273        398        640: 36% ━━━━──────── 19/52 4.1it/s 19.2s<8.0s
+[K       1/20      3.56G      2.656      2.895      2.264        301        640: 38% ━━━━╸─────── 20/52 3.4it/s 19.7s<9.4s
+[K       1/20      3.56G      2.655      2.893      2.262        229        640: 40% ━━━━╸─────── 21/52 2.9it/s 20.4s<10.8s
+[K       1/20      3.56G      2.641      2.883      2.256        238        640: 42% ━━━━━─────── 22/52 3.4it/s 20.6s<8.7s
+[K       1/20      3.56G      2.637      2.881      2.252        252        640: 44% ━━━━━─────── 23/52 3.8it/s 20.8s<7.6s
+[K       1/20      3.56G      2.626      2.861      2.247        367        640: 46% ━━━━━╸────── 24/52 3.3it/s 21.3s<8.6s
+[K       1/20      3.56G       2.62      2.853      2.243        233        640: 48% ━━━━━╸────── 25/52 3.4it/s 21.6s<8.0s
+[K       1/20      3.56G      2.616       2.86      2.244        215        640: 50% ━━━━━━────── 26/52 3.8it/s 21.8s<6.8s
+[K       1/20      3.56G      2.615      2.856       2.24        237        640: 51% ━━━━━━────── 27/52 4.2it/s 22.0s<6.0s
+[K       1/20      3.56G      2.609      2.846       2.24        215        640: 53% ━━━━━━────── 28/52 3.2it/s 23.0s<7.4s
+[K       1/20      3.56G      2.602      2.843      2.238        185        640: 55% ━━━━━━╸───── 29/52 3.7it/s 23.2s<6.2s
+[K       1/20      3.56G      2.596      2.841      2.235        274        640: 57% ━━━━━━╸───── 30/52 4.1it/s 23.4s<5.3s
+[K       1/20      3.56G      2.593      2.839       2.23        197        640: 59% ━━━━━━━───── 31/52 4.3it/s 23.6s<4.8s
+[K       1/20      3.56G      2.591      2.835       2.23        274        640: 61% ━━━━━━━───── 32/52 3.4it/s 24.4s<5.9s
+[K       1/20      3.56G       2.59      2.828      2.228        366        640: 63% ━━━━━━━╸──── 33/52 2.6it/s 25.5s<7.2s
+[K       1/20      3.56G      2.582      2.824      2.225        202        640: 65% ━━━━━━━╸──── 34/52 3.2it/s 25.7s<5.6s
+[K       1/20      3.56G      2.572      2.811       2.22        229        640: 67% ━━━━━━━━──── 35/52 3.5it/s 26.0s<4.8s
+[K       1/20      3.56G      2.565      2.809      2.216        148        640: 69% ━━━━━━━━──── 36/52 2.7it/s 27.3s<5.9s
+[K       1/20      3.56G      2.556      2.799      2.212        281        640: 71% ━━━━━━━━╸─── 37/52 2.1it/s 28.6s<7.1s
+[K       1/20      3.56G       2.55      2.796      2.209        297        640: 73% ━━━━━━━━╸─── 38/52 2.8it/s 28.8s<5.0s
+[K       1/20      3.56G      2.547      2.789       2.21        267        640: 75% ━━━━━━━━━─── 39/52 3.2it/s 29.1s<4.0s
+[K       1/20      3.56G      2.539       2.78      2.205        235        640: 76% ━━━━━━━━━─── 40/52 2.5it/s 30.5s<4.9s
+[K       1/20      3.56G      2.538      2.781      2.205        184        640: 78% ━━━━━━━━━─── 41/52 1.9it/s 32.0s<5.7s
+[K       1/20      3.56G      2.534      2.773      2.204        254        640: 80% ━━━━━━━━━╸── 42/52 2.6it/s 32.3s<3.9s
+[K       1/20      3.56G       2.53      2.769      2.202        232        640: 82% ━━━━━━━━━╸── 43/52 2.7it/s 32.6s<3.4s
+[K       1/20      3.56G      2.524      2.762        2.2        211        640: 84% ━━━━━━━━━━── 44/52 1.9it/s 37.0s<4.1s
+[K       1/20      3.56G      2.522      2.758      2.199        244        640: 86% ━━━━━━━━━━── 45/52 1.9it/s 37.6s<3.8s
+[K       1/20      3.56G      2.519      2.754      2.199        243        640: 88% ━━━━━━━━━━╸─ 46/52 2.2it/s 38.0s<2.7s
+[K       1/20      3.56G      2.513      2.746      2.197        160        640: 90% ━━━━━━━━━━╸─ 47/52 2.5it/s 38.3s<2.0s
+[K       1/20      3.56G      2.511      2.742      2.195        305        640: 92% ━━━━━━━━━━━─ 48/52 1.8it/s 42.7s<2.2s
+[K       1/20      3.56G      2.507      2.737      2.192        301        640: 94% ━━━━━━━━━━━─ 49/52 2.2it/s 43.0s<1.4s
+[K       1/20      3.56G      2.503      2.736       2.19        185        640: 96% ━━━━━━━━━━━╸ 50/52 2.7it/s 43.3s<0.7s
+[K       1/20      3.56G      2.496       2.73      2.187        178        640: 98% ━━━━━━━━━━━╸ 51/52 2.9it/s 43.6s<0.4s
+[K       1/20      3.56G      2.496       2.73      2.187        178        640: 100% ━━━━━━━━━━━━ 52/52 1.2it/s 43.6s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 68.9s/it 20.7s<3:27
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.4it/s 20.9s<1.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.3it/s 21.1s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 5.3s/it 21.2s
+                   all        104        681      0.294     0.0783     0.0782     0.0236
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       2/20      3.95G      2.283      2.429      2.089        229        640: 0% ──────────── 0/52  0.2s
+[K       2/20      3.96G      2.259      2.468      2.077        218        640: 1% ──────────── 1/52 1.4it/s 0.4s<35.7s
+[K       2/20      3.96G      2.318      2.508      2.089        298        640: 3% ──────────── 2/52 2.4it/s 0.6s<21.1s
+[K       2/20      3.96G       2.32      2.524      2.088        200        640: 5% ╸─────────── 3/52 3.1it/s 0.8s<16.0s
+[K       2/20      3.96G      2.307      2.489      2.078        308        640: 7% ╸─────────── 4/52 3.5it/s 1.1s<13.6s
+[K       2/20      3.96G      2.301      2.461      2.084        311        640: 9% ━─────────── 5/52 3.8it/s 1.3s<12.3s
+[K       2/20      3.96G      2.278      2.433       2.06        216        640: 11% ━─────────── 6/52 4.0it/s 1.5s<11.5s
+[K       2/20      3.96G      2.274      2.414      2.062        294        640: 13% ━╸────────── 7/52 4.2it/s 1.7s<10.8s
+[K       2/20      3.96G      2.277      2.413      2.062        188        640: 15% ━╸────────── 8/52 4.2it/s 2.0s<10.5s
+[K       2/20      3.96G      2.279       2.44      2.054        214        640: 17% ━━────────── 9/52 4.3it/s 2.2s<10.0s
+[K       2/20      3.96G      2.274       2.48       2.05        132        640: 19% ━━────────── 10/52 4.3it/s 2.4s<9.7s
+[K       2/20      3.96G      2.248      2.462      2.039        215        640: 21% ━━╸───────── 11/52 4.5it/s 2.6s<9.2s
+[K       2/20      3.96G      2.255      2.462      2.049        241        640: 23% ━━╸───────── 12/52 4.4it/s 2.9s<9.1s
+[K       2/20      3.96G      2.242      2.444      2.047        310        640: 25% ━━━───────── 13/52 4.4it/s 3.1s<8.9s
+[K       2/20      3.96G      2.247      2.445      2.057        187        640: 26% ━━━───────── 14/52 4.4it/s 3.3s<8.7s
+[K       2/20      3.96G      2.252      2.458      2.054        246        640: 28% ━━━───────── 15/52 4.3it/s 3.6s<8.6s
+[K       2/20      3.96G      2.252      2.456      2.052        267        640: 30% ━━━╸──────── 16/52 4.2it/s 3.8s<8.5s
+[K       2/20      3.96G      2.252      2.445      2.052        287        640: 32% ━━━╸──────── 17/52 4.3it/s 4.0s<8.1s
+[K       2/20      3.96G      2.256      2.434      2.049        273        640: 34% ━━━━──────── 18/52 4.4it/s 4.2s<7.7s
+[K       2/20      3.96G      2.256      2.436      2.049        244        640: 36% ━━━━──────── 19/52 4.3it/s 4.5s<7.6s
+[K       2/20      3.96G      2.251       2.44      2.043        207        640: 38% ━━━━╸─────── 20/52 4.4it/s 4.7s<7.3s
+[K       2/20      3.96G      2.238      2.426       2.04        187        640: 40% ━━━━╸─────── 21/52 4.3it/s 4.9s<7.2s
+[K       2/20      3.96G      2.233      2.413      2.036        351        640: 42% ━━━━━─────── 22/52 4.3it/s 5.2s<7.1s
+[K       2/20      3.96G      2.229      2.404      2.036        252        640: 44% ━━━━━─────── 23/52 4.1it/s 5.4s<7.0s
+[K       2/20      3.96G      2.228      2.405      2.038        221        640: 46% ━━━━━╸────── 24/52 4.3it/s 5.7s<6.5s
+[K       2/20      3.96G      2.227      2.399      2.037        279        640: 48% ━━━━━╸────── 25/52 3.6it/s 6.1s<7.4s
+[K       2/20      3.96G      2.222      2.399      2.035        172        640: 50% ━━━━━━────── 26/52 3.9it/s 6.3s<6.6s
+[K       2/20      3.96G      2.218      2.389      2.031        208        640: 51% ━━━━━━────── 27/52 4.1it/s 6.6s<6.1s
+[K       2/20      3.96G      2.216      2.383      2.031        294        640: 53% ━━━━━━────── 28/52 3.5it/s 7.1s<6.9s
+[K       2/20      3.96G      2.217      2.383      2.029        227        640: 55% ━━━━━━╸───── 29/52 3.0it/s 7.6s<7.8s
+[K       2/20      3.96G      2.215      2.384       2.03        171        640: 57% ━━━━━━╸───── 30/52 3.4it/s 7.8s<6.5s
+[K       2/20      3.96G      2.218      2.388       2.03        200        640: 59% ━━━━━━━───── 31/52 3.6it/s 8.1s<5.8s
+[K       2/20      3.96G       2.22        2.4      2.029        185        640: 61% ━━━━━━━───── 32/52 2.9it/s 8.8s<6.8s
+[K       2/20      3.96G       2.22      2.398      2.028        278        640: 63% ━━━━━━━╸──── 33/52 2.5it/s 9.5s<7.7s
+[K       2/20      3.96G      2.223      2.396      2.031        182        640: 65% ━━━━━━━╸──── 34/52 3.1it/s 9.8s<5.9s
+[K       2/20      3.96G      2.223      2.397       2.03        274        640: 67% ━━━━━━━━──── 35/52 3.5it/s 10.0s<4.9s
+[K       2/20      3.96G       2.22      2.391      2.029        244        640: 69% ━━━━━━━━──── 36/52 3.2it/s 10.4s<4.9s
+[K       2/20      3.96G      2.219      2.389      2.028        278        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 11.4s<5.9s
+[K       2/20      3.96G      2.219      2.387      2.026        211        640: 73% ━━━━━━━━╸─── 38/52 3.1it/s 11.6s<4.5s
+[K       2/20      3.96G      2.222      2.387      2.026        285        640: 75% ━━━━━━━━━─── 39/52 3.6it/s 11.8s<3.7s
+[K       2/20      3.96G      2.221      2.383      2.027        313        640: 76% ━━━━━━━━━─── 40/52 3.9it/s 12.1s<3.1s
+[K       2/20      3.96G       2.22      2.384      2.023        278        640: 78% ━━━━━━━━━─── 41/52 3.0it/s 13.2s<3.7s
+[K       2/20      3.96G      2.219      2.387      2.023        220        640: 80% ━━━━━━━━━╸── 42/52 3.4it/s 13.4s<3.0s
+[K       2/20      3.96G      2.219      2.384      2.023        312        640: 82% ━━━━━━━━━╸── 43/52 3.7it/s 13.6s<2.4s
+[K       2/20      3.96G      2.217      2.381      2.022        292        640: 84% ━━━━━━━━━━── 44/52 4.0it/s 13.9s<2.0s
+[K       2/20      3.96G      2.217      2.377       2.02        277        640: 86% ━━━━━━━━━━── 45/52 3.0it/s 15.2s<2.3s
+[K       2/20      3.96G      2.213      2.376      2.017        197        640: 88% ━━━━━━━━━━╸─ 46/52 3.4it/s 15.4s<1.8s
+[K       2/20      3.96G      2.213      2.372      2.017        262        640: 90% ━━━━━━━━━━╸─ 47/52 3.7it/s 15.7s<1.4s
+[K       2/20      3.96G      2.214      2.371      2.018        250        640: 92% ━━━━━━━━━━━─ 48/52 3.9it/s 15.9s<1.0s
+[K       2/20      3.96G      2.209      2.367      2.013        260        640: 94% ━━━━━━━━━━━─ 49/52 3.0it/s 17.0s<1.0s
+[K       2/20      3.96G      2.208       2.37      2.012        208        640: 96% ━━━━━━━━━━━╸ 50/52 3.5it/s 17.2s<0.6s
+[K       2/20      3.96G      2.206      2.367       2.01        247        640: 98% ━━━━━━━━━━━╸ 51/52 3.8it/s 17.4s<0.3s
+[K       2/20      3.96G      2.206      2.367       2.01        247        640: 100% ━━━━━━━━━━━━ 52/52 3.0it/s 17.4s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.3it/s 0.2s<2.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.7it/s 0.4s<0.7s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 3.2it/s 0.6s<0.3s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 6.0it/s 0.7s
+                   all        104        681      0.278       0.19      0.143     0.0486
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       3/20      3.97G      2.126      2.244      1.949        272        640: 0% ──────────── 0/52  0.2s
+[K       3/20      3.97G      2.033      2.283      1.897        207        640: 1% ──────────── 1/52 1.2it/s 0.5s<41.7s
+[K       3/20      3.97G      2.083      2.273      1.895        265        640: 3% ──────────── 2/52 2.1it/s 0.7s<23.9s
+[K       3/20      3.97G      2.092      2.303      1.901        219        640: 5% ╸─────────── 3/52 2.8it/s 0.9s<17.5s
+[K       3/20      3.97G      2.097      2.312      1.917        247        640: 7% ╸─────────── 4/52 3.2it/s 1.2s<14.8s
+[K       3/20      3.97G      2.108      2.317      1.925        245        640: 9% ━─────────── 5/52 2.7it/s 1.9s<17.4s
+[K       3/20      3.97G      2.113      2.347      1.913        173        640: 11% ━─────────── 6/52 3.2it/s 2.1s<14.4s
+[K       3/20      3.97G      2.107      2.328      1.919        218        640: 13% ━╸────────── 7/52 3.5it/s 2.3s<12.8s
+[K       3/20      3.97G      2.114      2.328      1.918        209        640: 15% ━╸────────── 8/52 3.8it/s 2.6s<11.7s
+[K       3/20      3.97G      2.112      2.338      1.929        168        640: 17% ━━────────── 9/52 2.9it/s 3.8s<14.9s
+[K       3/20      3.97G      2.116      2.353       1.93        190        640: 19% ━━────────── 10/52 3.3it/s 4.0s<12.6s
+[K       3/20      3.97G      2.099      2.333      1.919        183        640: 21% ━━╸───────── 11/52 3.7it/s 4.3s<11.2s
+[K       3/20      3.98G      2.107      2.329      1.926        332        640: 23% ━━╸───────── 12/52 3.9it/s 4.5s<10.3s
+[K       3/20      3.98G      2.107      2.326      1.925        226        640: 25% ━━━───────── 13/52 3.0it/s 5.4s<12.9s
+[K       3/20      3.98G      2.115      2.336       1.93        217        640: 26% ━━━───────── 14/52 3.5it/s 5.7s<11.0s
+[K       3/20      3.98G      2.122      2.334      1.934        275        640: 28% ━━━───────── 15/52 3.8it/s 5.9s<9.8s
+[K       3/20      3.98G      2.119      2.333      1.931        208        640: 30% ━━━╸──────── 16/52 4.0it/s 6.1s<9.0s
+[K       3/20      3.98G      2.115      2.319       1.93        261        640: 32% ━━━╸──────── 17/52 3.0it/s 7.4s<11.5s
+[K       3/20      3.98G      2.122      2.323      1.931        202        640: 34% ━━━━──────── 18/52 3.4it/s 7.6s<10.0s
+[K       3/20      3.98G      2.119      2.312      1.933        244        640: 36% ━━━━──────── 19/52 3.5it/s 7.9s<9.3s
+[K       3/20      3.98G      2.123      2.304      1.935        285        640: 38% ━━━━╸─────── 20/52 3.8it/s 8.1s<8.4s
+[K       3/20      3.98G      2.125      2.309      1.939        238        640: 40% ━━━━╸─────── 21/52 3.0it/s 9.0s<10.3s
+[K       3/20      3.98G      2.127      2.299      1.938        286        640: 42% ━━━━━─────── 22/52 3.3it/s 9.2s<9.0s
+[K       3/20      3.98G      2.126      2.297      1.938        279        640: 44% ━━━━━─────── 23/52 3.6it/s 9.5s<8.2s
+[K       3/20      3.98G      2.128      2.297      1.938        313        640: 46% ━━━━━╸────── 24/52 3.8it/s 9.7s<7.4s
+[K       3/20      3.98G      2.128      2.296       1.94        212        640: 48% ━━━━━╸────── 25/52 2.9it/s 10.8s<9.2s
+[K       3/20      3.98G      2.135      2.306      1.942        242        640: 50% ━━━━━━────── 26/52 3.4it/s 11.0s<7.6s
+[K       3/20      3.98G      2.137      2.307       1.94        237        640: 51% ━━━━━━────── 27/52 3.7it/s 11.2s<6.8s
+[K       3/20      3.98G      2.138      2.307       1.94        342        640: 53% ━━━━━━────── 28/52 3.9it/s 11.4s<6.2s
+[K       3/20      3.98G      2.137      2.309      1.944        222        640: 55% ━━━━━━╸───── 29/52 3.0it/s 12.6s<7.8s
+[K       3/20      3.98G      2.143       2.31      1.947        344        640: 57% ━━━━━━╸───── 30/52 3.3it/s 12.9s<6.7s
+[K       3/20      3.98G      2.142       2.31      1.944        243        640: 59% ━━━━━━━───── 31/52 3.5it/s 13.1s<5.9s
+[K       3/20      3.98G      2.139      2.306      1.943        261        640: 61% ━━━━━━━───── 32/52 3.7it/s 13.4s<5.4s
+[K       3/20      3.98G      2.136      2.305      1.943        254        640: 63% ━━━━━━━╸──── 33/52 2.9it/s 14.4s<6.6s
+[K       3/20      3.98G      2.132      2.306       1.94        165        640: 65% ━━━━━━━╸──── 34/52 3.4it/s 14.6s<5.4s
+[K       3/20      3.98G      2.132      2.304      1.941        206        640: 67% ━━━━━━━━──── 35/52 3.7it/s 14.8s<4.6s
+[K       3/20      3.98G      2.135      2.312      1.942        244        640: 69% ━━━━━━━━──── 36/52 3.9it/s 15.1s<4.1s
+[K       3/20      3.98G      2.131      2.307      1.942        291        640: 71% ━━━━━━━━╸─── 37/52 3.0it/s 16.3s<5.0s
+[K       3/20      3.98G      2.129      2.301       1.94        321        640: 73% ━━━━━━━━╸─── 38/52 3.5it/s 16.5s<4.0s
+[K       3/20      3.98G      2.126      2.308      1.938        164        640: 75% ━━━━━━━━━─── 39/52 3.8it/s 16.7s<3.4s
+[K       3/20      3.98G      2.123      2.309      1.936        208        640: 76% ━━━━━━━━━─── 40/52 4.0it/s 16.9s<3.0s
+[K       3/20      3.98G      2.124      2.308      1.936        301        640: 78% ━━━━━━━━━─── 41/52 3.1it/s 17.8s<3.5s
+[K       3/20      3.98G      2.119      2.303      1.934        287        640: 80% ━━━━━━━━━╸── 42/52 3.4it/s 18.1s<3.0s
+[K       3/20      3.98G      2.117      2.299       1.93        271        640: 82% ━━━━━━━━━╸── 43/52 3.7it/s 18.3s<2.5s
+[K       3/20      3.98G      2.114      2.291      1.927        364        640: 84% ━━━━━━━━━━── 44/52 3.9it/s 18.5s<2.1s
+[K       3/20      3.98G      2.114      2.289      1.929        236        640: 86% ━━━━━━━━━━── 45/52 3.0it/s 19.6s<2.3s
+[K       3/20      3.98G      2.113      2.288      1.931        217        640: 88% ━━━━━━━━━━╸─ 46/52 3.3it/s 19.8s<1.8s
+[K       3/20      3.98G      2.108      2.286      1.927        248        640: 90% ━━━━━━━━━━╸─ 47/52 3.6it/s 20.0s<1.4s
+[K       3/20      3.98G      2.109       2.29       1.93        226        640: 92% ━━━━━━━━━━━─ 48/52 3.8it/s 20.3s<1.1s
+[K       3/20      3.98G      2.109      2.288      1.931        208        640: 94% ━━━━━━━━━━━─ 49/52 2.9it/s 21.3s<1.0s
+[K       3/20      3.98G      2.106      2.283      1.931        213        640: 96% ━━━━━━━━━━━╸ 50/52 3.3it/s 21.5s<0.6s
+[K       3/20      3.98G      2.106      2.289      1.932        177        640: 98% ━━━━━━━━━━━╸ 51/52 3.7it/s 21.8s<0.3s
+[K       3/20      3.98G      2.106      2.289      1.932        177        640: 100% ━━━━━━━━━━━━ 52/52 2.4it/s 21.8s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.4it/s 0.2s<2.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.5it/s 0.4s<0.8s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 3.2it/s 0.6s<0.3s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 6.0it/s 0.7s
+                   all        104        681      0.293      0.254      0.215     0.0789
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       4/20      3.98G      2.085       2.26       1.96        269        640: 0% ──────────── 0/52  0.2s
+[K       4/20      3.98G      2.123      2.151      2.015        236        640: 1% ──────────── 1/52 1.2it/s 0.5s<41.0s
+[K       4/20      3.98G      2.096      2.275      1.992        135        640: 3% ──────────── 2/52 2.2it/s 0.7s<23.1s
+[K       4/20      3.98G      2.117       2.27      1.979        306        640: 5% ╸─────────── 3/52 2.8it/s 0.9s<17.6s
+[K       4/20      3.98G      2.077      2.257       1.99        156        640: 7% ╸─────────── 4/52 3.2it/s 1.2s<15.1s
+[K       4/20      3.98G      2.091      2.263      1.989        172        640: 9% ━─────────── 5/52 2.8it/s 1.7s<16.8s
+[K       4/20      3.98G      2.044      2.204      1.961        225        640: 11% ━─────────── 6/52 3.2it/s 1.9s<14.3s
+[K       4/20      3.98G      2.041      2.203      1.966        257        640: 13% ━╸────────── 7/52 3.5it/s 2.2s<13.0s
+[K       4/20      3.98G      2.053       2.22      1.969        206        640: 15% ━╸────────── 8/52 3.6it/s 2.4s<12.1s
+[K       4/20      3.98G      2.027      2.174      1.945        316        640: 17% ━━────────── 9/52 2.9it/s 3.4s<15.0s
+[K       4/20      3.98G      2.023      2.173      1.948        188        640: 19% ━━────────── 10/52 3.3it/s 3.6s<12.9s
+[K       4/20      3.98G      2.016      2.178      1.949        226        640: 21% ━━╸───────── 11/52 3.6it/s 3.9s<11.4s
+[K       4/20      3.98G      2.011      2.174      1.941        252        640: 23% ━━╸───────── 12/52 3.9it/s 4.1s<10.3s
+[K       4/20      3.98G      2.007      2.176      1.937        203        640: 25% ━━━───────── 13/52 3.1it/s 4.9s<12.6s
+[K       4/20      3.98G      2.013      2.189      1.941        203        640: 26% ━━━───────── 14/52 3.5it/s 5.1s<10.9s
+[K       4/20      3.98G      2.021      2.204       1.94        191        640: 28% ━━━───────── 15/52 3.7it/s 5.3s<9.9s
+[K       4/20      3.98G      2.022      2.194      1.935        254        640: 30% ━━━╸──────── 16/52 3.9it/s 5.5s<9.3s
+[K       4/20      3.98G      2.033      2.198      1.937        239        640: 32% ━━━╸──────── 17/52 3.0it/s 6.6s<11.7s
+[K       4/20      3.98G       2.03      2.196      1.935        268        640: 34% ━━━━──────── 18/52 3.3it/s 6.8s<10.3s
+[K       4/20      3.98G       2.03      2.217      1.937        150        640: 36% ━━━━──────── 19/52 3.6it/s 7.1s<9.2s
+[K       4/20      3.98G      2.021      2.204      1.929        273        640: 38% ━━━━╸─────── 20/52 3.8it/s 7.3s<8.4s
+[K       4/20      3.98G      2.005      2.202      1.921        126        640: 40% ━━━━╸─────── 21/52 3.0it/s 8.2s<10.3s
+[K       4/20      3.98G      2.001      2.196      1.915        214        640: 42% ━━━━━─────── 22/52 3.5it/s 8.4s<8.6s
+[K       4/20      3.98G      2.005      2.205      1.917        223        640: 44% ━━━━━─────── 23/52 3.8it/s 8.6s<7.6s
+[K       4/20      3.98G      2.008      2.202      1.919        282        640: 46% ━━━━━╸────── 24/52 4.0it/s 8.8s<7.0s
+[K       4/20      3.98G      2.008      2.216      1.917        129        640: 48% ━━━━━╸────── 25/52 3.0it/s 10.1s<8.9s
+[K       4/20      3.98G      2.009      2.221      1.917        195        640: 50% ━━━━━━────── 26/52 3.4it/s 10.4s<7.7s
+[K       4/20      3.98G      2.008      2.224      1.918        197        640: 51% ━━━━━━────── 27/52 3.7it/s 10.6s<6.8s
+[K       4/20      3.98G      2.011       2.22      1.918        247        640: 53% ━━━━━━────── 28/52 3.7it/s 10.9s<6.4s
+[K       4/20      3.98G      2.011       2.22      1.918        151        640: 55% ━━━━━━╸───── 29/52 2.9it/s 11.9s<7.9s
+[K       4/20      3.98G      2.011       2.22      1.919        251        640: 57% ━━━━━━╸───── 30/52 3.4it/s 12.1s<6.5s
+[K       4/20      3.98G       2.01      2.219      1.915        240        640: 59% ━━━━━━━───── 31/52 3.7it/s 12.3s<5.6s
+[K       4/20      3.98G      2.008       2.21      1.912        387        640: 61% ━━━━━━━───── 32/52 4.0it/s 12.6s<5.1s
+[K       4/20      3.98G      2.011      2.212      1.912        206        640: 63% ━━━━━━━╸──── 33/52 3.0it/s 13.7s<6.3s
+[K       4/20      3.98G      2.012      2.223      1.911        125        640: 65% ━━━━━━━╸──── 34/52 3.4it/s 14.0s<5.3s
+[K       4/20      3.98G      2.011      2.222      1.912        252        640: 67% ━━━━━━━━──── 35/52 3.6it/s 14.2s<4.7s
+[K       4/20      3.98G      2.011      2.217      1.908        277        640: 69% ━━━━━━━━──── 36/52 3.8it/s 14.4s<4.2s
+[K       4/20      3.98G      2.013      2.223      1.908        178        640: 71% ━━━━━━━━╸─── 37/52 3.0it/s 15.3s<5.0s
+[K       4/20      3.98G       2.01       2.22      1.907        226        640: 73% ━━━━━━━━╸─── 38/52 3.4it/s 15.5s<4.1s
+[K       4/20      3.98G      2.013      2.219      1.906        292        640: 75% ━━━━━━━━━─── 39/52 3.6it/s 15.8s<3.6s
+[K       4/20      3.98G      2.014      2.214      1.906        307        640: 76% ━━━━━━━━━─── 40/52 3.9it/s 16.0s<3.1s
+[K       4/20      3.98G      2.012      2.212      1.906        163        640: 78% ━━━━━━━━━─── 41/52 3.0it/s 17.0s<3.7s
+[K       4/20      3.98G      2.012      2.209      1.904        248        640: 80% ━━━━━━━━━╸── 42/52 3.1it/s 17.3s<3.2s
+[K       4/20      3.98G      2.009      2.207      1.903        200        640: 82% ━━━━━━━━━╸── 43/52 3.4it/s 17.5s<2.7s
+[K       4/20      3.98G      2.007      2.205      1.902        207        640: 84% ━━━━━━━━━━── 44/52 3.6it/s 17.8s<2.2s
+[K       4/20      3.98G      2.011      2.208      1.903        234        640: 86% ━━━━━━━━━━── 45/52 2.8it/s 18.8s<2.5s
+[K       4/20      3.98G      2.014      2.211      1.904        214        640: 88% ━━━━━━━━━━╸─ 46/52 3.3it/s 19.1s<1.8s
+[K       4/20      3.98G      2.014      2.217      1.904        219        640: 90% ━━━━━━━━━━╸─ 47/52 3.6it/s 19.3s<1.4s
+[K       4/20      3.98G      2.016      2.218      1.905        252        640: 92% ━━━━━━━━━━━─ 48/52 3.8it/s 19.5s<1.0s
+[K       4/20      3.98G      2.021      2.225      1.907        200        640: 94% ━━━━━━━━━━━─ 49/52 2.9it/s 20.7s<1.0s
+[K       4/20      3.98G      2.024      2.231      1.907        151        640: 96% ━━━━━━━━━━━╸ 50/52 3.3it/s 20.9s<0.6s
+[K       4/20      3.98G      2.023      2.228      1.906        242        640: 98% ━━━━━━━━━━━╸ 51/52 3.7it/s 21.1s<0.3s
+[K       4/20      3.98G      2.023      2.228      1.906        242        640: 100% ━━━━━━━━━━━━ 52/52 2.5it/s 21.1s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.4it/s 0.2s<2.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.4it/s 0.4s<0.8s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.9it/s 0.7s<0.3s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 5.4it/s 0.7s
+                   all        104        681      0.219      0.215       0.14     0.0503
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       5/20      3.99G      2.047      2.361      1.933        174        640: 0% ──────────── 0/52  0.3s
+[K       5/20      3.99G      2.053      2.273      1.901        270        640: 1% ──────────── 1/52 1.2it/s 0.5s<41.5s
+[K       5/20      3.99G      2.122      2.263      1.908        353        640: 3% ──────────── 2/52 2.1it/s 0.7s<23.7s
+[K       5/20      3.99G      2.071      2.209      1.891        309        640: 5% ╸─────────── 3/52 2.8it/s 1.0s<17.7s
+[K       5/20      3.99G      2.061      2.242      1.905        239        640: 7% ╸─────────── 4/52 3.2it/s 1.2s<15.2s
+[K       5/20      3.99G      2.082      2.249      1.904        295        640: 9% ━─────────── 5/52 2.5it/s 2.2s<18.7s
+[K       5/20      3.99G      2.098      2.243      1.911        306        640: 11% ━─────────── 6/52 3.0it/s 2.5s<15.3s
+[K       5/20      3.99G      2.079      2.234      1.905        234        640: 13% ━╸────────── 7/52 3.4it/s 2.7s<13.0s
+[K       5/20      3.99G      2.075      2.246       1.92        198        640: 15% ━╸────────── 8/52 3.7it/s 2.9s<11.8s
+[K       5/20      3.99G      2.073      2.245      1.917        238        640: 17% ━━────────── 9/52 2.9it/s 4.1s<15.0s
+[K       5/20      3.99G      2.063      2.223      1.916        242        640: 19% ━━────────── 10/52 3.3it/s 4.3s<12.8s
+[K       5/20      3.99G      2.045      2.207      1.905        244        640: 21% ━━╸───────── 11/52 3.6it/s 4.6s<11.5s
+[K       5/20      3.99G      2.039      2.208      1.903        221        640: 23% ━━╸───────── 12/52 3.7it/s 4.8s<10.7s
+[K       5/20      3.99G      2.038      2.199      1.908        283        640: 25% ━━━───────── 13/52 2.9it/s 5.8s<13.4s
+[K       5/20      3.99G      2.033        2.2      1.906        201        640: 26% ━━━───────── 14/52 3.3it/s 6.1s<11.6s
+[K       5/20      3.99G      2.035      2.194      1.904        320        640: 28% ━━━───────── 15/52 3.6it/s 6.3s<10.2s
+[K       5/20      3.99G      2.037      2.188      1.906        264        640: 30% ━━━╸──────── 16/52 3.7it/s 6.5s<9.6s
+[K       5/20      3.99G      2.038      2.192      1.905        248        640: 32% ━━━╸──────── 17/52 3.0it/s 7.4s<11.8s
+[K       5/20      3.99G      2.036       2.19      1.901        202        640: 34% ━━━━──────── 18/52 3.4it/s 7.6s<10.0s
+[K       5/20      3.99G      2.041      2.193      1.899        257        640: 36% ━━━━──────── 19/52 3.6it/s 7.9s<9.1s
+[K       5/20      3.99G      2.048      2.197      1.902        289        640: 38% ━━━━╸─────── 20/52 3.8it/s 8.1s<8.4s
+[K       5/20      3.99G      2.042      2.193      1.903        197        640: 40% ━━━━╸─────── 21/52 2.9it/s 9.4s<10.7s
+[K       5/20      3.99G      2.041      2.183      1.903        195        640: 42% ━━━━━─────── 22/52 3.3it/s 9.7s<9.2s
+[K       5/20      3.99G      2.045      2.182      1.902        447        640: 44% ━━━━━─────── 23/52 3.5it/s 9.9s<8.3s
+[K       5/20      3.99G      2.043      2.186      1.904        182        640: 46% ━━━━━╸────── 24/52 3.7it/s 10.1s<7.6s
+[K       5/20      3.99G      2.043      2.188      1.906        250        640: 48% ━━━━━╸────── 25/52 2.9it/s 11.0s<9.3s
+[K       5/20      3.99G      2.038      2.186      1.904        247        640: 50% ━━━━━━────── 26/52 3.3it/s 11.3s<7.8s
+[K       5/20      3.99G      2.033      2.194      1.901        121        640: 51% ━━━━━━────── 27/52 3.7it/s 11.5s<6.8s
+[K       5/20      3.99G      2.038      2.204      1.902        257        640: 53% ━━━━━━────── 28/52 3.9it/s 11.7s<6.2s
+[K       5/20      3.99G      2.049      2.209      1.907        271        640: 55% ━━━━━━╸───── 29/52 3.0it/s 12.8s<7.7s
+[K       5/20         4G      2.043      2.203      1.907        259        640: 57% ━━━━━━╸───── 30/52 3.3it/s 13.0s<6.6s
+[K       5/20         4G      2.041      2.203      1.906        240        640: 59% ━━━━━━━───── 31/52 3.5it/s 13.3s<5.9s
+[K       5/20         4G      2.043      2.205      1.908        269        640: 61% ━━━━━━━───── 32/52 3.7it/s 13.5s<5.3s
+[K       5/20         4G      2.042      2.205       1.91        260        640: 63% ━━━━━━━╸──── 33/52 2.8it/s 14.9s<6.7s
+[K       5/20         4G      2.042        2.2      1.908        299        640: 65% ━━━━━━━╸──── 34/52 3.3it/s 15.2s<5.5s
+[K       5/20         4G      2.036      2.194      1.906        280        640: 67% ━━━━━━━━──── 35/52 3.6it/s 15.4s<4.7s
+[K       5/20         4G      2.032      2.189      1.905        235        640: 69% ━━━━━━━━──── 36/52 3.9it/s 15.6s<4.1s
+[K       5/20         4G      2.035      2.191      1.906        235        640: 71% ━━━━━━━━╸─── 37/52 3.0it/s 16.6s<5.0s
+[K       5/20         4G      2.028      2.184      1.902        231        640: 73% ━━━━━━━━╸─── 38/52 3.3it/s 16.8s<4.3s
+[K       5/20         4G      2.027      2.183      1.904        180        640: 75% ━━━━━━━━━─── 39/52 3.5it/s 17.1s<3.7s
+[K       5/20         4G      2.027      2.182      1.903        273        640: 76% ━━━━━━━━━─── 40/52 3.7it/s 17.3s<3.2s
+[K       5/20         4G      2.025      2.179      1.904        224        640: 78% ━━━━━━━━━─── 41/52 2.8it/s 18.7s<3.9s
+[K       5/20         4G      2.021      2.175      1.902        321        640: 80% ━━━━━━━━━╸── 42/52 3.2it/s 19.0s<3.1s
+[K       5/20         4G       2.02      2.173      1.901        230        640: 82% ━━━━━━━━━╸── 43/52 3.5it/s 19.2s<2.6s
+[K       5/20         4G      2.024      2.173      1.905        233        640: 84% ━━━━━━━━━━── 44/52 3.7it/s 19.5s<2.2s
+[K       5/20         4G      2.028      2.179      1.906        222        640: 86% ━━━━━━━━━━── 45/52 2.8it/s 20.5s<2.5s
+[K       5/20         4G      2.023      2.184      1.903        124        640: 88% ━━━━━━━━━━╸─ 46/52 3.2it/s 20.8s<1.9s
+[K       5/20         4G      2.021       2.18      1.902        254        640: 90% ━━━━━━━━━━╸─ 47/52 3.5it/s 21.0s<1.4s
+[K       5/20         4G      2.018      2.183      1.901        158        640: 92% ━━━━━━━━━━━─ 48/52 3.8it/s 21.3s<1.1s
+[K       5/20         4G       2.02      2.186      1.899        316        640: 94% ━━━━━━━━━━━─ 49/52 2.8it/s 22.7s<1.1s
+[K       5/20         4G       2.02      2.184      1.896        250        640: 96% ━━━━━━━━━━━╸ 50/52 3.3it/s 23.0s<0.6s
+[K       5/20         4G       2.02      2.184      1.896        204        640: 98% ━━━━━━━━━━━╸ 51/52 3.6it/s 23.2s<0.3s
+[K       5/20         4G       2.02      2.184      1.896        204        640: 100% ━━━━━━━━━━━━ 52/52 2.2it/s 23.2s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.5it/s 0.2s<2.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.2it/s 0.5s<0.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.6it/s 0.7s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 5.0it/s 0.8s
+                   all        104        681      0.269      0.279      0.199     0.0739
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       6/20      3.58G      1.808      1.968      1.812        326        640: 0% ──────────── 0/52  0.3s
+[K       6/20      3.58G      1.873      2.007      1.884        194        640: 1% ──────────── 1/52 1.3it/s 0.5s<39.5s
+[K       6/20      3.58G      1.909      2.037       1.85        246        640: 3% ──────────── 2/52 2.2it/s 0.7s<22.7s
+[K       6/20      3.58G      1.913      2.011      1.848        245        640: 5% ╸─────────── 3/52 2.7it/s 1.0s<17.9s
+[K       6/20      3.58G      1.885      2.008      1.833        173        640: 7% ╸─────────── 4/52 3.1it/s 1.2s<15.3s
+[K       6/20      3.58G      1.919      2.113      1.868        120        640: 9% ━─────────── 5/52 2.5it/s 2.3s<18.9s
+[K       6/20      3.58G      1.927      2.099      1.857        330        640: 11% ━─────────── 6/52 3.0it/s 2.6s<15.5s
+[K       6/20      3.58G      1.953      2.121      1.879        306        640: 13% ━╸────────── 7/52 3.4it/s 2.8s<13.4s
+[K       6/20      3.58G      1.952      2.114      1.877        301        640: 15% ━╸────────── 8/52 3.6it/s 3.0s<12.2s
+[K       6/20      3.58G      1.959      2.124      1.879        225        640: 17% ━━────────── 9/52 2.8it/s 4.2s<15.5s
+[K       6/20      3.58G      1.953      2.119      1.878        226        640: 19% ━━────────── 10/52 3.3it/s 4.4s<12.8s
+[K       6/20      3.58G      1.944      2.123      1.868        146        640: 21% ━━╸───────── 11/52 3.6it/s 4.7s<11.2s
+[K       6/20      3.58G      1.951      2.118      1.868        276        640: 23% ━━╸───────── 12/52 3.8it/s 4.9s<10.5s
+[K       6/20      3.58G      1.954      2.135      1.869        240        640: 25% ━━━───────── 13/52 2.9it/s 6.0s<13.2s
+[K       6/20      3.58G      1.957      2.153      1.866        226        640: 26% ━━━───────── 14/52 3.3it/s 6.3s<11.6s
+[K       6/20      3.58G      1.955      2.142      1.864        290        640: 28% ━━━───────── 15/52 3.7it/s 6.5s<10.1s
+[K       6/20      3.58G      1.952      2.143      1.866        201        640: 30% ━━━╸──────── 16/52 3.9it/s 6.7s<9.3s
+[K       6/20      3.58G      1.954      2.151      1.862        174        640: 32% ━━━╸──────── 17/52 3.0it/s 7.8s<11.8s
+[K       6/20      3.58G      1.941      2.148      1.854        139        640: 34% ━━━━──────── 18/52 3.3it/s 8.1s<10.2s
+[K       6/20      3.58G      1.949      2.151      1.855        258        640: 36% ━━━━──────── 19/52 3.5it/s 8.3s<9.4s
+[K       6/20      3.58G      1.959      2.149      1.856        305        640: 38% ━━━━╸─────── 20/52 3.7it/s 8.6s<8.6s
+[K       6/20      3.58G      1.948      2.141      1.847        190        640: 40% ━━━━╸─────── 21/52 2.9it/s 9.8s<10.8s
+[K       6/20      3.58G      1.949      2.138      1.849        242        640: 42% ━━━━━─────── 22/52 3.3it/s 10.0s<9.1s
+[K       6/20      3.58G      1.949      2.139      1.849        257        640: 44% ━━━━━─────── 23/52 3.6it/s 10.2s<8.1s
+[K       6/20      3.58G      1.946      2.139      1.849        209        640: 46% ━━━━━╸────── 24/52 3.8it/s 10.5s<7.4s
+[K       6/20      3.58G      1.947      2.139      1.846        241        640: 48% ━━━━━╸────── 25/52 2.9it/s 11.7s<9.3s
+[K       6/20      3.58G      1.952      2.142      1.849        292        640: 50% ━━━━━━────── 26/52 3.2it/s 11.9s<8.1s
+[K       6/20      3.58G      1.949      2.141      1.848        247        640: 51% ━━━━━━────── 27/52 3.4it/s 12.2s<7.3s
+[K       6/20      3.58G      1.948      2.134      1.849        241        640: 53% ━━━━━━────── 28/52 3.7it/s 12.4s<6.5s
+[K       6/20      3.58G      1.951      2.135      1.849        197        640: 55% ━━━━━━╸───── 29/52 2.9it/s 13.4s<7.9s
+[K       6/20      3.58G      1.952      2.142      1.848        254        640: 57% ━━━━━━╸───── 30/52 3.2it/s 13.6s<6.9s
+[K       6/20      3.58G      1.949      2.136      1.847        220        640: 59% ━━━━━━━───── 31/52 3.5it/s 13.9s<5.9s
+[K       6/20      3.58G      1.947      2.135      1.848        280        640: 61% ━━━━━━━───── 32/52 3.8it/s 14.1s<5.2s
+[K       6/20      3.58G      1.949      2.136      1.847        201        640: 63% ━━━━━━━╸──── 33/52 2.9it/s 15.3s<6.5s
+[K       6/20      3.58G      1.946      2.132      1.847        188        640: 65% ━━━━━━━╸──── 34/52 3.3it/s 15.6s<5.5s
+[K       6/20      3.58G      1.943      2.134      1.845        163        640: 67% ━━━━━━━━──── 35/52 3.5it/s 15.8s<4.9s
+[K       6/20      3.58G      1.948       2.14      1.847        221        640: 69% ━━━━━━━━──── 36/52 3.6it/s 16.1s<4.4s
+[K       6/20      3.58G      1.954      2.147       1.85        224        640: 71% ━━━━━━━━╸─── 37/52 2.8it/s 17.1s<5.3s
+[K       6/20      3.58G      1.947      2.148      1.847        211        640: 73% ━━━━━━━━╸─── 38/52 3.2it/s 17.3s<4.4s
+[K       6/20      3.58G      1.947      2.145      1.846        213        640: 75% ━━━━━━━━━─── 39/52 3.5it/s 17.5s<3.7s
+[K       6/20      3.58G      1.946      2.139      1.847        237        640: 76% ━━━━━━━━━─── 40/52 3.8it/s 17.8s<3.2s
+[K       6/20      3.58G      1.949      2.143      1.849        206        640: 78% ━━━━━━━━━─── 41/52 2.9it/s 18.9s<3.8s
+[K       6/20      3.58G       1.95      2.144       1.85        216        640: 80% ━━━━━━━━━╸── 42/52 3.2it/s 19.1s<3.1s
+[K       6/20      3.58G       1.95      2.142       1.85        180        640: 82% ━━━━━━━━━╸── 43/52 3.5it/s 19.4s<2.5s
+[K       6/20      3.58G      1.952      2.142      1.851        261        640: 84% ━━━━━━━━━━── 44/52 3.8it/s 19.6s<2.1s
+[K       6/20      3.58G      1.955      2.145      1.852        191        640: 86% ━━━━━━━━━━── 45/52 2.9it/s 20.8s<2.4s
+[K       6/20      3.58G      1.956      2.146      1.851        206        640: 88% ━━━━━━━━━━╸─ 46/52 3.3it/s 21.1s<1.8s
+[K       6/20      3.58G      1.957      2.144      1.852        267        640: 90% ━━━━━━━━━━╸─ 47/52 3.6it/s 21.3s<1.4s
+[K       6/20      3.58G      1.956      2.142      1.852        295        640: 92% ━━━━━━━━━━━─ 48/52 3.7it/s 21.5s<1.1s
+[K       6/20      3.58G      1.954      2.141      1.852        240        640: 94% ━━━━━━━━━━━─ 49/52 2.9it/s 22.7s<1.0s
+[K       6/20      3.58G      1.954      2.141      1.851        214        640: 96% ━━━━━━━━━━━╸ 50/52 3.3it/s 22.9s<0.6s
+[K       6/20      3.58G      1.954      2.143      1.849        219        640: 98% ━━━━━━━━━━━╸ 51/52 3.5it/s 23.1s<0.3s
+[K       6/20      3.58G      1.954      2.143      1.849        219        640: 100% ━━━━━━━━━━━━ 52/52 2.2it/s 23.1s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.2it/s 0.2s<2.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.0it/s 0.5s<1.0s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.6it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.8it/s 0.8s
+                   all        104        681      0.366      0.263      0.229     0.0935
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       7/20      3.96G      1.916      2.092      1.787        246        640: 0% ──────────── 0/52  0.3s
+[K       7/20      3.96G       2.02      2.135      1.811        316        640: 1% ──────────── 1/52 1.0it/s 0.5s<49.8s
+[K       7/20      3.97G      1.993      2.096      1.832        204        640: 3% ──────────── 2/52 1.9it/s 0.8s<26.1s
+[K       7/20      3.97G      1.939       2.06      1.818        273        640: 5% ╸─────────── 3/52 2.5it/s 1.1s<19.7s
+[K       7/20      3.97G      1.978      2.155      1.825        194        640: 7% ╸─────────── 4/52 3.0it/s 1.3s<16.1s
+[K       7/20      3.97G      1.968      2.115      1.815        321        640: 9% ━─────────── 5/52 2.3it/s 2.8s<20.5s
+[K       7/20      3.97G      1.949      2.116      1.815        162        640: 11% ━─────────── 6/52 2.8it/s 3.0s<16.4s
+[K       7/20      3.97G      1.942      2.107      1.818        358        640: 13% ━╸────────── 7/52 3.1it/s 3.3s<14.3s
+[K       7/20      3.97G       1.94      2.103      1.825        241        640: 15% ━╸────────── 8/52 3.4it/s 3.5s<13.1s
+[K       7/20      3.97G      1.963      2.117      1.837        292        640: 17% ━━────────── 9/52 2.6it/s 4.7s<16.5s
+[K       7/20      3.97G      1.937      2.099      1.824        205        640: 19% ━━────────── 10/52 3.1it/s 4.9s<13.8s
+[K       7/20      3.97G      1.934      2.094      1.821        366        640: 21% ━━╸───────── 11/52 3.4it/s 5.1s<11.9s
+[K       7/20      3.97G      1.937      2.102      1.816        227        640: 23% ━━╸───────── 12/52 3.5it/s 5.4s<11.5s
+[K       7/20      3.97G      1.934      2.097      1.816        240        640: 25% ━━━───────── 13/52 2.6it/s 7.0s<14.8s
+[K       7/20      3.97G      1.924      2.092      1.814        193        640: 26% ━━━───────── 14/52 3.1it/s 7.2s<12.1s
+[K       7/20      3.97G      1.934        2.1      1.817        251        640: 28% ━━━───────── 15/52 3.5it/s 7.5s<10.7s
+[K       7/20      3.97G      1.926      2.106       1.82        144        640: 30% ━━━╸──────── 16/52 3.6it/s 7.7s<9.9s
+[K       7/20      3.97G      1.925      2.101      1.822        349        640: 32% ━━━╸──────── 17/52 2.8it/s 8.7s<12.3s
+[K       7/20      3.97G      1.921      2.098      1.816        168        640: 34% ━━━━──────── 18/52 3.2it/s 9.0s<10.6s
+[K       7/20      3.97G       1.92      2.097      1.816        246        640: 36% ━━━━──────── 19/52 3.5it/s 9.2s<9.5s
+[K       7/20      3.97G      1.923      2.097      1.816        239        640: 38% ━━━━╸─────── 20/52 3.6it/s 9.5s<8.8s
+[K       7/20      3.97G      1.924      2.092      1.818        247        640: 40% ━━━━╸─────── 21/52 2.8it/s 10.8s<11.1s
+[K       7/20      3.97G      1.921      2.098      1.817        159        640: 42% ━━━━━─────── 22/52 3.2it/s 11.0s<9.4s
+[K       7/20      3.97G      1.922      2.097      1.818        327        640: 44% ━━━━━─────── 23/52 3.4it/s 11.3s<8.5s
+[K       7/20      3.97G      1.917      2.088      1.812        398        640: 46% ━━━━━╸────── 24/52 3.6it/s 11.5s<7.8s
+[K       7/20      3.97G      1.924      2.097      1.817        177        640: 48% ━━━━━╸────── 25/52 2.7it/s 13.1s<9.9s
+[K       7/20      3.97G      1.919       2.09      1.816        199        640: 50% ━━━━━━────── 26/52 3.1it/s 13.3s<8.4s
+[K       7/20      3.97G      1.921      2.086      1.815        309        640: 51% ━━━━━━────── 27/52 3.4it/s 13.6s<7.4s
+[K       7/20      3.97G      1.927      2.082      1.817        325        640: 53% ━━━━━━────── 28/52 3.7it/s 13.8s<6.5s
+[K       7/20      3.97G      1.924      2.079      1.817        246        640: 55% ━━━━━━╸───── 29/52 2.8it/s 15.0s<8.1s
+[K       7/20      3.97G      1.925      2.076      1.817        227        640: 57% ━━━━━━╸───── 30/52 3.2it/s 15.2s<6.8s
+[K       7/20      3.97G      1.927      2.081      1.819        328        640: 59% ━━━━━━━───── 31/52 3.6it/s 15.4s<5.9s
+[K       7/20      3.97G      1.929      2.083      1.821        300        640: 61% ━━━━━━━───── 32/52 3.8it/s 15.7s<5.3s
+[K       7/20      3.97G      1.928      2.086      1.821        174        640: 63% ━━━━━━━╸──── 33/52 2.9it/s 16.8s<6.6s
+[K       7/20      3.97G      1.923      2.077      1.819        229        640: 65% ━━━━━━━╸──── 34/52 3.3it/s 17.1s<5.5s
+[K       7/20      3.97G      1.924      2.078       1.82        251        640: 67% ━━━━━━━━──── 35/52 3.6it/s 17.3s<4.7s
+[K       7/20      3.97G      1.923      2.077       1.82        298        640: 69% ━━━━━━━━──── 36/52 3.8it/s 17.5s<4.2s
+[K       7/20      3.97G      1.924      2.077      1.824        249        640: 71% ━━━━━━━━╸─── 37/52 3.0it/s 18.4s<5.0s
+[K       7/20      3.97G       1.92      2.072      1.822        228        640: 73% ━━━━━━━━╸─── 38/52 3.3it/s 18.7s<4.2s
+[K       7/20      3.97G      1.919      2.073      1.822        256        640: 75% ━━━━━━━━━─── 39/52 3.6it/s 18.9s<3.6s
+[K       7/20      3.97G      1.916      2.068      1.819        241        640: 76% ━━━━━━━━━─── 40/52 3.9it/s 19.1s<3.1s
+[K       7/20      3.97G      1.913      2.066      1.819        327        640: 78% ━━━━━━━━━─── 41/52 3.0it/s 20.3s<3.7s
+[K       7/20      3.97G      1.908      2.064      1.817        156        640: 80% ━━━━━━━━━╸── 42/52 3.3it/s 20.5s<3.1s
+[K       7/20      3.97G      1.914       2.07      1.819        280        640: 82% ━━━━━━━━━╸── 43/52 3.6it/s 20.8s<2.5s
+[K       7/20      3.97G      1.914       2.07      1.819        220        640: 84% ━━━━━━━━━━── 44/52 3.8it/s 21.0s<2.1s
+[K       7/20      3.97G      1.912      2.067      1.817        233        640: 86% ━━━━━━━━━━── 45/52 3.0it/s 22.0s<2.4s
+[K       7/20      3.97G      1.914       2.07      1.821        151        640: 88% ━━━━━━━━━━╸─ 46/52 3.3it/s 22.3s<1.8s
+[K       7/20      3.97G      1.911      2.071      1.818        200        640: 90% ━━━━━━━━━━╸─ 47/52 3.5it/s 22.5s<1.4s
+[K       7/20      3.97G      1.913      2.073      1.819        336        640: 92% ━━━━━━━━━━━─ 48/52 3.6it/s 22.8s<1.1s
+[K       7/20      3.97G      1.913      2.072      1.818        220        640: 94% ━━━━━━━━━━━─ 49/52 2.8it/s 24.0s<1.1s
+[K       7/20      3.97G      1.911       2.07      1.816        189        640: 96% ━━━━━━━━━━━╸ 50/52 3.2it/s 24.3s<0.6s
+[K       7/20      3.97G       1.91      2.068      1.814        290        640: 98% ━━━━━━━━━━━╸ 51/52 3.5it/s 24.5s<0.3s
+[K       7/20      3.97G       1.91      2.068      1.814        290        640: 100% ━━━━━━━━━━━━ 52/52 2.1it/s 24.5s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.1it/s 0.3s<2.6s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.1it/s 0.5s<0.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.6it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.7it/s 0.9s
+                   all        104        681      0.302      0.264      0.202     0.0803
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       8/20      3.98G       1.93      1.907      1.812        263        640: 0% ──────────── 0/52  0.2s
+[K       8/20      3.98G       1.92      1.917      1.817        277        640: 1% ──────────── 1/52 1.2it/s 0.5s<42.5s
+[K       8/20      3.99G      1.946      1.906      1.855        262        640: 3% ──────────── 2/52 2.0it/s 0.8s<25.5s
+[K       8/20      3.99G       1.89      1.902       1.81        217        640: 5% ╸─────────── 3/52 2.4it/s 1.1s<20.2s
+[K       8/20      3.99G      1.889      1.928      1.818        197        640: 7% ╸─────────── 4/52 2.7it/s 1.3s<17.5s
+[K       8/20      3.99G      1.896      1.932      1.804        252        640: 9% ━─────────── 5/52 2.1it/s 3.1s<22.4s
+[K       8/20      3.99G      1.893      1.919      1.806        226        640: 11% ━─────────── 6/52 2.6it/s 3.3s<17.8s
+[K       8/20      3.99G      1.889      1.932      1.798        251        640: 13% ━╸────────── 7/52 2.9it/s 3.6s<15.5s
+[K       8/20      3.99G      1.874      1.916      1.794        282        640: 15% ━╸────────── 8/52 3.2it/s 3.9s<13.7s
+[K       8/20      3.99G      1.856      1.916      1.784        204        640: 17% ━━────────── 9/52 2.4it/s 5.6s<17.8s
+[K       8/20      3.99G      1.846      1.921      1.777        203        640: 19% ━━────────── 10/52 2.8it/s 5.9s<14.8s
+[K       8/20      3.99G      1.853      1.919      1.773        311        640: 21% ━━╸───────── 11/52 3.1it/s 6.2s<13.2s
+[K       8/20      3.99G      1.857      1.927      1.775        215        640: 23% ━━╸───────── 12/52 3.4it/s 6.4s<11.7s
+[K       8/20      3.99G       1.86       1.93       1.78        183        640: 25% ━━━───────── 13/52 2.5it/s 8.9s<15.6s
+[K       8/20      3.99G      1.866      1.951      1.785        181        640: 26% ━━━───────── 14/52 2.9it/s 9.1s<13.1s
+[K       8/20      3.99G      1.871      1.946      1.782        269        640: 28% ━━━───────── 15/52 3.2it/s 9.4s<11.7s
+[K       8/20      3.99G      1.875      1.942      1.778        302        640: 30% ━━━╸──────── 16/52 3.4it/s 9.6s<10.5s
+[K       8/20      3.99G       1.87      1.941       1.77        200        640: 32% ━━━╸──────── 17/52 2.6it/s 11.0s<13.3s
+[K       8/20      3.99G      1.868      1.947      1.769        194        640: 34% ━━━━──────── 18/52 3.0it/s 11.3s<11.3s
+[K       8/20      3.99G      1.869      1.948      1.771        256        640: 36% ━━━━──────── 19/52 3.1it/s 11.6s<10.7s
+[K       8/20      3.99G      1.867      1.959      1.771        146        640: 38% ━━━━╸─────── 20/52 3.3it/s 11.9s<9.7s
+[K       8/20      3.99G      1.868      1.964      1.773        222        640: 40% ━━━━╸─────── 21/52 2.4it/s 14.1s<12.7s
+[K       8/20      3.99G      1.866      1.964       1.77        179        640: 42% ━━━━━─────── 22/52 2.8it/s 14.4s<10.6s
+[K       8/20      3.99G      1.862      1.958      1.768        253        640: 44% ━━━━━─────── 23/52 3.2it/s 14.6s<9.2s
+[K       8/20      3.99G      1.863      1.966      1.771        210        640: 46% ━━━━━╸────── 24/52 3.3it/s 14.9s<8.4s
+[K       8/20      3.99G       1.86      1.968      1.771        218        640: 48% ━━━━━╸────── 25/52 2.5it/s 16.5s<10.7s
+[K       8/20      3.99G      1.863      1.973      1.771        211        640: 50% ━━━━━━────── 26/52 2.9it/s 16.7s<8.9s
+[K       8/20      3.99G      1.863      1.982       1.77        212        640: 51% ━━━━━━────── 27/52 3.2it/s 17.0s<7.9s
+[K       8/20      3.99G       1.86      1.984      1.767        155        640: 53% ━━━━━━────── 28/52 3.5it/s 17.2s<6.9s
+[K       8/20      3.99G      1.862      1.983      1.766        253        640: 55% ━━━━━━╸───── 29/52 2.6it/s 19.1s<8.9s
+[K       8/20      3.99G      1.859      1.985      1.767        210        640: 57% ━━━━━━╸───── 30/52 3.0it/s 19.3s<7.4s
+[K       8/20      3.99G      1.865      1.986      1.768        412        640: 59% ━━━━━━━───── 31/52 3.2it/s 19.6s<6.6s
+[K       8/20      3.99G      1.861      1.983      1.766        225        640: 61% ━━━━━━━───── 32/52 3.4it/s 19.9s<6.0s
+[K       8/20      3.99G      1.865      1.988      1.768        215        640: 63% ━━━━━━━╸──── 33/52 2.5it/s 21.5s<7.5s
+[K       8/20      3.99G      1.866      1.992       1.77        204        640: 65% ━━━━━━━╸──── 34/52 3.0it/s 21.7s<6.1s
+[K       8/20      3.99G      1.864      1.986      1.767        325        640: 67% ━━━━━━━━──── 35/52 3.3it/s 22.0s<5.2s
+[K       8/20      3.99G      1.869      1.989       1.77        216        640: 69% ━━━━━━━━──── 36/52 3.5it/s 22.2s<4.6s
+[K       8/20      3.99G      1.872      1.993      1.773        172        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 24.0s<5.8s
+[K       8/20      3.99G      1.872      2.001      1.775        199        640: 73% ━━━━━━━━╸─── 38/52 3.0it/s 24.3s<4.7s
+[K       8/20      3.99G      1.869      1.996      1.774        256        640: 75% ━━━━━━━━━─── 39/52 3.2it/s 24.5s<4.0s
+[K       8/20      3.99G      1.871      1.995      1.775        226        640: 76% ━━━━━━━━━─── 40/52 3.4it/s 24.8s<3.5s
+[K       8/20      3.99G      1.872      2.002      1.775        209        640: 78% ━━━━━━━━━─── 41/52 2.5it/s 26.8s<4.4s
+[K       8/20      3.99G      1.872      2.003      1.777        226        640: 80% ━━━━━━━━━╸── 42/52 2.9it/s 27.1s<3.4s
+[K       8/20      3.99G      1.872      2.002      1.778        313        640: 82% ━━━━━━━━━╸── 43/52 3.1it/s 27.4s<2.9s
+[K       8/20      3.99G      1.872      2.005      1.778        217        640: 84% ━━━━━━━━━━── 44/52 3.3it/s 27.6s<2.4s
+[K       8/20      3.99G      1.875      2.009      1.779        200        640: 86% ━━━━━━━━━━── 45/52 2.5it/s 29.6s<2.8s
+[K       8/20      3.99G      1.871      2.011      1.778        234        640: 88% ━━━━━━━━━━╸─ 46/52 2.9it/s 29.9s<2.1s
+[K       8/20      3.99G      1.874      2.013       1.78        250        640: 90% ━━━━━━━━━━╸─ 47/52 3.3it/s 30.1s<1.5s
+[K       8/20      3.99G      1.875       2.01       1.78        368        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 30.4s<1.1s
+[K       8/20      3.99G      1.875      2.011      1.781        239        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 32.0s<1.1s
+[K       8/20      3.99G      1.872      2.009       1.78        287        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 32.3s<0.7s
+[K       8/20      3.99G      1.872      2.009       1.78        296        640: 98% ━━━━━━━━━━━╸ 51/52 3.4it/s 32.5s<0.3s
+[K       8/20      3.99G      1.872      2.009       1.78        296        640: 100% ━━━━━━━━━━━━ 52/52 1.6it/s 32.5s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.0s/it 0.3s<3.0s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.7it/s 0.6s<1.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.1it/s 0.9s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.7it/s 1.1s
+                   all        104        681      0.354      0.279      0.237     0.0986
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K       9/20      3.99G      1.905      1.927      1.756        289        640: 0% ──────────── 0/52  0.2s
+[K       9/20      3.99G      1.905      1.954      1.799        284        640: 1% ──────────── 1/52 1.1it/s 0.5s<44.4s
+[K       9/20      3.99G      1.938      2.003      1.831        338        640: 3% ──────────── 2/52 1.9it/s 0.8s<25.8s
+[K       9/20      3.99G      1.915       1.96      1.814        285        640: 5% ╸─────────── 3/52 2.5it/s 1.0s<19.5s
+[K       9/20      3.99G      1.938      1.985      1.842        211        640: 7% ╸─────────── 4/52 3.0it/s 1.3s<16.2s
+[K       9/20      3.99G      1.931      1.974      1.848        215        640: 9% ━─────────── 5/52 2.2it/s 3.2s<21.1s
+[K       9/20      3.99G      1.908      1.964      1.833        263        640: 11% ━─────────── 6/52 2.6it/s 3.5s<17.5s
+[K       9/20      3.99G      1.917       1.97      1.835        229        640: 13% ━╸────────── 7/52 3.0it/s 3.7s<15.2s
+[K       9/20      3.99G      1.926      1.963      1.834        353        640: 15% ━╸────────── 8/52 3.3it/s 4.0s<13.4s
+[K       9/20      3.99G      1.921      1.965      1.829        248        640: 17% ━━────────── 9/52 2.5it/s 5.3s<17.0s
+[K       9/20      3.99G      1.913      1.983      1.826        257        640: 19% ━━────────── 10/52 2.9it/s 5.5s<14.4s
+[K       9/20      3.99G      1.914      1.988      1.823        313        640: 21% ━━╸───────── 11/52 3.3it/s 5.8s<12.5s
+[K       9/20      3.99G      1.906       1.97      1.824        244        640: 23% ━━╸───────── 12/52 3.5it/s 6.0s<11.5s
+[K       9/20      3.99G      1.898      1.959      1.818        236        640: 25% ━━━───────── 13/52 2.6it/s 7.7s<14.9s
+[K       9/20      3.99G      1.903      1.988       1.82        178        640: 26% ━━━───────── 14/52 3.0it/s 7.9s<12.6s
+[K       9/20      3.99G      1.896      1.977      1.821        266        640: 28% ━━━───────── 15/52 3.3it/s 8.2s<11.1s
+[K       9/20      3.99G      1.895      1.988      1.816        187        640: 30% ━━━╸──────── 16/52 3.5it/s 8.4s<10.1s
+[K       9/20      3.99G      1.891      1.982      1.813        255        640: 32% ━━━╸──────── 17/52 2.7it/s 9.7s<12.9s
+[K       9/20      3.99G      1.896      1.983      1.814        313        640: 34% ━━━━──────── 18/52 3.1it/s 9.9s<11.1s
+[K       9/20      3.99G      1.893      1.995      1.818        188        640: 36% ━━━━──────── 19/52 3.3it/s 10.2s<9.9s
+[K       9/20      3.99G       1.89      1.999      1.817        247        640: 38% ━━━━╸─────── 20/52 3.6it/s 10.4s<9.0s
+[K       9/20      3.99G      1.889      2.003      1.817        221        640: 40% ━━━━╸─────── 21/52 2.6it/s 12.3s<11.7s
+[K       9/20      3.99G      1.893      2.002      1.818        365        640: 42% ━━━━━─────── 22/52 3.1it/s 12.6s<9.8s
+[K       9/20      3.99G      1.893      2.001      1.817        302        640: 44% ━━━━━─────── 23/52 3.4it/s 12.8s<8.6s
+[K       9/20      3.99G      1.889      1.999      1.813        253        640: 46% ━━━━━╸────── 24/52 3.6it/s 13.1s<7.9s
+[K       9/20      3.99G      1.885      1.992       1.81        327        640: 48% ━━━━━╸────── 25/52 2.7it/s 14.7s<10.1s
+[K       9/20      3.99G      1.886      1.989      1.811        307        640: 50% ━━━━━━────── 26/52 3.0it/s 14.9s<8.6s
+[K       9/20      3.99G      1.891      1.992      1.812        292        640: 51% ━━━━━━────── 27/52 3.4it/s 15.2s<7.5s
+[K       9/20      3.99G      1.894      1.993      1.815        224        640: 53% ━━━━━━────── 28/52 3.5it/s 15.4s<6.8s
+[K       9/20      3.99G      1.896      1.993      1.812        264        640: 55% ━━━━━━╸───── 29/52 2.7it/s 16.9s<8.6s
+[K       9/20      3.99G      1.898      1.997      1.811        210        640: 57% ━━━━━━╸───── 30/52 3.0it/s 17.1s<7.3s
+[K       9/20      3.99G      1.898      1.998      1.809        327        640: 59% ━━━━━━━───── 31/52 3.3it/s 17.4s<6.3s
+[K       9/20      3.99G      1.895      1.993      1.807        287        640: 61% ━━━━━━━───── 32/52 3.5it/s 17.6s<5.7s
+[K       9/20      3.99G      1.893      2.001      1.806        203        640: 63% ━━━━━━━╸──── 33/52 2.7it/s 19.1s<7.1s
+[K       9/20      3.99G      1.896      2.004      1.809        292        640: 65% ━━━━━━━╸──── 34/52 3.1it/s 19.3s<5.7s
+[K       9/20      3.99G      1.892      2.001      1.807        283        640: 67% ━━━━━━━━──── 35/52 3.5it/s 19.6s<4.9s
+[K       9/20      3.99G      1.892      2.003      1.806        222        640: 69% ━━━━━━━━──── 36/52 3.6it/s 19.8s<4.4s
+[K       9/20      3.99G      1.892      1.997      1.805        283        640: 71% ━━━━━━━━╸─── 37/52 2.7it/s 21.5s<5.5s
+[K       9/20      3.99G      1.893      1.996      1.805        327        640: 73% ━━━━━━━━╸─── 38/52 3.1it/s 21.7s<4.5s
+[K       9/20      3.99G      1.891      1.995      1.805        193        640: 75% ━━━━━━━━━─── 39/52 3.4it/s 22.0s<3.8s
+[K       9/20      3.99G      1.882      1.989      1.801        189        640: 76% ━━━━━━━━━─── 40/52 3.6it/s 22.2s<3.3s
+[K       9/20      3.99G      1.881      1.992      1.802        230        640: 78% ━━━━━━━━━─── 41/52 2.8it/s 23.5s<4.0s
+[K       9/20      3.99G      1.879      1.992      1.801        393        640: 80% ━━━━━━━━━╸── 42/52 3.1it/s 23.8s<3.2s
+[K       9/20      3.99G      1.878      1.991      1.798        275        640: 82% ━━━━━━━━━╸── 43/52 3.4it/s 24.0s<2.7s
+[K       9/20      3.99G      1.876       1.99      1.795        316        640: 84% ━━━━━━━━━━── 44/52 3.7it/s 24.3s<2.2s
+[K       9/20      3.99G      1.881      1.995      1.798        249        640: 86% ━━━━━━━━━━── 45/52 2.7it/s 26.1s<2.6s
+[K       9/20      3.99G      1.882      1.999      1.798        199        640: 88% ━━━━━━━━━━╸─ 46/52 3.2it/s 26.3s<1.9s
+[K       9/20      3.99G      1.881      1.997      1.797        216        640: 90% ━━━━━━━━━━╸─ 47/52 3.4it/s 26.6s<1.5s
+[K       9/20      3.99G      1.877      1.993      1.796        206        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 26.9s<1.1s
+[K       9/20      3.99G      1.882          2      1.797        239        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 28.4s<1.1s
+[K       9/20      3.99G      1.882      1.998      1.797        239        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 28.7s<0.7s
+[K       9/20      3.99G       1.88      1.993      1.796        247        640: 98% ━━━━━━━━━━━╸ 51/52 3.3it/s 28.9s<0.3s
+[K       9/20      3.99G       1.88      1.993      1.796        247        640: 100% ━━━━━━━━━━━━ 52/52 1.8it/s 28.9s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.1it/s 0.3s<2.6s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.0it/s 0.5s<1.0s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.3it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.4it/s 0.9s
+                   all        104        681      0.343        0.3       0.25      0.105
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      10/20      3.99G      1.894      1.943      1.689        240        640: 0% ──────────── 0/52  0.2s
+[K      10/20      3.99G      1.944      2.013      1.765        302        640: 1% ──────────── 1/52 1.2it/s 0.5s<43.1s
+[K      10/20      3.99G      1.948      2.045       1.79        302        640: 3% ──────────── 2/52 2.0it/s 0.7s<24.4s
+[K      10/20      3.99G      1.927      2.025      1.789        229        640: 5% ╸─────────── 3/52 2.7it/s 1.0s<18.2s
+[K      10/20      3.99G      1.922      2.009      1.777        238        640: 7% ╸─────────── 4/52 3.1it/s 1.2s<15.4s
+[K      10/20      3.99G      1.909      2.033      1.764        184        640: 9% ━─────────── 5/52 2.4it/s 2.6s<19.7s
+[K      10/20      3.99G      1.891      2.009       1.76        275        640: 11% ━─────────── 6/52 2.8it/s 2.9s<16.2s
+[K      10/20      3.99G      1.859      2.014      1.747        170        640: 13% ━╸────────── 7/52 3.3it/s 3.1s<13.7s
+[K      10/20      3.99G      1.864      2.017      1.753        151        640: 15% ━╸────────── 8/52 3.5it/s 3.4s<12.5s
+[K      10/20      3.99G       1.87      2.044      1.764        144        640: 17% ━━────────── 9/52 2.7it/s 4.5s<15.8s
+[K      10/20      3.99G      1.866      2.047      1.757        223        640: 19% ━━────────── 10/52 3.1it/s 4.8s<13.4s
+[K      10/20      3.99G      1.865      2.039      1.761        207        640: 21% ━━╸───────── 11/52 3.5it/s 5.0s<11.8s
+[K      10/20      3.99G      1.873      2.056      1.764        257        640: 23% ━━╸───────── 12/52 3.7it/s 5.2s<10.9s
+[K      10/20      3.99G      1.868      2.056      1.771        145        640: 25% ━━━───────── 13/52 3.0it/s 6.0s<13.1s
+[K      10/20      3.99G       1.86      2.055      1.779        166        640: 26% ━━━───────── 14/52 3.4it/s 6.2s<11.3s
+[K      10/20      3.99G      1.855      2.073      1.778        131        640: 28% ━━━───────── 15/52 3.6it/s 6.5s<10.3s
+[K      10/20      3.99G      1.851      2.062      1.772        256        640: 30% ━━━╸──────── 16/52 3.8it/s 6.7s<9.5s
+[K      10/20      3.99G      1.849      2.052      1.779        191        640: 32% ━━━╸──────── 17/52 2.9it/s 7.9s<12.1s
+[K      10/20      3.99G       1.85      2.039      1.778        289        640: 34% ━━━━──────── 18/52 3.2it/s 8.2s<10.6s
+[K      10/20      3.99G      1.858       2.05      1.776        200        640: 36% ━━━━──────── 19/52 3.4it/s 8.4s<9.7s
+[K      10/20      3.99G      1.858      2.052      1.774        206        640: 38% ━━━━╸─────── 20/52 3.7it/s 8.7s<8.8s
+[K      10/20      3.99G      1.857      2.046      1.772        215        640: 40% ━━━━╸─────── 21/52 2.7it/s 10.3s<11.3s
+[K      10/20      3.99G      1.855      2.042      1.772        227        640: 42% ━━━━━─────── 22/52 3.0it/s 10.5s<9.8s
+[K      10/20      3.99G      1.856      2.039      1.772        191        640: 44% ━━━━━─────── 23/52 3.4it/s 10.8s<8.6s
+[K      10/20      3.99G      1.856      2.033       1.77        266        640: 46% ━━━━━╸────── 24/52 3.6it/s 11.0s<7.8s
+[K      10/20      3.99G      1.851      2.027      1.766        214        640: 48% ━━━━━╸────── 25/52 2.7it/s 13.0s<10.1s
+[K      10/20      3.99G      1.855      2.026      1.769        223        640: 50% ━━━━━━────── 26/52 3.1it/s 13.2s<8.4s
+[K      10/20      3.99G      1.855      2.021       1.77        267        640: 51% ━━━━━━────── 27/52 3.5it/s 13.4s<7.2s
+[K      10/20      3.99G      1.852      2.026      1.769        129        640: 53% ━━━━━━────── 28/52 3.7it/s 13.7s<6.4s
+[K      10/20      3.99G      1.849      2.022      1.767        233        640: 55% ━━━━━━╸───── 29/52 2.8it/s 15.3s<8.2s
+[K      10/20      3.99G      1.851      2.024      1.767        276        640: 57% ━━━━━━╸───── 30/52 3.1it/s 15.6s<7.1s
+[K      10/20      3.99G      1.848      2.017      1.765        268        640: 59% ━━━━━━━───── 31/52 3.4it/s 15.8s<6.2s
+[K      10/20      3.99G      1.843      2.015      1.762        176        640: 61% ━━━━━━━───── 32/52 3.5it/s 16.1s<5.7s
+[K      10/20      3.99G      1.841      2.009       1.76        262        640: 63% ━━━━━━━╸──── 33/52 2.6it/s 18.1s<7.3s
+[K      10/20      3.99G       1.84      2.003      1.758        254        640: 65% ━━━━━━━╸──── 34/52 3.0it/s 18.3s<6.0s
+[K      10/20      3.99G      1.838      2.001      1.757        298        640: 67% ━━━━━━━━──── 35/52 3.2it/s 18.6s<5.3s
+[K      10/20      3.99G      1.836          2      1.757        258        640: 69% ━━━━━━━━──── 36/52 3.3it/s 18.9s<4.8s
+[K      10/20      3.99G      1.837      2.003      1.759        189        640: 71% ━━━━━━━━╸─── 37/52 2.5it/s 20.7s<6.0s
+[K      10/20      3.99G      1.838      2.001      1.756        239        640: 73% ━━━━━━━━╸─── 38/52 3.0it/s 20.9s<4.7s
+[K      10/20      3.99G      1.836      1.997      1.755        393        640: 75% ━━━━━━━━━─── 39/52 3.4it/s 21.2s<3.9s
+[K      10/20      3.99G      1.833      1.994      1.753        302        640: 76% ━━━━━━━━━─── 40/52 3.5it/s 21.4s<3.4s
+[K      10/20      3.99G      1.833      1.992      1.753        274        640: 78% ━━━━━━━━━─── 41/52 2.7it/s 22.9s<4.1s
+[K      10/20      3.99G      1.835      1.996      1.754        187        640: 80% ━━━━━━━━━╸── 42/52 3.1it/s 23.2s<3.3s
+[K      10/20      3.99G      1.828       1.99      1.749        192        640: 82% ━━━━━━━━━╸── 43/52 3.2it/s 23.4s<2.8s
+[K      10/20      3.99G       1.83       1.99      1.751        290        640: 84% ━━━━━━━━━━── 44/52 3.5it/s 23.7s<2.3s
+[K      10/20      3.99G      1.832      1.993      1.754        244        640: 86% ━━━━━━━━━━── 45/52 2.6it/s 25.4s<2.7s
+[K      10/20      3.99G      1.831      1.991      1.752        254        640: 88% ━━━━━━━━━━╸─ 46/52 3.1it/s 25.7s<2.0s
+[K      10/20      3.99G      1.833       1.99      1.754        317        640: 90% ━━━━━━━━━━╸─ 47/52 3.4it/s 25.9s<1.5s
+[K      10/20      3.99G      1.833      1.986      1.754        303        640: 92% ━━━━━━━━━━━─ 48/52 3.6it/s 26.1s<1.1s
+[K      10/20      3.99G      1.831      1.983      1.752        225        640: 94% ━━━━━━━━━━━─ 49/52 2.7it/s 28.0s<1.1s
+[K      10/20      3.99G       1.83      1.981       1.75        219        640: 96% ━━━━━━━━━━━╸ 50/52 3.1it/s 28.3s<0.7s
+[K      10/20      3.99G      1.827      1.978      1.749        245        640: 98% ━━━━━━━━━━━╸ 51/52 3.2it/s 28.5s<0.3s
+[K      10/20      3.99G      1.827      1.978      1.749        245        640: 100% ━━━━━━━━━━━━ 52/52 1.8it/s 28.5s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.2it/s 0.3s<2.6s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.9it/s 0.5s<1.0s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.5it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.6it/s 0.9s
+                   all        104        681      0.394      0.288      0.289      0.127
+Closing dataloader mosaic
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      11/20      3.99G      1.875      2.073      1.737        161        640: 0% ──────────── 0/52  12.5s
+[K      11/20      3.99G      1.768      2.123      1.697         83        640: 1% ──────────── 1/52 1.2it/s 12.7s<43.2s
+[K      11/20      3.99G      1.872      2.226      1.781        134        640: 3% ──────────── 2/52 2.1it/s 13.0s<23.8s
+[K      11/20      3.99G      1.857      2.126      1.793        167        640: 5% ╸─────────── 3/52 2.8it/s 13.2s<17.8s
+[K      11/20      3.99G      1.892      2.166      1.822        113        640: 7% ╸─────────── 4/52 2.1it/s 14.7s<22.5s
+[K      11/20      3.99G      1.912      2.179       1.84        123        640: 9% ━─────────── 5/52 2.7it/s 14.9s<17.4s
+[K      11/20      3.99G      1.928      2.172      1.855        169        640: 11% ━─────────── 6/52 2.4it/s 15.5s<18.9s
+[K      11/20      3.99G      1.921      2.171      1.847        115        640: 13% ━╸────────── 7/52 2.9it/s 15.7s<15.4s
+[K      11/20      3.99G      1.914      2.136      1.839        173        640: 15% ━╸────────── 8/52 2.3it/s 16.8s<18.9s
+[K      11/20      3.99G      1.913      2.141      1.836        120        640: 17% ━━────────── 9/52 2.4it/s 17.2s<17.9s
+[K      11/20      3.99G      1.904      2.126      1.827        145        640: 19% ━━────────── 10/52 2.3it/s 17.7s<18.5s
+[K      11/20      3.99G      1.892      2.116      1.821        100        640: 21% ━━╸───────── 11/52 2.9it/s 17.9s<14.4s
+[K      11/20      3.99G        1.9       2.14      1.831        101        640: 23% ━━╸───────── 12/52 2.3it/s 19.1s<17.7s
+[K      11/20      3.99G      1.899      2.139      1.843        105        640: 25% ━━━───────── 13/52 2.7it/s 19.3s<14.3s
+[K      11/20      3.99G      1.892      2.129      1.832        144        640: 26% ━━━───────── 14/52 2.4it/s 20.0s<15.9s
+[K      11/20      3.99G      1.899      2.126      1.832        139        640: 28% ━━━───────── 15/52 3.0it/s 20.2s<12.5s
+[K      11/20      3.99G      1.894      2.105      1.827        117        640: 30% ━━━╸──────── 16/52 2.4it/s 21.3s<15.3s
+[K      11/20      3.99G      1.882      2.095      1.825         92        640: 32% ━━━╸──────── 17/52 2.5it/s 21.6s<13.7s
+[K      11/20      3.99G      1.882        2.1      1.826        133        640: 34% ━━━━──────── 18/52 2.1it/s 22.6s<16.3s
+[K      11/20      3.99G      1.886        2.1      1.831        149        640: 36% ━━━━──────── 19/52 2.7it/s 22.8s<12.1s
+[K      11/20      3.99G      1.886      2.099      1.832         89        640: 38% ━━━━╸─────── 20/52 2.4it/s 23.4s<13.1s
+[K      11/20      3.99G      1.888      2.099      1.835        113        640: 40% ━━━━╸─────── 21/52 2.1it/s 24.1s<14.6s
+[K      11/20      3.99G      1.892       2.11       1.84        110        640: 42% ━━━━━─────── 22/52 2.1it/s 24.6s<14.5s
+[K      11/20      3.99G      1.887      2.096      1.832        174        640: 44% ━━━━━─────── 23/52 2.7it/s 24.9s<10.8s
+[K      11/20      3.99G      1.883       2.09      1.831        100        640: 46% ━━━━━╸────── 24/52 2.3it/s 25.6s<12.2s
+[K      11/20      3.99G      1.877      2.094      1.829         74        640: 48% ━━━━━╸────── 25/52 2.1it/s 26.2s<12.9s
+[K      11/20      3.99G      1.877      2.091      1.829        105        640: 50% ━━━━━━────── 26/52 2.0it/s 26.8s<13.3s
+[K      11/20      3.99G      1.875      2.091      1.822        111        640: 51% ━━━━━━────── 27/52 2.6it/s 27.1s<9.7s
+[K      11/20      3.99G      1.878      2.101      1.825         71        640: 53% ━━━━━━────── 28/52 2.3it/s 27.7s<10.4s
+[K      11/20      3.99G      1.879        2.1      1.822        104        640: 55% ━━━━━━╸───── 29/52 2.1it/s 28.3s<11.1s
+[K      11/20      3.99G      1.875      2.109      1.822         86        640: 57% ━━━━━━╸───── 30/52 1.9it/s 28.9s<11.4s
+[K      11/20      3.99G      1.878      2.115      1.824         87        640: 59% ━━━━━━━───── 31/52 2.6it/s 29.2s<8.1s
+[K      11/20      3.99G      1.874      2.112      1.824         91        640: 61% ━━━━━━━───── 32/52 2.3it/s 29.8s<8.5s
+[K      11/20      3.99G      1.872      2.111      1.824        152        640: 63% ━━━━━━━╸──── 33/52 1.9it/s 30.9s<10.0s
+[K      11/20      3.99G      1.868      2.113      1.822         90        640: 65% ━━━━━━━╸──── 34/52 2.5it/s 31.1s<7.1s
+[K      11/20      3.99G      1.873       2.12      1.826        125        640: 67% ━━━━━━━━──── 35/52 3.0it/s 31.4s<5.6s
+[K      11/20      3.99G      1.877      2.124      1.827        185        640: 69% ━━━━━━━━──── 36/52 2.5it/s 32.2s<6.4s
+[K      11/20      3.99G      1.879      2.128      1.828        103        640: 71% ━━━━━━━━╸─── 37/52 2.0it/s 33.4s<7.5s
+[K      11/20      3.99G      1.877      2.123      1.824        115        640: 73% ━━━━━━━━╸─── 38/52 2.6it/s 33.6s<5.4s
+[K      11/20      3.99G       1.88      2.122      1.824        171        640: 75% ━━━━━━━━━─── 39/52 3.0it/s 33.9s<4.3s
+[K      11/20      3.99G      1.881      2.124      1.824        113        640: 76% ━━━━━━━━━─── 40/52 2.5it/s 34.6s<4.8s
+[K      11/20      3.99G      1.882       2.12      1.824        144        640: 78% ━━━━━━━━━─── 41/52 2.1it/s 35.6s<5.3s
+[K      11/20      3.99G      1.885      2.123      1.824        109        640: 80% ━━━━━━━━━╸── 42/52 2.6it/s 35.8s<3.8s
+[K      11/20      3.99G      1.887      2.123      1.825        156        640: 82% ━━━━━━━━━╸── 43/52 3.1it/s 36.1s<2.9s
+[K      11/20      3.99G      1.883       2.12      1.824        154        640: 84% ━━━━━━━━━━── 44/52 2.6it/s 36.8s<3.1s
+[K      11/20      3.99G      1.884      2.121      1.823        173        640: 86% ━━━━━━━━━━── 45/52 2.1it/s 38.0s<3.4s
+[K      11/20      3.99G      1.881       2.12      1.821         66        640: 88% ━━━━━━━━━━╸─ 46/52 2.6it/s 38.3s<2.3s
+[K      11/20      3.99G      1.884      2.125      1.819         77        640: 90% ━━━━━━━━━━╸─ 47/52 3.0it/s 38.5s<1.7s
+[K      11/20      3.99G      1.884      2.122      1.819        114        640: 92% ━━━━━━━━━━━─ 48/52 2.5it/s 39.3s<1.6s
+[K      11/20      3.99G      1.883      2.119      1.817        178        640: 94% ━━━━━━━━━━━─ 49/52 2.0it/s 40.7s<1.5s
+[K      11/20      3.99G      1.891      2.126      1.819        129        640: 96% ━━━━━━━━━━━╸ 50/52 2.5it/s 41.0s<0.8s
+[K      11/20      3.99G      1.892      2.126      1.822        173        640: 98% ━━━━━━━━━━━╸ 51/52 3.0it/s 41.2s<0.3s
+[K      11/20      3.99G      1.892      2.126      1.822        173        640: 100% ━━━━━━━━━━━━ 52/52 1.3it/s 41.2s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.0s/it 0.3s<3.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.5it/s 0.7s<1.3s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 1.9it/s 1.0s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.4it/s 1.2s
+                   all        104        681      0.322      0.294      0.246      0.108
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      12/20         4G      2.012      2.021      1.907        138        640: 0% ──────────── 0/52  0.3s
+[K      12/20         4G      1.993      2.021      1.827        148        640: 1% ──────────── 1/52 1.1it/s 0.6s<44.9s
+[K      12/20         4G      1.978      2.027      1.825        150        640: 3% ──────────── 2/52 2.0it/s 0.8s<24.9s
+[K      12/20         4G      1.929      2.059      1.812        121        640: 5% ╸─────────── 3/52 2.6it/s 1.1s<18.6s
+[K      12/20         4G      1.904      2.035      1.808        172        640: 7% ╸─────────── 4/52 2.5it/s 1.5s<18.8s
+[K      12/20         4G      1.896      2.015      1.813        131        640: 9% ━─────────── 5/52 2.2it/s 2.3s<21.7s
+[K      12/20         4G      1.885      2.022      1.825        117        640: 11% ━─────────── 6/52 2.7it/s 2.5s<16.8s
+[K      12/20         4G      1.892      2.011      1.833        150        640: 13% ━╸────────── 7/52 3.1it/s 2.8s<14.4s
+[K      12/20         4G      1.884      2.007      1.825        184        640: 15% ━╸────────── 8/52 2.4it/s 4.1s<18.2s
+[K      12/20         4G      1.897      2.013      1.813        143        640: 17% ━━────────── 9/52 2.0it/s 5.1s<21.7s
+[K      12/20         4G      1.906      2.065      1.815         92        640: 19% ━━────────── 10/52 2.5it/s 5.4s<16.6s
+[K      12/20         4G      1.914      2.082      1.825         74        640: 21% ━━╸───────── 11/52 2.9it/s 5.7s<14.3s
+[K      12/20         4G      1.906      2.086      1.829         90        640: 23% ━━╸───────── 12/52 2.9it/s 6.0s<13.8s
+[K      12/20         4G      1.924      2.088      1.841        193        640: 25% ━━━───────── 13/52 2.2it/s 7.6s<17.6s
+[K      12/20         4G      1.909      2.066      1.829        139        640: 26% ━━━───────── 14/52 2.7it/s 7.8s<13.9s
+[K      12/20         4G      1.911      2.056      1.825        119        640: 28% ━━━───────── 15/52 3.1it/s 8.1s<12.0s
+[K      12/20         4G      1.899      2.032      1.808         81        640: 30% ━━━╸──────── 16/52 2.8it/s 8.6s<13.0s
+[K      12/20         4G      1.887      2.036       1.81         95        640: 32% ━━━╸──────── 17/52 2.2it/s 9.9s<16.1s
+[K      12/20         4G      1.891      2.038      1.814        151        640: 34% ━━━━──────── 18/52 2.6it/s 10.2s<12.9s
+[K      12/20         4G       1.88      2.037      1.812         74        640: 36% ━━━━──────── 19/52 3.0it/s 10.4s<10.9s
+[K      12/20         4G      1.884      2.049      1.814        102        640: 38% ━━━━╸─────── 20/52 2.5it/s 11.2s<12.7s
+[K      12/20         4G      1.872      2.033      1.802        141        640: 40% ━━━━╸─────── 21/52 2.1it/s 12.0s<14.7s
+[K      12/20         4G       1.87      2.024      1.802        149        640: 42% ━━━━━─────── 22/52 2.7it/s 12.3s<11.0s
+[K      12/20         4G      1.866      2.014      1.798        141        640: 44% ━━━━━─────── 23/52 3.1it/s 12.5s<9.3s
+[K      12/20         4G      1.872      2.025      1.805         83        640: 46% ━━━━━╸────── 24/52 2.5it/s 13.5s<11.2s
+[K      12/20         4G      1.872      2.037      1.807        122        640: 48% ━━━━━╸────── 25/52 2.0it/s 14.5s<13.2s
+[K      12/20         4G      1.867      2.037      1.807        123        640: 50% ━━━━━━────── 26/52 2.7it/s 14.8s<9.6s
+[K      12/20         4G      1.869      2.029      1.813         80        640: 51% ━━━━━━────── 27/52 3.2it/s 15.0s<7.9s
+[K      12/20         4G      1.869      2.024      1.811        139        640: 53% ━━━━━━────── 28/52 2.6it/s 15.8s<9.2s
+[K      12/20         4G      1.866      2.022      1.809        108        640: 55% ━━━━━━╸───── 29/52 2.1it/s 16.7s<10.7s
+[K      12/20         4G      1.867      2.021       1.81        101        640: 57% ━━━━━━╸───── 30/52 2.6it/s 17.0s<8.6s
+[K      12/20         4G      1.864      2.017      1.812        163        640: 59% ━━━━━━━───── 31/52 2.9it/s 17.2s<7.2s
+[K      12/20         4G      1.868      2.026      1.812        153        640: 61% ━━━━━━━───── 32/52 2.5it/s 18.0s<8.1s
+[K      12/20         4G      1.862      2.014      1.808        150        640: 63% ━━━━━━━╸──── 33/52 2.0it/s 19.2s<9.7s
+[K      12/20         4G      1.862      2.013      1.812         90        640: 65% ━━━━━━━╸──── 34/52 2.6it/s 19.5s<7.0s
+[K      12/20         4G      1.859      2.008      1.813        121        640: 67% ━━━━━━━━──── 35/52 3.0it/s 19.7s<5.6s
+[K      12/20         4G      1.866      2.019      1.815        105        640: 69% ━━━━━━━━──── 36/52 2.4it/s 20.7s<6.6s
+[K      12/20         4G      1.866       2.02       1.82        110        640: 71% ━━━━━━━━╸─── 37/52 1.9it/s 21.9s<7.7s
+[K      12/20         4G      1.863      2.016      1.818        130        640: 73% ━━━━━━━━╸─── 38/52 2.6it/s 22.2s<5.3s
+[K      12/20         4G      1.871      2.021      1.824         87        640: 75% ━━━━━━━━━─── 39/52 3.0it/s 22.4s<4.3s
+[K      12/20         4G      1.869      2.019      1.822        111        640: 76% ━━━━━━━━━─── 40/52 2.6it/s 23.0s<4.6s
+[K      12/20         4G      1.869      2.023      1.821         89        640: 78% ━━━━━━━━━─── 41/52 2.1it/s 24.4s<5.3s
+[K      12/20         4G      1.873      2.023      1.823        141        640: 80% ━━━━━━━━━╸── 42/52 2.7it/s 24.6s<3.7s
+[K      12/20         4G      1.871      2.021       1.82        147        640: 82% ━━━━━━━━━╸── 43/52 3.2it/s 24.8s<2.8s
+[K      12/20         4G      1.876      2.026      1.823        203        640: 84% ━━━━━━━━━━── 44/52 2.9it/s 25.3s<2.7s
+[K      12/20         4G      1.876      2.025      1.824        194        640: 86% ━━━━━━━━━━── 45/52 2.2it/s 26.8s<3.1s
+[K      12/20         4G       1.87      2.023      1.822        128        640: 88% ━━━━━━━━━━╸─ 46/52 2.8it/s 27.0s<2.1s
+[K      12/20         4G      1.875      2.027      1.826        117        640: 90% ━━━━━━━━━━╸─ 47/52 3.2it/s 27.3s<1.6s
+[K      12/20         4G      1.872      2.024      1.825        101        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 27.5s<1.2s
+[K      12/20         4G      1.872      2.023      1.825         84        640: 94% ━━━━━━━━━━━─ 49/52 2.7it/s 28.8s<1.1s
+[K      12/20         4G      1.871      2.023      1.824        128        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 29.0s<0.7s
+[K      12/20         4G      1.877      2.031      1.826         56        640: 98% ━━━━━━━━━━━╸ 51/52 3.4it/s 29.3s<0.3s
+[K      12/20         4G      1.877      2.031      1.826         56        640: 100% ━━━━━━━━━━━━ 52/52 1.8it/s 29.3s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.2it/s 0.3s<2.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.9it/s 0.5s<1.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.3it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.2it/s 0.9s
+                   all        104        681      0.397      0.314      0.283      0.127
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      13/20      3.53G      2.018      2.306      1.905        100        640: 0% ──────────── 0/52  0.3s
+[K      13/20      3.53G      1.982        2.2       1.93        126        640: 1% ──────────── 1/52 1.1it/s 0.6s<44.7s
+[K      13/20      3.53G      1.928       2.08      1.909        140        640: 3% ──────────── 2/52 2.0it/s 0.8s<25.3s
+[K      13/20      3.53G      1.863      2.033      1.816        104        640: 5% ╸─────────── 3/52 2.6it/s 1.1s<18.9s
+[K      13/20      3.53G       1.85      2.001      1.799        100        640: 7% ╸─────────── 4/52 3.0it/s 1.3s<15.8s
+[K      13/20      3.53G      1.822      1.937      1.795        181        640: 9% ━─────────── 5/52 2.4it/s 2.6s<19.9s
+[K      13/20      3.53G      1.793      1.924      1.776        127        640: 11% ━─────────── 6/52 2.8it/s 2.8s<16.4s
+[K      13/20      3.53G      1.778      1.924      1.786        108        640: 13% ━╸────────── 7/52 3.1it/s 3.1s<14.5s
+[K      13/20      3.53G       1.79      1.936      1.779        126        640: 15% ━╸────────── 8/52 3.4it/s 3.3s<13.0s
+[K      13/20      3.53G      1.781      1.928      1.784        120        640: 17% ━━────────── 9/52 2.6it/s 4.7s<16.7s
+[K      13/20      3.53G      1.789       1.93      1.782        157        640: 19% ━━────────── 10/52 2.9it/s 5.0s<14.4s
+[K      13/20      3.53G      1.783       1.91      1.782        185        640: 21% ━━╸───────── 11/52 3.2it/s 5.3s<12.9s
+[K      13/20      3.53G       1.77      1.883      1.771        168        640: 23% ━━╸───────── 12/52 3.4it/s 5.5s<11.8s
+[K      13/20      3.53G       1.78      1.905      1.773        118        640: 25% ━━━───────── 13/52 2.6it/s 6.7s<14.8s
+[K      13/20      3.53G      1.772      1.895      1.761        142        640: 26% ━━━───────── 14/52 3.0it/s 7.0s<12.7s
+[K      13/20      3.53G      1.776       1.89      1.764        129        640: 28% ━━━───────── 15/52 3.3it/s 7.2s<11.1s
+[K      13/20      3.53G      1.788       1.89      1.765        171        640: 30% ━━━╸──────── 16/52 3.2it/s 7.5s<11.2s
+[K      13/20      3.53G      1.798      1.919      1.773         68        640: 32% ━━━╸──────── 17/52 2.7it/s 8.2s<13.0s
+[K      13/20      3.53G      1.812       1.92      1.777        142        640: 34% ━━━━──────── 18/52 3.1it/s 8.5s<11.0s
+[K      13/20      3.53G      1.808      1.914      1.767        101        640: 36% ━━━━──────── 19/52 3.3it/s 8.7s<9.9s
+[K      13/20      3.53G      1.795      1.909      1.758        110        640: 38% ━━━━╸─────── 20/52 2.7it/s 9.7s<12.1s
+[K      13/20      3.53G      1.791      1.913      1.756        119        640: 40% ━━━━╸─────── 21/52 2.2it/s 10.4s<13.8s
+[K      13/20      3.53G      1.784      1.909       1.75         89        640: 42% ━━━━━─────── 22/52 2.7it/s 10.7s<11.0s
+[K      13/20      3.53G      1.786      1.905      1.753        115        640: 44% ━━━━━─────── 23/52 3.2it/s 10.9s<9.2s
+[K      13/20      3.53G      1.786      1.901       1.75        171        640: 46% ━━━━━╸────── 24/52 2.6it/s 11.8s<11.0s
+[K      13/20      3.53G      1.786      1.906      1.755        158        640: 48% ━━━━━╸────── 25/52 2.2it/s 12.5s<12.2s
+[K      13/20      3.53G      1.789      1.917      1.757        106        640: 50% ━━━━━━────── 26/52 2.7it/s 12.8s<9.5s
+[K      13/20      3.53G      1.796      1.924      1.767        103        640: 51% ━━━━━━────── 27/52 3.1it/s 13.0s<8.1s
+[K      13/20      3.53G      1.799      1.925      1.768        118        640: 53% ━━━━━━────── 28/52 2.4it/s 14.2s<9.9s
+[K      13/20      3.53G      1.798      1.922      1.765        218        640: 55% ━━━━━━╸───── 29/52 2.2it/s 14.8s<10.3s
+[K      13/20      3.53G      1.803      1.922      1.768        142        640: 57% ━━━━━━╸───── 30/52 2.8it/s 15.0s<7.8s
+[K      13/20      3.53G        1.8      1.921      1.765         98        640: 59% ━━━━━━━───── 31/52 3.2it/s 15.2s<6.5s
+[K      13/20      3.53G      1.802       1.92      1.765        129        640: 61% ━━━━━━━───── 32/52 2.5it/s 16.4s<7.9s
+[K      13/20      3.53G      1.805      1.923      1.765        151        640: 63% ━━━━━━━╸──── 33/52 2.2it/s 17.1s<8.8s
+[K      13/20      3.53G      1.808      1.931      1.767         99        640: 65% ━━━━━━━╸──── 34/52 2.7it/s 17.4s<6.8s
+[K      13/20      3.53G      1.824      1.963      1.775         81        640: 67% ━━━━━━━━──── 35/52 3.1it/s 17.6s<5.4s
+[K      13/20      3.53G      1.821      1.966       1.77         78        640: 69% ━━━━━━━━──── 36/52 2.5it/s 18.8s<6.5s
+[K      13/20      3.53G      1.825      1.965      1.772        155        640: 71% ━━━━━━━━╸─── 37/52 2.0it/s 19.7s<7.4s
+[K      13/20      3.53G       1.83      1.962      1.776        125        640: 73% ━━━━━━━━╸─── 38/52 2.6it/s 20.0s<5.4s
+[K      13/20      3.53G      1.829      1.967      1.777        119        640: 75% ━━━━━━━━━─── 39/52 2.9it/s 20.3s<4.5s
+[K      13/20      3.53G      1.837      1.979      1.783        156        640: 76% ━━━━━━━━━─── 40/52 2.4it/s 21.1s<5.1s
+[K      13/20      3.53G      1.836      1.983      1.781        109        640: 78% ━━━━━━━━━─── 41/52 1.9it/s 22.5s<5.8s
+[K      13/20      3.53G      1.841      1.988      1.784        113        640: 80% ━━━━━━━━━╸── 42/52 2.5it/s 22.7s<3.9s
+[K      13/20      3.53G      1.841       1.99      1.782         84        640: 82% ━━━━━━━━━╸── 43/52 2.9it/s 23.0s<3.1s
+[K      13/20      3.53G       1.84      1.988       1.78        130        640: 84% ━━━━━━━━━━── 44/52 2.8it/s 23.4s<2.9s
+[K      13/20      3.53G      1.842      1.998      1.785         65        640: 86% ━━━━━━━━━━── 45/52 2.1it/s 24.8s<3.3s
+[K      13/20      3.53G      1.839      1.994      1.785        113        640: 88% ━━━━━━━━━━╸─ 46/52 2.8it/s 25.0s<2.2s
+[K      13/20      3.53G      1.836      1.991      1.781        103        640: 90% ━━━━━━━━━━╸─ 47/52 3.2it/s 25.3s<1.6s
+[K      13/20      3.53G      1.833      1.986      1.782         86        640: 92% ━━━━━━━━━━━─ 48/52 2.7it/s 25.9s<1.5s
+[K      13/20      3.53G      1.837      1.988      1.782        138        640: 94% ━━━━━━━━━━━─ 49/52 2.2it/s 27.0s<1.4s
+[K      13/20      3.53G      1.838       1.99      1.781        128        640: 96% ━━━━━━━━━━━╸ 50/52 2.8it/s 27.2s<0.7s
+[K      13/20      3.53G       1.84       1.99      1.781        166        640: 98% ━━━━━━━━━━━╸ 51/52 3.2it/s 27.5s<0.3s
+[K      13/20      3.53G       1.84       1.99      1.781        166        640: 100% ━━━━━━━━━━━━ 52/52 1.9it/s 27.5s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.2it/s 0.2s<2.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.2it/s 0.5s<0.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.7it/s 0.7s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 5.0it/s 0.8s
+                   all        104        681      0.317      0.334      0.269       0.12
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      14/20      3.54G      1.741      2.195      1.635         98        640: 0% ──────────── 0/52  0.3s
+[K      14/20      3.54G      1.785      2.077      1.753         81        640: 1% ──────────── 1/52 1.1it/s 0.5s<45.1s
+[K      14/20      3.54G      1.798      1.985       1.73        172        640: 3% ──────────── 2/52 1.8it/s 0.8s<27.3s
+[K      14/20      3.54G      1.785      1.971      1.746        121        640: 5% ╸─────────── 3/52 2.5it/s 1.1s<19.7s
+[K      14/20      3.54G      1.837      1.956      1.763        154        640: 7% ╸─────────── 4/52 3.0it/s 1.3s<16.2s
+[K      14/20      3.54G      1.827       1.97      1.757         84        640: 9% ━─────────── 5/52 2.3it/s 2.6s<20.4s
+[K      14/20      3.54G      1.835      1.965      1.765        148        640: 11% ━─────────── 6/52 2.7it/s 2.9s<16.9s
+[K      14/20      3.54G      1.874      2.026      1.796        118        640: 13% ━╸────────── 7/52 3.1it/s 3.1s<14.5s
+[K      14/20      3.54G      1.871      2.003      1.803        130        640: 15% ━╸────────── 8/52 2.7it/s 3.7s<16.3s
+[K      14/20      3.54G      1.851      1.988       1.79        117        640: 17% ━━────────── 9/52 2.1it/s 5.3s<20.7s
+[K      14/20      3.54G      1.833      1.989      1.788        103        640: 19% ━━────────── 10/52 2.6it/s 5.5s<16.0s
+[K      14/20      3.54G      1.836      1.989      1.789        146        640: 21% ━━╸───────── 11/52 3.1it/s 5.8s<13.4s
+[K      14/20      3.54G      1.828      1.973      1.783        127        640: 23% ━━╸───────── 12/52 3.4it/s 6.0s<11.8s
+[K      14/20      3.54G      1.824      1.974      1.783        138        640: 25% ━━━───────── 13/52 2.6it/s 7.6s<15.3s
+[K      14/20      3.54G      1.844      1.974      1.795        129        640: 26% ━━━───────── 14/52 2.9it/s 7.9s<13.0s
+[K      14/20      3.54G      1.843      1.965      1.788         76        640: 28% ━━━───────── 15/52 3.2it/s 8.2s<11.5s
+[K      14/20      3.54G      1.844      1.964      1.785         96        640: 30% ━━━╸──────── 16/52 3.4it/s 8.4s<10.5s
+[K      14/20      3.54G      1.843      1.962      1.788        131        640: 32% ━━━╸──────── 17/52 2.6it/s 10.0s<13.5s
+[K      14/20      3.54G      1.842      1.953       1.79        120        640: 34% ━━━━──────── 18/52 3.0it/s 10.3s<11.3s
+[K      14/20      3.54G      1.846      1.958      1.795        119        640: 36% ━━━━──────── 19/52 3.3it/s 10.5s<9.9s
+[K      14/20      3.54G       1.83      1.932      1.783        153        640: 38% ━━━━╸─────── 20/52 3.5it/s 10.8s<9.1s
+[K      14/20      3.54G      1.831      1.927      1.781        163        640: 40% ━━━━╸─────── 21/52 2.7it/s 12.0s<11.5s
+[K      14/20      3.54G      1.836      1.935      1.784        103        640: 42% ━━━━━─────── 22/52 3.0it/s 12.3s<10.1s
+[K      14/20      3.54G      1.839      1.939       1.78        119        640: 44% ━━━━━─────── 23/52 3.3it/s 12.5s<8.8s
+[K      14/20      3.54G      1.835      1.933      1.776        115        640: 46% ━━━━━╸────── 24/52 3.5it/s 12.8s<7.9s
+[K      14/20      3.54G      1.838      1.935      1.779        121        640: 48% ━━━━━╸────── 25/52 2.7it/s 14.3s<10.1s
+[K      14/20      3.54G      1.843      1.937      1.782        132        640: 50% ━━━━━━────── 26/52 3.1it/s 14.6s<8.3s
+[K      14/20      3.54G      1.842      1.937      1.777         98        640: 51% ━━━━━━────── 27/52 3.4it/s 14.8s<7.3s
+[K      14/20      3.54G      1.842      1.946      1.776        101        640: 53% ━━━━━━────── 28/52 3.6it/s 15.1s<6.6s
+[K      14/20      3.54G       1.84      1.938      1.774        135        640: 55% ━━━━━━╸───── 29/52 2.7it/s 17.1s<8.6s
+[K      14/20      3.54G      1.838      1.938      1.773        146        640: 57% ━━━━━━╸───── 30/52 3.1it/s 17.4s<7.2s
+[K      14/20      3.54G      1.841      1.946      1.775        131        640: 59% ━━━━━━━───── 31/52 3.3it/s 17.6s<6.3s
+[K      14/20      3.54G       1.84      1.945      1.773        153        640: 61% ━━━━━━━───── 32/52 3.5it/s 17.9s<5.7s
+[K      14/20      3.54G      1.842      1.953      1.778        132        640: 63% ━━━━━━━╸──── 33/52 2.8it/s 18.9s<6.9s
+[K      14/20      3.54G      1.843      1.949      1.778        156        640: 65% ━━━━━━━╸──── 34/52 3.0it/s 19.2s<6.0s
+[K      14/20      3.54G       1.84      1.952      1.774         68        640: 67% ━━━━━━━━──── 35/52 3.3it/s 19.4s<5.1s
+[K      14/20      3.54G      1.838      1.951       1.77        117        640: 69% ━━━━━━━━──── 36/52 3.5it/s 19.7s<4.5s
+[K      14/20      3.54G      1.844      1.951      1.771        176        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 21.5s<5.7s
+[K      14/20      3.54G      1.842      1.947      1.771        166        640: 73% ━━━━━━━━╸─── 38/52 3.0it/s 21.7s<4.6s
+[K      14/20      3.54G      1.836      1.942      1.766        103        640: 75% ━━━━━━━━━─── 39/52 3.3it/s 22.0s<3.9s
+[K      14/20      3.54G      1.831      1.941      1.765         70        640: 76% ━━━━━━━━━─── 40/52 3.6it/s 22.2s<3.3s
+[K      14/20      3.54G      1.827      1.939      1.763        137        640: 78% ━━━━━━━━━─── 41/52 2.7it/s 23.7s<4.0s
+[K      14/20      3.54G      1.822      1.937       1.76        108        640: 80% ━━━━━━━━━╸── 42/52 3.1it/s 24.0s<3.2s
+[K      14/20      3.54G      1.821      1.936      1.759         92        640: 82% ━━━━━━━━━╸── 43/52 3.4it/s 24.2s<2.6s
+[K      14/20      3.54G      1.818      1.932      1.761        125        640: 84% ━━━━━━━━━━── 44/52 3.6it/s 24.5s<2.2s
+[K      14/20      3.54G      1.822      1.936      1.762         86        640: 86% ━━━━━━━━━━── 45/52 2.7it/s 26.1s<2.6s
+[K      14/20      3.54G      1.819      1.933      1.759        116        640: 88% ━━━━━━━━━━╸─ 46/52 3.1it/s 26.4s<2.0s
+[K      14/20      3.54G       1.82       1.93      1.759        131        640: 90% ━━━━━━━━━━╸─ 47/52 3.3it/s 26.7s<1.5s
+[K      14/20      3.54G      1.822      1.928      1.761        179        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 26.9s<1.1s
+[K      14/20      3.54G      1.818      1.922      1.759        176        640: 94% ━━━━━━━━━━━─ 49/52 2.7it/s 28.5s<1.1s
+[K      14/20      3.54G      1.818      1.928      1.759        117        640: 96% ━━━━━━━━━━━╸ 50/52 3.1it/s 28.7s<0.6s
+[K      14/20      3.54G      1.818      1.931      1.761         95        640: 98% ━━━━━━━━━━━╸ 51/52 3.4it/s 29.0s<0.3s
+[K      14/20      3.54G      1.818      1.931      1.761         95        640: 100% ━━━━━━━━━━━━ 52/52 1.8it/s 29.0s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.4it/s 0.2s<2.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 2.1it/s 0.5s<1.0s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.5it/s 0.8s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.5it/s 0.9s
+                   all        104        681      0.383      0.355      0.305      0.131
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      15/20      3.56G      1.753       1.98      1.821        114        640: 0% ──────────── 0/52  0.3s
+[K      15/20      3.56G      1.814      1.946      1.868        133        640: 1% ──────────── 1/52 1.1s/it 0.6s<53.7s
+[K      15/20      3.56G      1.724      1.829       1.76        132        640: 3% ──────────── 2/52 1.8it/s 0.8s<27.8s
+[K      15/20      3.56G      1.721      1.826      1.716        105        640: 5% ╸─────────── 3/52 2.4it/s 1.1s<20.2s
+[K      15/20      3.56G      1.688      1.778      1.697        120        640: 7% ╸─────────── 4/52 2.9it/s 1.3s<16.5s
+[K      15/20      3.56G      1.705       1.81      1.701        139        640: 9% ━─────────── 5/52 2.3it/s 2.5s<20.5s
+[K      15/20      3.56G      1.702      1.841      1.698         85        640: 11% ━─────────── 6/52 2.8it/s 2.7s<16.2s
+[K      15/20      3.56G      1.695      1.845      1.705        100        640: 13% ━╸────────── 7/52 2.3it/s 3.6s<19.4s
+[K      15/20      3.56G      1.731      1.898      1.722        125        640: 15% ━╸────────── 8/52 2.8it/s 3.9s<15.8s
+[K      15/20      3.56G      1.732      1.898      1.729         86        640: 17% ━━────────── 9/52 2.4it/s 4.5s<17.6s
+[K      15/20      3.56G      1.727      1.879      1.726        168        640: 19% ━━────────── 10/52 2.9it/s 4.8s<14.5s
+[K      15/20      3.56G      1.737      1.875      1.724        141        640: 21% ━━╸───────── 11/52 2.2it/s 6.2s<18.3s
+[K      15/20      3.56G      1.743      1.877      1.728        110        640: 23% ━━╸───────── 12/52 2.8it/s 6.4s<14.3s
+[K      15/20      3.56G      1.743      1.865      1.724        160        640: 25% ━━━───────── 13/52 2.9it/s 6.7s<13.4s
+[K      15/20      3.56G      1.742      1.865      1.718         85        640: 26% ━━━───────── 14/52 3.3it/s 7.0s<11.5s
+[K      15/20      3.56G      1.754      1.874      1.727        161        640: 28% ━━━───────── 15/52 2.5it/s 8.2s<14.5s
+[K      15/20      3.56G      1.755      1.874      1.728        104        640: 30% ━━━╸──────── 16/52 3.0it/s 8.5s<12.0s
+[K      15/20      3.56G      1.758      1.882      1.728        103        640: 32% ━━━╸──────── 17/52 2.6it/s 9.1s<13.4s
+[K      15/20      3.56G      1.766      1.878      1.738        101        640: 34% ━━━━──────── 18/52 3.1it/s 9.3s<11.1s
+[K      15/20      3.56G      1.788      1.895      1.758         90        640: 36% ━━━━──────── 19/52 2.4it/s 10.5s<13.8s
+[K      15/20      3.56G      1.784      1.889      1.757        125        640: 38% ━━━━╸─────── 20/52 2.9it/s 10.7s<11.2s
+[K      15/20      3.56G      1.788      1.888      1.761        188        640: 40% ━━━━╸─────── 21/52 2.2it/s 12.0s<13.8s
+[K      15/20      3.56G      1.784      1.896      1.759         83        640: 42% ━━━━━─────── 22/52 2.7it/s 12.3s<11.0s
+[K      15/20      3.56G      1.785      1.894      1.757        142        640: 44% ━━━━━─────── 23/52 2.3it/s 13.0s<12.6s
+[K      15/20      3.56G      1.785      1.892      1.753        145        640: 46% ━━━━━╸────── 24/52 2.7it/s 13.3s<10.3s
+[K      15/20      3.56G       1.78      1.889      1.751        112        640: 48% ━━━━━╸────── 25/52 2.4it/s 13.9s<11.3s
+[K      15/20      3.56G      1.771      1.876      1.747        142        640: 50% ━━━━━━────── 26/52 2.8it/s 14.2s<9.2s
+[K      15/20      3.56G       1.77      1.874      1.748        142        640: 51% ━━━━━━────── 27/52 2.4it/s 15.0s<10.6s
+[K      15/20      3.56G      1.764      1.866      1.743        102        640: 53% ━━━━━━────── 28/52 2.8it/s 15.3s<8.7s
+[K      15/20      3.56G      1.762      1.875      1.743         78        640: 55% ━━━━━━╸───── 29/52 2.1it/s 17.0s<10.9s
+[K      15/20      3.56G      1.772       1.88      1.747        160        640: 57% ━━━━━━╸───── 30/52 2.6it/s 17.2s<8.3s
+[K      15/20      3.56G      1.766      1.873      1.745        106        640: 59% ━━━━━━━───── 31/52 2.4it/s 17.7s<8.6s
+[K      15/20      3.56G      1.769      1.872       1.75        183        640: 61% ━━━━━━━───── 32/52 2.8it/s 18.0s<7.0s
+[K      15/20      3.56G      1.769      1.876      1.752         97        640: 63% ━━━━━━━╸──── 33/52 2.2it/s 19.3s<8.6s
+[K      15/20      3.56G      1.773      1.882      1.755        138        640: 65% ━━━━━━━╸──── 34/52 2.7it/s 19.6s<6.7s
+[K      15/20      3.56G      1.767      1.876      1.752        107        640: 67% ━━━━━━━━──── 35/52 2.3it/s 20.3s<7.3s
+[K      15/20      3.56G      1.765      1.876      1.751        106        640: 69% ━━━━━━━━──── 36/52 2.8it/s 20.5s<5.7s
+[K      15/20      3.56G      1.768      1.877      1.754        160        640: 71% ━━━━━━━━╸─── 37/52 2.2it/s 21.9s<6.9s
+[K      15/20      3.56G      1.767       1.88      1.751         88        640: 73% ━━━━━━━━╸─── 38/52 2.7it/s 22.1s<5.2s
+[K      15/20      3.56G      1.768      1.881      1.755        139        640: 75% ━━━━━━━━━─── 39/52 2.4it/s 22.7s<5.4s
+[K      15/20      3.56G      1.764      1.873      1.754        148        640: 76% ━━━━━━━━━─── 40/52 2.8it/s 23.0s<4.3s
+[K      15/20      3.56G      1.761      1.872      1.752        122        640: 78% ━━━━━━━━━─── 41/52 2.3it/s 24.0s<4.9s
+[K      15/20      3.56G      1.761      1.875      1.754        119        640: 80% ━━━━━━━━━╸── 42/52 2.8it/s 24.2s<3.6s
+[K      15/20      3.56G       1.76      1.874      1.754        120        640: 82% ━━━━━━━━━╸── 43/52 2.2it/s 25.5s<4.2s
+[K      15/20      3.56G      1.761      1.877      1.753         92        640: 84% ━━━━━━━━━━── 44/52 2.6it/s 25.8s<3.0s
+[K      15/20      3.56G      1.762      1.874      1.751        188        640: 86% ━━━━━━━━━━── 45/52 2.2it/s 26.6s<3.1s
+[K      15/20      3.56G       1.76      1.869      1.747         96        640: 88% ━━━━━━━━━━╸─ 46/52 2.7it/s 26.8s<2.2s
+[K      15/20      3.56G       1.76      1.873      1.747        119        640: 90% ━━━━━━━━━━╸─ 47/52 2.1it/s 28.3s<2.4s
+[K      15/20      3.56G      1.765      1.874      1.748        203        640: 92% ━━━━━━━━━━━─ 48/52 2.6it/s 28.5s<1.5s
+[K      15/20      3.56G      1.768      1.879       1.75        105        640: 94% ━━━━━━━━━━━─ 49/52 2.3it/s 29.2s<1.3s
+[K      15/20      3.56G      1.766       1.88      1.747        102        640: 96% ━━━━━━━━━━━╸ 50/52 2.7it/s 29.5s<0.7s
+[K      15/20      3.56G      1.766      1.882      1.746        100        640: 98% ━━━━━━━━━━━╸ 51/52 2.1it/s 31.0s<0.5s
+[K      15/20      3.56G      1.766      1.882      1.746        100        640: 100% ━━━━━━━━━━━━ 52/52 1.7it/s 31.0s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.1it/s 0.3s<2.8s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.7it/s 0.6s<1.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.2it/s 0.9s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.0it/s 1.0s
+                   all        104        681      0.389      0.303      0.302      0.139
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      16/20      3.57G      1.746      1.634      1.688        179        640: 0% ──────────── 0/52  0.3s
+[K      16/20      3.57G       1.71      1.793      1.719         77        640: 1% ──────────── 1/52 1.1it/s 0.5s<45.7s
+[K      16/20      3.57G      1.757      1.912      1.755        117        640: 3% ──────────── 2/52 2.0it/s 0.8s<25.2s
+[K      16/20      3.57G      1.732      1.915      1.733        117        640: 5% ╸─────────── 3/52 2.1it/s 1.2s<23.3s
+[K      16/20      3.57G       1.73      1.881      1.717        186        640: 7% ╸─────────── 4/52 2.6it/s 1.5s<18.2s
+[K      16/20      3.57G      1.748      1.868      1.716        132        640: 9% ━─────────── 5/52 2.9it/s 1.7s<16.0s
+[K      16/20      3.57G      1.788      1.905      1.737        111        640: 11% ━─────────── 6/52 3.1it/s 2.0s<14.6s
+[K      16/20      3.57G      1.768      1.877      1.725        125        640: 13% ━╸────────── 7/52 2.4it/s 3.8s<19.0s
+[K      16/20      3.57G      1.775      1.885      1.731        196        640: 15% ━╸────────── 8/52 2.8it/s 4.1s<15.4s
+[K      16/20      3.57G      1.775      1.876       1.73         88        640: 17% ━━────────── 9/52 2.8it/s 4.5s<15.6s
+[K      16/20      3.57G      1.766      1.862      1.724        138        640: 19% ━━────────── 10/52 3.1it/s 4.7s<13.6s
+[K      16/20      3.57G      1.764      1.851      1.722        155        640: 21% ━━╸───────── 11/52 2.4it/s 5.9s<17.0s
+[K      16/20      3.57G      1.775      1.853      1.721        193        640: 23% ━━╸───────── 12/52 2.8it/s 6.2s<14.3s
+[K      16/20      3.57G      1.783      1.856      1.727         99        640: 25% ━━━───────── 13/52 2.7it/s 6.6s<14.5s
+[K      16/20      3.57G      1.768      1.859      1.717         70        640: 26% ━━━───────── 14/52 3.1it/s 6.8s<12.4s
+[K      16/20      3.57G      1.765      1.854       1.72        120        640: 28% ━━━───────── 15/52 2.3it/s 8.5s<16.0s
+[K      16/20      3.57G      1.758      1.836      1.719        152        640: 30% ━━━╸──────── 16/52 2.8it/s 8.8s<12.6s
+[K      16/20      3.57G      1.759      1.852      1.727        114        640: 32% ━━━╸──────── 17/52 3.2it/s 9.0s<10.8s
+[K      16/20      3.57G      1.766       1.86      1.725        128        640: 34% ━━━━──────── 18/52 3.4it/s 9.3s<10.0s
+[K      16/20      3.57G      1.756      1.851      1.721        112        640: 36% ━━━━──────── 19/52 2.6it/s 10.6s<12.7s
+[K      16/20      3.57G      1.753      1.842      1.715        121        640: 38% ━━━━╸─────── 20/52 3.0it/s 10.9s<10.5s
+[K      16/20      3.57G      1.754      1.839      1.718        106        640: 40% ━━━━╸─────── 21/52 2.6it/s 11.4s<11.8s
+[K      16/20      3.57G      1.753      1.848      1.718        116        640: 42% ━━━━━─────── 22/52 3.1it/s 11.7s<9.8s
+[K      16/20      3.57G      1.749      1.841      1.718        101        640: 44% ━━━━━─────── 23/52 2.4it/s 12.8s<12.0s
+[K      16/20      3.57G      1.744      1.834      1.715        142        640: 46% ━━━━━╸────── 24/52 2.8it/s 13.1s<9.8s
+[K      16/20      3.57G      1.744      1.828      1.714        140        640: 48% ━━━━━╸────── 25/52 2.2it/s 14.3s<12.1s
+[K      16/20      3.57G       1.75      1.829      1.715        136        640: 50% ━━━━━━────── 26/52 2.7it/s 14.5s<9.7s
+[K      16/20      3.57G      1.751      1.827      1.718        119        640: 51% ━━━━━━────── 27/52 2.5it/s 15.0s<10.0s
+[K      16/20      3.57G      1.744      1.831       1.72         87        640: 53% ━━━━━━────── 28/52 2.9it/s 15.3s<8.3s
+[K      16/20      3.57G      1.745       1.83      1.721         94        640: 55% ━━━━━━╸───── 29/52 2.2it/s 17.0s<10.4s
+[K      16/20      3.57G      1.742      1.828      1.718        165        640: 57% ━━━━━━╸───── 30/52 2.6it/s 17.3s<8.3s
+[K      16/20      3.57G      1.745       1.83      1.714        111        640: 59% ━━━━━━━───── 31/52 3.0it/s 17.5s<7.1s
+[K      16/20      3.57G      1.744      1.826      1.714        147        640: 61% ━━━━━━━───── 32/52 3.2it/s 17.8s<6.2s
+[K      16/20      3.57G      1.739      1.821      1.713        166        640: 63% ━━━━━━━╸──── 33/52 2.4it/s 19.6s<7.9s
+[K      16/20      3.57G      1.741      1.828      1.716        109        640: 65% ━━━━━━━╸──── 34/52 2.9it/s 19.9s<6.3s
+[K      16/20      3.57G      1.739      1.823       1.71        115        640: 67% ━━━━━━━━──── 35/52 2.5it/s 20.5s<6.9s
+[K      16/20      3.57G       1.74      1.825       1.71        158        640: 69% ━━━━━━━━──── 36/52 2.8it/s 20.8s<5.7s
+[K      16/20      3.57G      1.741      1.828      1.709         82        640: 71% ━━━━━━━━╸─── 37/52 2.2it/s 22.2s<6.9s
+[K      16/20      3.57G      1.741      1.824      1.709        163        640: 73% ━━━━━━━━╸─── 38/52 2.7it/s 22.5s<5.2s
+[K      16/20      3.57G      1.738      1.821      1.708        133        640: 75% ━━━━━━━━━─── 39/52 2.6it/s 22.9s<4.9s
+[K      16/20      3.57G      1.741      1.823      1.709        160        640: 76% ━━━━━━━━━─── 40/52 3.0it/s 23.1s<4.0s
+[K      16/20      3.57G      1.739      1.821      1.708        156        640: 78% ━━━━━━━━━─── 41/52 2.3it/s 24.8s<4.8s
+[K      16/20      3.57G      1.739      1.823      1.708         96        640: 80% ━━━━━━━━━╸── 42/52 2.7it/s 25.1s<3.7s
+[K      16/20      3.57G      1.738      1.822      1.706        132        640: 82% ━━━━━━━━━╸── 43/52 3.0it/s 25.4s<3.0s
+[K      16/20      3.57G      1.741      1.828      1.709        107        640: 84% ━━━━━━━━━━── 44/52 3.3it/s 25.6s<2.4s
+[K      16/20      3.57G      1.739      1.828      1.709        133        640: 86% ━━━━━━━━━━── 45/52 2.5it/s 27.2s<2.8s
+[K      16/20      3.57G      1.738      1.827       1.71         88        640: 88% ━━━━━━━━━━╸─ 46/52 2.8it/s 27.5s<2.1s
+[K      16/20      3.57G      1.741      1.829       1.71        124        640: 90% ━━━━━━━━━━╸─ 47/52 3.1it/s 27.8s<1.6s
+[K      16/20      3.57G      1.741      1.832      1.709         73        640: 92% ━━━━━━━━━━━─ 48/52 3.4it/s 28.0s<1.2s
+[K      16/20      3.57G      1.741      1.833      1.708         99        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 29.4s<1.2s
+[K      16/20      3.57G      1.741      1.834      1.709         97        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 29.7s<0.7s
+[K      16/20      3.57G      1.737      1.834      1.709         81        640: 98% ━━━━━━━━━━━╸ 51/52 3.3it/s 29.9s<0.3s
+[K      16/20      3.57G      1.737      1.834      1.709         81        640: 100% ━━━━━━━━━━━━ 52/52 1.7it/s 29.9s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.0s/it 0.3s<3.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.6it/s 0.6s<1.3s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.0it/s 1.0s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.5it/s 1.1s
+                   all        104        681      0.432      0.354      0.319      0.146
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      17/20      3.57G      1.659      1.735      1.784        126        640: 0% ──────────── 0/52  0.3s
+[K      17/20      3.57G      1.664      1.749      1.744        100        640: 1% ──────────── 1/52 1.0it/s 0.6s<50.7s
+[K      17/20      3.57G      1.661       1.75      1.723        114        640: 3% ──────────── 2/52 1.9it/s 0.8s<26.5s
+[K      17/20      3.57G      1.657      1.714      1.674        173        640: 5% ╸─────────── 3/52 2.5it/s 1.1s<19.6s
+[K      17/20      3.57G      1.688      1.728      1.676        100        640: 7% ╸─────────── 4/52 2.8it/s 1.4s<17.3s
+[K      17/20      3.57G      1.703      1.742      1.685        124        640: 9% ━─────────── 5/52 2.1it/s 2.9s<22.0s
+[K      17/20      3.57G      1.727      1.774      1.695        107        640: 11% ━─────────── 6/52 2.6it/s 3.2s<17.9s
+[K      17/20      3.57G      1.729      1.757      1.705        137        640: 13% ━╸────────── 7/52 2.5it/s 3.6s<17.8s
+[K      17/20      3.57G      1.733      1.761      1.708        124        640: 15% ━╸────────── 8/52 2.9it/s 3.9s<15.1s
+[K      17/20      3.57G      1.721       1.76        1.7        108        640: 17% ━━────────── 9/52 2.3it/s 5.3s<19.0s
+[K      17/20      3.57G      1.727      1.799      1.699        101        640: 19% ━━────────── 10/52 2.8it/s 5.5s<15.1s
+[K      17/20      3.57G      1.731      1.804      1.688        184        640: 21% ━━╸───────── 11/52 2.3it/s 6.4s<18.0s
+[K      17/20      3.57G       1.71      1.776      1.678        129        640: 23% ━━╸───────── 12/52 2.7it/s 6.7s<14.8s
+[K      17/20      3.57G      1.707      1.779      1.682        113        640: 25% ━━━───────── 13/52 2.3it/s 7.5s<17.3s
+[K      17/20      3.57G      1.712      1.789      1.684        147        640: 26% ━━━───────── 14/52 2.7it/s 7.8s<14.3s
+[K      17/20      3.57G      1.716      1.789      1.682        138        640: 28% ━━━───────── 15/52 2.2it/s 8.7s<16.8s
+[K      17/20      3.57G      1.727      1.811      1.689        105        640: 30% ━━━╸──────── 16/52 2.7it/s 8.9s<13.5s
+[K      17/20      3.57G      1.724      1.808      1.696        121        640: 32% ━━━╸──────── 17/52 2.1it/s 10.2s<16.6s
+[K      17/20      3.57G      1.742       1.82      1.702        127        640: 34% ━━━━──────── 18/52 2.6it/s 10.4s<13.1s
+[K      17/20      3.57G      1.754      1.844      1.712        188        640: 36% ━━━━──────── 19/52 2.4it/s 10.9s<13.8s
+[K      17/20      3.57G      1.745      1.831      1.711        103        640: 38% ━━━━╸─────── 20/52 2.7it/s 11.2s<11.8s
+[K      17/20      3.57G      1.739      1.822      1.709        142        640: 40% ━━━━╸─────── 21/52 2.0it/s 13.3s<15.2s
+[K      17/20      3.57G      1.742      1.811      1.706        146        640: 42% ━━━━━─────── 22/52 2.5it/s 13.5s<11.8s
+[K      17/20      3.57G      1.736      1.804      1.707        104        640: 44% ━━━━━─────── 23/52 2.9it/s 13.8s<10.0s
+[K      17/20      3.57G      1.735      1.796      1.702        171        640: 46% ━━━━━╸────── 24/52 3.1it/s 14.1s<9.0s
+[K      17/20      3.57G      1.738      1.807      1.707        138        640: 48% ━━━━━╸────── 25/52 2.4it/s 15.6s<11.4s
+[K      17/20      3.57G      1.738      1.807      1.708        160        640: 50% ━━━━━━────── 26/52 2.8it/s 15.9s<9.4s
+[K      17/20      3.57G      1.743      1.814      1.712         95        640: 51% ━━━━━━────── 27/52 3.0it/s 16.2s<8.4s
+[K      17/20      3.57G      1.742      1.809      1.709        125        640: 53% ━━━━━━────── 28/52 3.3it/s 16.4s<7.3s
+[K      17/20      3.57G      1.739      1.805      1.708        151        640: 55% ━━━━━━╸───── 29/52 2.5it/s 18.2s<9.3s
+[K      17/20      3.57G      1.734      1.797      1.704        117        640: 57% ━━━━━━╸───── 30/52 2.9it/s 18.4s<7.5s
+[K      17/20      3.57G      1.736      1.798      1.708        104        640: 59% ━━━━━━━───── 31/52 3.3it/s 18.7s<6.4s
+[K      17/20      3.57G      1.736      1.801      1.708        109        640: 61% ━━━━━━━───── 32/52 3.5it/s 18.9s<5.7s
+[K      17/20      3.57G      1.737        1.8      1.708        134        640: 63% ━━━━━━━╸──── 33/52 2.7it/s 20.3s<7.1s
+[K      17/20      3.57G      1.737      1.802      1.707        112        640: 65% ━━━━━━━╸──── 34/52 2.9it/s 20.6s<6.2s
+[K      17/20      3.57G       1.73      1.795      1.706        135        640: 67% ━━━━━━━━──── 35/52 3.2it/s 20.9s<5.3s
+[K      17/20      3.57G      1.728      1.791      1.703         94        640: 69% ━━━━━━━━──── 36/52 3.4it/s 21.1s<4.7s
+[K      17/20      3.57G      1.732      1.804      1.708        107        640: 71% ━━━━━━━━╸─── 37/52 2.5it/s 23.3s<5.9s
+[K      17/20      3.57G      1.726      1.802      1.708         87        640: 73% ━━━━━━━━╸─── 38/52 2.9it/s 23.6s<4.8s
+[K      17/20      3.57G       1.73      1.809      1.709        107        640: 75% ━━━━━━━━━─── 39/52 3.2it/s 23.8s<4.1s
+[K      17/20      3.57G      1.727      1.805      1.707         89        640: 76% ━━━━━━━━━─── 40/52 3.3it/s 24.1s<3.6s
+[K      17/20      3.57G      1.723      1.801      1.705        187        640: 78% ━━━━━━━━━─── 41/52 2.5it/s 26.0s<4.4s
+[K      17/20      3.57G      1.727      1.803      1.706        152        640: 80% ━━━━━━━━━╸── 42/52 2.9it/s 26.3s<3.5s
+[K      17/20      3.57G      1.728      1.804      1.707        115        640: 82% ━━━━━━━━━╸── 43/52 3.1it/s 26.6s<2.9s
+[K      17/20      3.57G      1.725      1.803      1.707         99        640: 84% ━━━━━━━━━━── 44/52 3.3it/s 26.8s<2.4s
+[K      17/20      3.57G      1.727      1.807      1.709        145        640: 86% ━━━━━━━━━━── 45/52 2.5it/s 28.8s<2.8s
+[K      17/20      3.57G      1.727      1.806      1.708        119        640: 88% ━━━━━━━━━━╸─ 46/52 2.9it/s 29.1s<2.1s
+[K      17/20      3.57G      1.724      1.806      1.706        107        640: 90% ━━━━━━━━━━╸─ 47/52 3.2it/s 29.3s<1.6s
+[K      17/20      3.57G      1.718        1.8      1.701         65        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 29.6s<1.2s
+[K      17/20      3.57G      1.717      1.801      1.702        106        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 31.2s<1.2s
+[K      17/20      3.57G      1.722      1.807      1.703         85        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 31.5s<0.7s
+[K      17/20      3.57G      1.721      1.804      1.702        157        640: 98% ━━━━━━━━━━━╸ 51/52 3.3it/s 31.7s<0.3s
+[K      17/20      3.57G      1.721      1.804      1.702        157        640: 100% ━━━━━━━━━━━━ 52/52 1.6it/s 31.7s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.0it/s 0.3s<2.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.7it/s 0.6s<1.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.1it/s 0.9s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.8it/s 1.1s
+                   all        104        681      0.389      0.386      0.315      0.146
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      18/20      3.58G      1.663      1.647      1.592        148        640: 0% ──────────── 0/52  0.3s
+[K      18/20      3.58G      1.733      1.695      1.677        104        640: 1% ──────────── 1/52 1.0it/s 0.5s<48.7s
+[K      18/20      3.58G      1.793       1.77       1.73         98        640: 3% ──────────── 2/52 1.8it/s 0.8s<28.0s
+[K      18/20      3.58G      1.808      1.798      1.757         97        640: 5% ╸─────────── 3/52 2.3it/s 1.1s<21.8s
+[K      18/20      3.58G      1.813      1.871      1.767        128        640: 7% ╸─────────── 4/52 2.5it/s 1.4s<18.9s
+[K      18/20      3.58G       1.74       1.83      1.738         67        640: 9% ━─────────── 5/52 2.2it/s 2.2s<21.8s
+[K      18/20      3.58G       1.73      1.813      1.722         85        640: 11% ━─────────── 6/52 2.7it/s 2.5s<17.1s
+[K      18/20      3.58G      1.715      1.816      1.718         52        640: 13% ━╸────────── 7/52 3.0it/s 2.8s<15.0s
+[K      18/20      3.58G      1.716      1.796      1.715        133        640: 15% ━╸────────── 8/52 3.1it/s 3.0s<14.1s
+[K      18/20      3.58G      1.699      1.755      1.703        144        640: 17% ━━────────── 9/52 2.3it/s 4.9s<18.3s
+[K      18/20      3.58G      1.692      1.744      1.711        120        640: 19% ━━────────── 10/52 2.7it/s 5.2s<15.6s
+[K      18/20      3.58G      1.725       1.76      1.724        155        640: 21% ━━╸───────── 11/52 3.0it/s 5.5s<13.5s
+[K      18/20      3.58G      1.723      1.754      1.724        115        640: 23% ━━╸───────── 12/52 3.3it/s 5.8s<12.2s
+[K      18/20      3.58G      1.717       1.76      1.718        118        640: 25% ━━━───────── 13/52 2.5it/s 7.4s<15.7s
+[K      18/20      3.58G      1.715      1.751      1.721        116        640: 26% ━━━───────── 14/52 2.9it/s 7.6s<13.3s
+[K      18/20      3.58G      1.709      1.743       1.71        125        640: 28% ━━━───────── 15/52 3.1it/s 7.9s<12.0s
+[K      18/20      3.58G      1.725      1.764      1.713         93        640: 30% ━━━╸──────── 16/52 3.3it/s 8.2s<10.8s
+[K      18/20      3.58G      1.728      1.768      1.721        126        640: 32% ━━━╸──────── 17/52 2.5it/s 10.0s<14.0s
+[K      18/20      3.58G      1.717      1.758      1.715        138        640: 34% ━━━━──────── 18/52 3.0it/s 10.2s<11.5s
+[K      18/20      3.58G      1.711      1.755      1.715        127        640: 36% ━━━━──────── 19/52 3.1it/s 10.5s<10.5s
+[K      18/20      3.58G        1.7      1.745      1.706        105        640: 38% ━━━━╸─────── 20/52 3.3it/s 10.8s<9.6s
+[K      18/20      3.58G      1.696      1.744      1.708        145        640: 40% ━━━━╸─────── 21/52 2.5it/s 12.7s<12.4s
+[K      18/20      3.58G      1.697      1.752      1.709         97        640: 42% ━━━━━─────── 22/52 3.0it/s 12.9s<10.1s
+[K      18/20      3.58G      1.686      1.745      1.703         96        640: 44% ━━━━━─────── 23/52 3.3it/s 13.1s<8.7s
+[K      18/20      3.58G      1.692      1.752      1.704        101        640: 46% ━━━━━╸────── 24/52 3.5it/s 13.4s<7.9s
+[K      18/20      3.58G      1.694      1.749      1.703        155        640: 48% ━━━━━╸────── 25/52 2.6it/s 15.2s<10.2s
+[K      18/20      3.58G       1.69      1.739        1.7        138        640: 50% ━━━━━━────── 26/52 3.0it/s 15.5s<8.8s
+[K      18/20      3.58G      1.686      1.739      1.698        112        640: 51% ━━━━━━────── 27/52 3.2it/s 15.8s<7.8s
+[K      18/20      3.58G      1.678      1.734      1.693        105        640: 53% ━━━━━━────── 28/52 3.4it/s 16.0s<7.0s
+[K      18/20      3.58G      1.686      1.744        1.7         90        640: 55% ━━━━━━╸───── 29/52 2.6it/s 17.8s<9.0s
+[K      18/20      3.58G      1.683      1.744      1.697        113        640: 57% ━━━━━━╸───── 30/52 3.0it/s 18.0s<7.4s
+[K      18/20      3.58G      1.685      1.744      1.698        159        640: 59% ━━━━━━━───── 31/52 3.3it/s 18.3s<6.3s
+[K      18/20      3.58G      1.682      1.742      1.695         84        640: 61% ━━━━━━━───── 32/52 3.5it/s 18.5s<5.7s
+[K      18/20      3.58G      1.686      1.744      1.697        166        640: 63% ━━━━━━━╸──── 33/52 2.6it/s 20.8s<7.4s
+[K      18/20      3.58G      1.686      1.749      1.696        195        640: 65% ━━━━━━━╸──── 34/52 3.0it/s 21.1s<6.1s
+[K      18/20      3.58G      1.684      1.744      1.692        199        640: 67% ━━━━━━━━──── 35/52 3.2it/s 21.3s<5.3s
+[K      18/20      3.58G      1.684      1.747       1.69        131        640: 69% ━━━━━━━━──── 36/52 3.3it/s 21.6s<4.8s
+[K      18/20      3.58G      1.691      1.752      1.695        130        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 22.9s<5.8s
+[K      18/20      3.58G      1.693      1.746      1.696        187        640: 73% ━━━━━━━━╸─── 38/52 3.0it/s 23.1s<4.7s
+[K      18/20      3.58G      1.698      1.753      1.696        142        640: 75% ━━━━━━━━━─── 39/52 3.3it/s 23.4s<4.0s
+[K      18/20      3.58G      1.698      1.754      1.698        115        640: 76% ━━━━━━━━━─── 40/52 3.4it/s 23.7s<3.5s
+[K      18/20      3.58G      1.702      1.757      1.698        128        640: 78% ━━━━━━━━━─── 41/52 2.6it/s 25.5s<4.3s
+[K      18/20      3.58G      1.704      1.758      1.699        115        640: 80% ━━━━━━━━━╸── 42/52 2.9it/s 25.8s<3.4s
+[K      18/20      3.58G      1.704      1.762        1.7         98        640: 82% ━━━━━━━━━╸── 43/52 3.2it/s 26.0s<2.8s
+[K      18/20      3.58G      1.708      1.766        1.7        131        640: 84% ━━━━━━━━━━── 44/52 3.4it/s 26.3s<2.3s
+[K      18/20      3.58G      1.704      1.766      1.698        105        640: 86% ━━━━━━━━━━── 45/52 2.6it/s 28.0s<2.7s
+[K      18/20      3.58G      1.702      1.761      1.698        137        640: 88% ━━━━━━━━━━╸─ 46/52 3.0it/s 28.3s<2.0s
+[K      18/20      3.58G      1.701       1.76      1.698        136        640: 90% ━━━━━━━━━━╸─ 47/52 3.2it/s 28.6s<1.5s
+[K      18/20      3.58G      1.706      1.762        1.7         96        640: 92% ━━━━━━━━━━━─ 48/52 3.4it/s 28.8s<1.2s
+[K      18/20      3.58G        1.7       1.76      1.698         66        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 30.4s<1.2s
+[K      18/20      3.58G      1.705      1.763      1.699        225        640: 96% ━━━━━━━━━━━╸ 50/52 2.8it/s 30.7s<0.7s
+[K      18/20      3.58G      1.704      1.764      1.698        102        640: 98% ━━━━━━━━━━━╸ 51/52 3.2it/s 31.0s<0.3s
+[K      18/20      3.58G      1.704      1.764      1.698        102        640: 100% ━━━━━━━━━━━━ 52/52 1.7it/s 31.0s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.1it/s 0.3s<2.7s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.9it/s 0.5s<1.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.3it/s 0.9s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 4.2it/s 1.0s
+                   all        104        681      0.421      0.339      0.308      0.144
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      19/20      3.58G      1.599      1.707      1.704        121        640: 0% ──────────── 0/52  0.2s
+[K      19/20      3.58G       1.68      1.761      1.686        119        640: 1% ──────────── 1/52 1.0it/s 0.5s<49.0s
+[K      19/20      3.58G      1.744        1.8      1.697        127        640: 3% ──────────── 2/52 1.8it/s 0.8s<27.5s
+[K      19/20      3.58G       1.78      1.887      1.728         80        640: 5% ╸─────────── 3/52 2.4it/s 1.1s<20.2s
+[K      19/20      3.58G      1.764      1.832      1.725        101        640: 7% ╸─────────── 4/52 2.8it/s 1.3s<17.0s
+[K      19/20      3.58G      1.739      1.833        1.7         77        640: 9% ━─────────── 5/52 2.2it/s 2.6s<21.3s
+[K      19/20      3.58G      1.715      1.837      1.697         87        640: 11% ━─────────── 6/52 2.7it/s 2.9s<17.1s
+[K      19/20      3.58G      1.734      1.855      1.715        146        640: 13% ━╸────────── 7/52 2.9it/s 3.2s<15.3s
+[K      19/20      3.58G      1.716      1.847      1.704        113        640: 15% ━╸────────── 8/52 3.1it/s 3.5s<14.2s
+[K      19/20      3.58G      1.722      1.851      1.715        192        640: 17% ━━────────── 9/52 2.4it/s 4.9s<18.2s
+[K      19/20      3.58G      1.713       1.82      1.702         77        640: 19% ━━────────── 10/52 2.8it/s 5.2s<14.9s
+[K      19/20      3.58G      1.699      1.794      1.682        103        640: 21% ━━╸───────── 11/52 3.2it/s 5.4s<12.9s
+[K      19/20      3.58G      1.703      1.815      1.681         94        640: 23% ━━╸───────── 12/52 3.4it/s 5.7s<11.6s
+[K      19/20      3.58G      1.712      1.837      1.692         82        640: 25% ━━━───────── 13/52 2.6it/s 7.3s<15.0s
+[K      19/20      3.58G       1.71      1.829      1.694        185        640: 26% ━━━───────── 14/52 2.9it/s 7.5s<13.0s
+[K      19/20      3.58G      1.717      1.832      1.695        108        640: 28% ━━━───────── 15/52 3.2it/s 7.8s<11.6s
+[K      19/20      3.58G      1.725      1.836        1.7        115        640: 30% ━━━╸──────── 16/52 3.5it/s 8.0s<10.4s
+[K      19/20      3.58G      1.722      1.827      1.701        123        640: 32% ━━━╸──────── 17/52 2.7it/s 9.3s<13.1s
+[K      19/20      3.58G      1.723      1.836      1.698         62        640: 34% ━━━━──────── 18/52 3.1it/s 9.5s<11.0s
+[K      19/20      3.58G      1.722      1.832        1.7        143        640: 36% ━━━━──────── 19/52 3.4it/s 9.7s<9.7s
+[K      19/20      3.58G      1.716      1.816      1.692        119        640: 38% ━━━━╸─────── 20/52 3.6it/s 10.0s<9.0s
+[K      19/20      3.58G      1.718      1.813      1.693        108        640: 40% ━━━━╸─────── 21/52 2.7it/s 11.6s<11.6s
+[K      19/20      3.58G      1.705      1.806      1.687         90        640: 42% ━━━━━─────── 22/52 3.0it/s 11.9s<9.9s
+[K      19/20      3.58G      1.695      1.792      1.682        117        640: 44% ━━━━━─────── 23/52 3.3it/s 12.1s<8.8s
+[K      19/20      3.58G      1.697      1.798      1.683        116        640: 46% ━━━━━╸────── 24/52 3.6it/s 12.4s<7.9s
+[K      19/20      3.58G      1.697      1.804      1.681        113        640: 48% ━━━━━╸────── 25/52 2.7it/s 13.7s<9.9s
+[K      19/20      3.58G        1.7      1.809      1.683        110        640: 50% ━━━━━━────── 26/52 3.0it/s 13.9s<8.6s
+[K      19/20      3.58G      1.694        1.8      1.679        188        640: 51% ━━━━━━────── 27/52 3.3it/s 14.2s<7.6s
+[K      19/20      3.58G      1.697      1.801      1.681        169        640: 53% ━━━━━━────── 28/52 3.4it/s 14.5s<7.0s
+[K      19/20      3.58G      1.692      1.792      1.675        166        640: 55% ━━━━━━╸───── 29/52 2.6it/s 15.9s<8.8s
+[K      19/20      3.58G      1.688      1.787      1.673        140        640: 57% ━━━━━━╸───── 30/52 2.9it/s 16.2s<7.6s
+[K      19/20      3.58G      1.687      1.785      1.676        164        640: 59% ━━━━━━━───── 31/52 3.2it/s 16.4s<6.5s
+[K      19/20      3.58G      1.689      1.791      1.678         95        640: 61% ━━━━━━━───── 32/52 3.5it/s 16.7s<5.7s
+[K      19/20      3.58G      1.686      1.785      1.677        181        640: 63% ━━━━━━━╸──── 33/52 2.6it/s 18.5s<7.3s
+[K      19/20      3.58G      1.682      1.782      1.675        140        640: 65% ━━━━━━━╸──── 34/52 3.0it/s 18.8s<6.1s
+[K      19/20      3.58G      1.682      1.776      1.672        137        640: 67% ━━━━━━━━──── 35/52 3.2it/s 19.0s<5.3s
+[K      19/20      3.58G      1.685      1.782      1.673         84        640: 69% ━━━━━━━━──── 36/52 3.4it/s 19.3s<4.7s
+[K      19/20      3.58G      1.689      1.785      1.676         99        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 21.2s<5.9s
+[K      19/20      3.58G      1.685      1.784      1.675         93        640: 73% ━━━━━━━━╸─── 38/52 2.8it/s 21.5s<4.9s
+[K      19/20      3.58G      1.686      1.782      1.674        120        640: 75% ━━━━━━━━━─── 39/52 3.2it/s 21.7s<4.1s
+[K      19/20      3.58G      1.685      1.786      1.675         67        640: 76% ━━━━━━━━━─── 40/52 3.4it/s 22.0s<3.5s
+[K      19/20      3.58G      1.685      1.784      1.677        158        640: 78% ━━━━━━━━━─── 41/52 2.6it/s 23.6s<4.3s
+[K      19/20      3.58G      1.681      1.779      1.676        129        640: 80% ━━━━━━━━━╸── 42/52 3.0it/s 23.9s<3.4s
+[K      19/20      3.58G      1.681      1.774      1.675        102        640: 82% ━━━━━━━━━╸── 43/52 3.3it/s 24.1s<2.7s
+[K      19/20      3.58G      1.682      1.774      1.675        138        640: 84% ━━━━━━━━━━── 44/52 3.5it/s 24.4s<2.3s
+[K      19/20      3.58G      1.679      1.769      1.672        123        640: 86% ━━━━━━━━━━── 45/52 2.6it/s 26.3s<2.7s
+[K      19/20      3.58G       1.68      1.766      1.673        230        640: 88% ━━━━━━━━━━╸─ 46/52 3.0it/s 26.6s<2.0s
+[K      19/20      3.58G      1.685      1.772      1.672        154        640: 90% ━━━━━━━━━━╸─ 47/52 3.2it/s 26.8s<1.6s
+[K      19/20      3.58G      1.683       1.77      1.671        150        640: 92% ━━━━━━━━━━━─ 48/52 3.5it/s 27.1s<1.2s
+[K      19/20      3.58G      1.683      1.767       1.67        123        640: 94% ━━━━━━━━━━━─ 49/52 2.6it/s 28.7s<1.2s
+[K      19/20      3.58G      1.685      1.772       1.67        106        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 29.0s<0.7s
+[K      19/20      3.58G      1.684       1.77      1.669        124        640: 98% ━━━━━━━━━━━╸ 51/52 3.1it/s 29.3s<0.3s
+[K      19/20      3.58G      1.684       1.77      1.669        124        640: 100% ━━━━━━━━━━━━ 52/52 1.8it/s 29.3s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.1it/s 0.3s<2.6s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.8it/s 0.6s<1.1s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.0it/s 1.0s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.6it/s 1.1s
+                   all        104        681      0.436       0.35      0.324      0.148
+
+      Epoch    GPU_mem   box_loss   cls_loss   dfl_loss  Instances       Size
+
+[K      20/20      3.58G      1.687      1.709      1.714        156        640: 0% ──────────── 0/52  0.3s
+[K      20/20      3.58G      1.615      1.647      1.693        133        640: 1% ──────────── 1/52 1.1it/s 0.6s<45.9s
+[K      20/20      3.58G      1.685       1.81      1.725         67        640: 3% ──────────── 2/52 2.0it/s 0.8s<25.4s
+[K      20/20      3.58G      1.663      1.782      1.707        105        640: 5% ╸─────────── 3/52 2.6it/s 1.1s<18.9s
+[K      20/20      3.58G      1.631      1.782      1.703         84        640: 7% ╸─────────── 4/52 3.0it/s 1.3s<16.1s
+[K      20/20      3.58G      1.627      1.808      1.706        146        640: 9% ━─────────── 5/52 2.3it/s 2.5s<20.0s
+[K      20/20      3.58G      1.634      1.827      1.704         95        640: 11% ━─────────── 6/52 2.7it/s 2.8s<16.9s
+[K      20/20      3.58G      1.622      1.816       1.69        113        640: 13% ━╸────────── 7/52 3.0it/s 3.0s<14.8s
+[K      20/20      3.58G      1.622      1.801      1.671         92        640: 15% ━╸────────── 8/52 3.2it/s 3.3s<13.8s
+[K      20/20      3.58G      1.621      1.783       1.67        176        640: 17% ━━────────── 9/52 2.5it/s 4.7s<17.5s
+[K      20/20      3.58G      1.624      1.759      1.659        167        640: 19% ━━────────── 10/52 2.9it/s 4.9s<14.3s
+[K      20/20      3.58G       1.63      1.744      1.657        159        640: 21% ━━╸───────── 11/52 3.3it/s 5.2s<12.5s
+[K      20/20      3.58G      1.624      1.747      1.662         73        640: 23% ━━╸───────── 12/52 3.5it/s 5.4s<11.4s
+[K      20/20      3.58G       1.62      1.762      1.655         87        640: 25% ━━━───────── 13/52 2.7it/s 6.7s<14.5s
+[K      20/20      3.58G      1.622      1.767      1.664        125        640: 26% ━━━───────── 14/52 3.1it/s 7.0s<12.3s
+[K      20/20      3.58G      1.627      1.765      1.659        111        640: 28% ━━━───────── 15/52 3.4it/s 7.2s<10.9s
+[K      20/20      3.58G      1.629      1.771      1.655        125        640: 30% ━━━╸──────── 16/52 3.6it/s 7.5s<10.1s
+[K      20/20      3.58G      1.629      1.758      1.659        149        640: 32% ━━━╸──────── 17/52 2.6it/s 9.3s<13.2s
+[K      20/20      3.58G      1.632      1.761      1.656         95        640: 34% ━━━━──────── 18/52 3.0it/s 9.6s<11.3s
+[K      20/20      3.58G      1.631      1.759      1.647        112        640: 36% ━━━━──────── 19/52 3.0it/s 9.9s<10.9s
+[K      20/20      3.58G      1.636      1.757      1.646         92        640: 38% ━━━━╸─────── 20/52 3.3it/s 10.2s<9.6s
+[K      20/20      3.58G      1.637      1.761      1.643         88        640: 40% ━━━━╸─────── 21/52 2.5it/s 12.2s<12.5s
+[K      20/20      3.58G      1.629      1.744      1.642        108        640: 42% ━━━━━─────── 22/52 2.9it/s 12.5s<10.5s
+[K      20/20      3.58G      1.631      1.748      1.649        103        640: 44% ━━━━━─────── 23/52 3.2it/s 12.7s<9.1s
+[K      20/20      3.58G      1.635      1.753       1.65        124        640: 46% ━━━━━╸────── 24/52 3.5it/s 13.0s<8.0s
+[K      20/20      3.58G      1.641      1.759      1.656        187        640: 48% ━━━━━╸────── 25/52 2.6it/s 14.7s<10.3s
+[K      20/20      3.58G      1.649      1.764      1.663        115        640: 50% ━━━━━━────── 26/52 3.0it/s 15.0s<8.6s
+[K      20/20      3.58G      1.649      1.759      1.663        103        640: 51% ━━━━━━────── 27/52 2.7it/s 15.5s<9.1s
+[K      20/20      3.58G      1.652      1.764      1.665        131        640: 53% ━━━━━━────── 28/52 3.0it/s 15.8s<8.0s
+[K      20/20      3.58G      1.661       1.77       1.67        184        640: 55% ━━━━━━╸───── 29/52 2.3it/s 17.4s<10.1s
+[K      20/20      3.59G      1.664      1.769      1.676        214        640: 57% ━━━━━━╸───── 30/52 2.7it/s 17.7s<8.2s
+[K      20/20      3.59G      1.665      1.771      1.676         80        640: 59% ━━━━━━━───── 31/52 2.9it/s 18.0s<7.2s
+[K      20/20      3.59G      1.665      1.773      1.676        101        640: 61% ━━━━━━━───── 32/52 3.2it/s 18.3s<6.2s
+[K      20/20      3.59G      1.666      1.768      1.677        104        640: 63% ━━━━━━━╸──── 33/52 2.4it/s 19.9s<7.8s
+[K      20/20      3.59G      1.661      1.762      1.672        149        640: 65% ━━━━━━━╸──── 34/52 2.9it/s 20.1s<6.2s
+[K      20/20      3.59G      1.665      1.765      1.674        137        640: 67% ━━━━━━━━──── 35/52 3.2it/s 20.4s<5.3s
+[K      20/20      3.59G      1.663      1.759      1.673        121        640: 69% ━━━━━━━━──── 36/52 3.5it/s 20.6s<4.6s
+[K      20/20      3.59G      1.663      1.759      1.675        125        640: 71% ━━━━━━━━╸─── 37/52 2.6it/s 22.1s<5.7s
+[K      20/20      3.59G      1.663      1.763      1.677         96        640: 73% ━━━━━━━━╸─── 38/52 2.9it/s 22.4s<4.8s
+[K      20/20      3.59G      1.658      1.766      1.674         71        640: 75% ━━━━━━━━━─── 39/52 3.2it/s 22.7s<4.1s
+[K      20/20      3.59G      1.654      1.758      1.671        103        640: 76% ━━━━━━━━━─── 40/52 3.4it/s 22.9s<3.5s
+[K      20/20      3.59G      1.654      1.754       1.67         99        640: 78% ━━━━━━━━━─── 41/52 2.6it/s 24.5s<4.3s
+[K      20/20      3.59G      1.651      1.749       1.67        167        640: 80% ━━━━━━━━━╸── 42/52 3.0it/s 24.8s<3.4s
+[K      20/20      3.59G      1.651      1.746      1.669        209        640: 82% ━━━━━━━━━╸── 43/52 3.3it/s 25.0s<2.7s
+[K      20/20      3.59G      1.652      1.753      1.668         59        640: 84% ━━━━━━━━━━── 44/52 3.4it/s 25.3s<2.3s
+[K      20/20      3.59G      1.659       1.76      1.671        100        640: 86% ━━━━━━━━━━── 45/52 2.6it/s 27.1s<2.7s
+[K      20/20      3.59G       1.66      1.756      1.672        165        640: 88% ━━━━━━━━━━╸─ 46/52 2.9it/s 27.4s<2.1s
+[K      20/20      3.59G       1.66      1.756      1.672        121        640: 90% ━━━━━━━━━━╸─ 47/52 2.8it/s 27.8s<1.8s
+[K      20/20      3.59G      1.664      1.757      1.676        157        640: 92% ━━━━━━━━━━━─ 48/52 3.2it/s 28.0s<1.3s
+[K      20/20      3.59G      1.665      1.759      1.675        129        640: 94% ━━━━━━━━━━━─ 49/52 2.4it/s 29.5s<1.2s
+[K      20/20      3.59G      1.665      1.759      1.675        118        640: 96% ━━━━━━━━━━━╸ 50/52 3.0it/s 29.7s<0.7s
+[K      20/20      3.59G      1.666       1.76      1.678        133        640: 98% ━━━━━━━━━━━╸ 51/52 2.6it/s 30.3s<0.4s
+[K      20/20      3.59G      1.666       1.76      1.678        133        640: 100% ━━━━━━━━━━━━ 52/52 1.7it/s 30.3s
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.0it/s 0.3s<2.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.7it/s 0.6s<1.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.0it/s 1.0s<0.5s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.6it/s 1.1s
+                   all        104        681      0.442      0.361      0.342      0.154
+
+20 epochs completed in 0.175 hours.
+Optimizer stripped from E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\last.pt, 4.3MB
+Optimizer stripped from E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.pt, 4.3MB
+
+Validating E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.pt...
+Ultralytics 8.4.218  Python-3.11.5 torch-2.6.0+cu124 CUDA:0 (NVIDIA GeForce RTX 4060 Laptop GPU, 8188MiB)
+Model summary (fused): 73 layers, 2,059,851 parameters, 0 gradients, 5.4 GFLOPs
+
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 25% ━━━───────── 1/4 1.3s/it 0.4s<3.9s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 50% ━━━━━━────── 2/4 1.7it/s 0.6s<1.2s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 75% ━━━━━━━━━─── 3/4 2.2it/s 0.9s<0.4s
+[K                 Class     Images  Instances      Box(P          R      mAP50  mAP50-95): 100% ━━━━━━━━━━━━ 4/4 3.9it/s 1.0s
+                   all        104        681      0.443      0.361      0.342      0.154
+                 crack         64        219      0.369      0.142      0.132     0.0463
+            spallation         50        134       0.43      0.463      0.467      0.208
+         efflorescence         32         90      0.447      0.222      0.207     0.0952
+           exposed_bar         38        105       0.51      0.571      0.519      0.259
+       corrosion_stain         48        133      0.461      0.406      0.384      0.164
+Speed: 0.2ms preprocess, 3.1ms inference, 0.0ms loss, 2.4ms postprocess per image

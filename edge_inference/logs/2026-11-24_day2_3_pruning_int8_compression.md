@@ -1,5 +1,7 @@
 # Day 2–3: physically pruned and QDQ INT8 CODEBRIM detectors
 
+[Public recovery, export and PTQ consoles and the four-variant summary](evidence/2026-11-24/README.md). References to `build/` below preserve the paths used during the run.
+
 ## Objective
 
 Compare four ONNX variants on the same decoded validation frame and export their

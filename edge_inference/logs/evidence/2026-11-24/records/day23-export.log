@@ -1,0 +1,15 @@
+WARNING 'half' is deprecated and will be removed in the future. Use 'quantize' instead.
+Ultralytics 8.4.218  Python-3.11.5 torch-2.6.0+cu124 CUDA:0 (NVIDIA GeForce RTX 4060 Laptop GPU, 8188MiB)
+WARNING This model has no one-to-one head; using one-to-many outputs.
+Model summary (fused): 73 layers, 2,059,851 parameters, 0 gradients, 5.4 GFLOPs
+
+[34m[1mPyTorch:[0m starting from 'E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 9, 8400) (4.1 MB)
+
+[34m[1mONNX:[0m starting export with onnx 1.23.2 opset 17...
+[34m[1mONNX:[0m export success  1.2s, saved as 'E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.onnx' (8.1 MB)
+
+Export complete (4.1s)
+Results saved to [1mE:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.onnx[0m
+Predict:         yolo predict task=detect model=E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.onnx imgsz=640 
+Validate:        yolo val task=detect model=E:\Project\uav-fms-portfolio\edge_inference\runs\yolov8n_pruned\weights\best.onnx imgsz=640 data=E:\Project\uav-fms-portfolio\build\day23-recovery-data\data.yaml 
+Visualize:       https://netron.app

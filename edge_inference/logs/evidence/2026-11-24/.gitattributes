@@ -1,0 +1,3 @@
+# Evidence hashes cover the captured bytes, including Windows CRLF and terminal escapes.
+records/* -text
+SHA256SUMS.txt text eol=lf

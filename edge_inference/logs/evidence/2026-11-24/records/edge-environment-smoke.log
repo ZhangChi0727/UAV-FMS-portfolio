@@ -1,0 +1,15 @@
+Creating new Ultralytics Settings v0.0.8 file  
+View Ultralytics Settings with 'yolo settings' or at 'E:\Project\uav-fms-portfolio\build\ultralytics-settings\Ultralytics\settings.json'
+Update Settings with 'yolo settings key=value', i.e. 'yolo settings runs_dir=path/to/dir'. For help see https://docs.ultralytics.com/usage/settings
+Python: 3.11.5 | packaged by Anaconda, Inc. | (main, Sep 11 2023, 13:26:23) [MSC v.1916 64 bit (AMD64)]
+torch 2.6.0+cu124
+cv2 4.11.0
+onnx 1.23.2
+onnxruntime 1.21.1
+ultralytics 8.4.218
+torch.version.cuda: 12.4
+torch.cuda.is_available(): True
+onnxruntime.get_available_providers(): ['TensorrtExecutionProvider', 'CUDAExecutionProvider', 'CPUExecutionProvider']
+CUDA tensor sum: 4.0
+Skip loading CUDA and cuDNN DLLs since torch is imported.
+ORT CUDA session arithmetic smoke: PASS

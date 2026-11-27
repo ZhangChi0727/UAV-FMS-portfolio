@@ -1,0 +1,3 @@
+WARNING:root:Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+WARNING:root:Please consider pre-processing before quantization. See https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+E:\Project\uav-fms-portfolio\edge_inference\weights\yolov8n_pruned_int8.onnx 156e8fa5ba8aa20458582a6d1062b0460d19e65778856a8c2be7cb04dcb144cf

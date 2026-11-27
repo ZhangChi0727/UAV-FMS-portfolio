@@ -1,0 +1,7 @@
+gpu 100 raw samples: mean/P95/P99/FPS independently recomputed
+cpu4 100 raw samples: mean/P95/P99/FPS independently recomputed
+trace: 104 unique frames, 864 reference rows, 806 predictions; geometry/payload/hash/timing checks passed; 6 panels
+split_manifest.json 7321eaef3d7cd3526e7489e4c3872554f6f8741a2030e5ff45dcb5bf461adf84
+edge_inference\runs\yolov8n_fp32_baseline\test_metrics.json 880cc8426cbc59b1237f274b505f602686698d2575815ada07e9a5df2c74a067
+edge_inference\weights\onnx_export.json 6eaa4797fbead64da82c8a9ef5aa77cfd0e2af75a2f05a3159f7d44d811337f4
+edge_inference\runs\yolov8n_fp32_baseline\training_provenance.json 40097880948a8374b9b47b24af455c6987322c250d637d412725c947168b26a7
