@@ -1,19 +1,51 @@
 import inspect
 import json
-from dataclasses import replace
+from dataclasses import FrozenInstanceError, fields, replace
 from pathlib import Path
 import sys
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from src.offload_sim import (Detection, EvaluationConfig, FrameTrace, ReferenceFrame,
+from src.offload_sim import (CGAOPolicy, Detection, EvaluationConfig, FrameContext, FrameTrace,
+                            ObservedFrameTrace, OffloadDecision, ReferenceFrame,
                             SimulationConfig, decide, evaluate, main, simulate,
                             sweep, synthetic_traces)
 
 
 def detection(score=0.8, box=(0, 0, 10, 10), cls='crack'):
     return Detection(box, cls, score)
+
+
+def test_strategy_band_and_legacy_metrics():
+    scores = (.149, .15, .499, .5)
+    detections = tuple(detection(score, (i, i, 10, 10)) for i, score in enumerate(scores))
+    context = FrameContext('f', detections, 128, 1.)
+    decision = CGAOPolicy().decide(context)
+    assert decision.offload == decide(detections, policy='cgao')
+    assert decision.roi_boxes == (detections[1].bbox, detections[2].bbox)
+    traces = synthetic_traces()
+    assert simulate(traces, SimulationConfig(policy=CGAOPolicy())) == simulate(traces, SimulationConfig())
+
+
+def test_injected_strategy_only_sees_immutable_current_observations():
+    seen = []
+    class AgeGate:
+        def decide(self, context):
+            seen.append(context)
+            return OffloadDecision(context.aoi_ms is not None)
+
+    t = synthetic_traces()
+    first, second = t.frames
+    t = replace(t, frames=(ObservedFrameTrace(**vars(first), aoi_ms=5., uq_radius=.2), second))
+    r = simulate(t, SimulationConfig(policy=AgeGate()))
+    assert [row['offload'] for row in r.rows] == [True, False]
+    assert [(c.frame_id, c.aoi_ms, c.uq_radius) for c in seen] == [
+        (first.frame_id, 5., .2), (second.frame_id, None, None)]
+    assert {f.name for f in fields(FrameContext)} == {
+        'frame_id','edge_detections','payload_bytes','edge_latency_ms','aoi_ms','uq_radius'}
+    with pytest.raises(FrozenInstanceError):
+        seen[0].payload_bytes = 0
 
 
 @pytest.mark.parametrize('scores,expected', [([], False), ([0.149], False),

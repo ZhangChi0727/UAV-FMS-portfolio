@@ -64,6 +64,14 @@ The decision \(u_i(\tau)\in\{0,1\}\) selects local acceptance (0) or offloading
 (1). Runtime policy code must not receive ground truth, cloud predictions or
 future timing outcomes. Ground truth is used only after decisions are fixed.
 
+The replay gives an `OffloadingPolicy` only an immutable `FrameContext`:
+frame ID, retained local detections (pixel xyxy), full payload bytes, and
+elapsed local latency in ms. Optional `ObservedFrameTrace` supplies a current
+`aoi_ms` or `uq_radius`; absent observations are None, never inferred from
+cloud results. A direct All-Cloud request has no local detections or elapsed
+edge compute. CGAO returns all triggering boxes in input order in its
+`OffloadDecision`; these describe candidates, not actual encoded crops.
+
 - **All-Edge:** \(u_i=0\) for every frame; run the edge detector only.
 - **All-Cloud:** \(u_i=1\) for every frame; skip edge inference and transmit the
   full frame directly.
@@ -216,11 +224,16 @@ not accuracy. No late-result discard or deadline-dependent efficacy is modeled.
 Test-grid presentation is descriptive, not permission to choose a winning
 threshold on test data and claim an independent evaluation.
 
-## 7. Planned software interface and retained outputs
+## 7. Software interface and retained outputs
 
-The following are conceptual signatures only, not executable implementation:
+The replay accepts the legacy policy names or a strategy instance via
+`SimulationConfig(policy=my_policy)`. Custom strategies run after edge
+inference and transmit the full payload when selected. Only CGAO uses the
+existing ROI byte-sensitivity factor. Custom strategy parameters and versions
+belong in the experiment provenance; the result records the strategy class.
 
 ```python
+OffloadingPolicy.decide(context: FrameContext) -> OffloadDecision
 decide(edge_detections: Sequence[Detection], *, policy: Policy,
        tau_low: float, tau: float) -> bool
 simulate(traces: TraceInputs, config: SimulationConfig) -> SimulationResult

@@ -15,7 +15,7 @@ import json
 import math
 from numbers import Real
 from pathlib import Path
-from typing import Literal, Mapping, Sequence
+from typing import Literal, Mapping, Protocol, Sequence
 
 import numpy as np
 
@@ -42,6 +42,65 @@ class FrameTrace:
     width: int
     height: int
     payload_bytes: int
+
+
+@dataclass(frozen=True)
+class ObservedFrameTrace(FrameTrace):
+    """Optional observations available at decision time; absent from legacy traces."""
+    aoi_ms: float | None = None
+    uq_radius: float | None = None
+
+
+@dataclass(frozen=True)
+class FrameContext:
+    frame_id: str
+    edge_detections: tuple[Detection, ...]
+    payload_bytes: int
+    edge_latency_ms: float
+    aoi_ms: float | None = None
+    uq_radius: float | None = None
+
+    def __post_init__(self):
+        # Legacy traces may use lists for both the detections and bbox coordinates.
+        object.__setattr__(self, 'edge_detections', tuple(
+            Detection(tuple(d.bbox), d.class_id, d.confidence) for d in self.edge_detections))
+
+
+@dataclass(frozen=True)
+class OffloadDecision:
+    offload: bool
+    roi_boxes: tuple[tuple[float, float, float, float], ...] = ()
+    reason: str = ""
+
+
+class OffloadingPolicy(Protocol):
+    def decide(self, context: FrameContext) -> OffloadDecision: ...
+
+
+class AllEdgePolicy:
+    def decide(self, context: FrameContext) -> OffloadDecision:
+        return OffloadDecision(False, reason='local only')
+
+
+class AllCloudPolicy:
+    def decide(self, context: FrameContext) -> OffloadDecision:
+        return OffloadDecision(True, reason='direct uplink')
+
+
+@dataclass(frozen=True)
+class CGAOPolicy:
+    tau_low: float = 0.15
+    tau: float = 0.5
+
+    def __post_init__(self):
+        _validate_band(self.tau_low, self.tau)
+
+    def decide(self, context: FrameContext) -> OffloadDecision:
+        # [TRACEABILITY] Spec/Req: offload_sim_spec §3.2; Literature Basis: confidence-gated scheduling.
+        # Vault-ID: concept-20261124-cgao-model; Analytical/Engineering Scope: any retained score
+        # in the half-open interval triggers uplink; no future cloud output or label is visible.
+        boxes = tuple(d.bbox for d in context.edge_detections if self.tau_low <= d.confidence < self.tau)
+        return OffloadDecision(bool(boxes), boxes, 'in band' if boxes else 'no in-band candidate')
 
 
 @dataclass(frozen=True)
@@ -85,7 +144,7 @@ class TraceInputs:
 
 @dataclass(frozen=True)
 class SimulationConfig:
-    policy: Policy = 'cgao'
+    policy: Policy | OffloadingPolicy = 'cgao'
     # [TRACEABILITY] Spec/Req: offload_sim_spec §3–5; EDG-REQ-0038 (stage timings only).
     # Literature Basis: resource-scheduling context; Vault-ID: lit-20261124-uav-edge-resource-survey.
     # Analytical/Engineering Scope: bandwidth, RTT and power are scenario inputs, not measured constants.
@@ -159,30 +218,44 @@ def _evaluation_config(config):
         raise ValueError('unsupported evaluator version')
 
 
-def decide(edge_detections: Sequence[Detection], *, policy: Policy,
-           tau_low: float = 0.15, tau: float = 0.5) -> bool:
-    """No references, cloud predictions or future timings are accepted here."""
-    if policy not in ('all_edge', 'all_cloud', 'cgao'):
-        raise ValueError('policy: unknown policy')
+def _validate_band(tau_low, tau):
     _number(tau_low, 'tau_low', high=1)
     _number(tau, 'tau', low=0.25, high=0.95)
     if tau_low >= tau:
         raise ValueError('tau_low must be less than tau')
+
+
+def _strategy(policy, tau_low, tau):
+    _validate_band(tau_low, tau)
+    if isinstance(policy, str):
+        if policy == 'all_edge':
+            return AllEdgePolicy()
+        if policy == 'all_cloud':
+            return AllCloudPolicy()
+        if policy == 'cgao':
+            return CGAOPolicy(tau_low, tau)
+    elif callable(getattr(policy, 'decide', None)):
+        return policy
+    raise ValueError('policy: unknown policy')
+
+
+def decide(edge_detections: Sequence[Detection], *, policy: Policy,
+           tau_low: float = 0.15, tau: float = 0.5) -> bool:
+    """Legacy confidence-only wrapper for the three named policies."""
+    if not isinstance(policy, str):
+        raise ValueError('policy: unknown policy')
+    strategy = _strategy(policy, tau_low, tau)
     for d in edge_detections:
         if not isinstance(d, Detection):
             raise ValueError('edge_detections: expected Detection')
         _number(d.confidence, 'edge_detections.confidence', high=1)
-    if policy != 'cgao':
-        return policy == 'all_cloud'
-    # [TRACEABILITY] Spec/Req: offload_sim_spec §3.2; Literature Basis: confidence-gated scheduling.
-    # Vault-ID: concept-20261124-cgao-model; Analytical/Engineering Scope: any retained score
-    # in the half-open interval triggers uplink; no future cloud output or label is visible.
-    return any(tau_low <= d.confidence < tau for d in edge_detections)
+    return strategy.decide(FrameContext('', tuple(edge_detections), 0, 0.0)).offload
 
 
-def _validate(traces, config):
+def _validate(traces, config, strategy=None):
     _evaluation_config(config.evaluation)
-    decide((), policy=config.policy, tau_low=config.tau_low, tau=config.tau)
+    if strategy is None:
+        strategy = _strategy(config.policy, config.tau_low, config.tau)
     for key in ('bandwidth_mbps', 'rtt_ms', 'compute_power_w', 'tx_power_w'):
         _number(getattr(config, key), key)
     if config.bandwidth_mbps == 0:
@@ -191,7 +264,7 @@ def _validate(traces, config):
     if config.alpha_roi == 0:
         raise ValueError('alpha_roi must be positive')
     _number(traces.gate_retention_floor, 'gate_retention_floor', high=1)
-    if config.policy == 'cgao' and traces.gate_retention_floor > config.tau_low:
+    if isinstance(strategy, CGAOPolicy) and traces.gate_retention_floor > strategy.tau_low:
         raise ValueError('gate_retention_floor exceeds tau_low; missing gate candidates')
     if traces.trace_kind not in ('synthetic_not_measured', 'development_host_trace'):
         raise ValueError('trace_kind: unsupported provenance label')
@@ -207,6 +280,10 @@ def _validate(traces, config):
             raise ValueError(f'frame_id {f.frame_id}: duplicate')
         for key in ('width', 'height', 'payload_bytes'):
             _positive_int(getattr(f, key), f'{f.frame_id}.{key}')
+        if isinstance(f, ObservedFrameTrace):
+            for key in ('aoi_ms', 'uq_radius'):
+                if getattr(f, key) is not None:
+                    _number(getattr(f, key), f'{f.frame_id}.{key}')
         frames[f.frame_id] = f
     # [TRACEABILITY] Spec/Req: offload_sim_spec §2; Literature Basis: latency-aware perception.
     # Vault-ID: lit-20261124-perception-control-latency; Analytical/Engineering Scope:
@@ -319,15 +396,23 @@ def evaluate(predictions: Mapping[str, Sequence[Detection]],
 
 
 def simulate(traces: TraceInputs, config: SimulationConfig) -> SimulationResult:
-    frames = _validate(traces, config)
+    strategy = _strategy(config.policy, config.tau_low, config.tau)
+    frames = _validate(traces, config, strategy)
+    direct = isinstance(strategy, AllCloudPolicy)
+    gated = isinstance(strategy, CGAOPolicy)
     rows, selected = [], {}
     for fid in sorted(frames):
         f = frames[fid]
         edge, cloud = traces.edge_timings[fid], traces.cloud_timings[fid]
-        offload = decide(traces.edge_predictions[fid], policy=config.policy,
-                         tau_low=config.tau_low, tau=config.tau)
-        edge_ms = 0.0 if config.policy == 'all_cloud' else edge.total
-        scale = config.alpha_roi if config.policy == 'cgao' else 1.0
+        edge_ms = 0.0 if direct else edge.total
+        context = FrameContext(fid, () if direct else traces.edge_predictions[fid],
+                               f.payload_bytes, edge_ms, getattr(f, 'aoi_ms', None),
+                               getattr(f, 'uq_radius', None))
+        decision = strategy.decide(context)
+        if not isinstance(decision, OffloadDecision) or type(decision.offload) is not bool:
+            raise ValueError(f'{fid}.policy: expected OffloadDecision with boolean offload')
+        offload = decision.offload
+        scale = config.alpha_roi if gated else 1.0
         sent = f.payload_bytes*scale if offload else 0.0
         # [TRACEABILITY] Spec/Req: offload_sim_spec §4–5; Literature Basis: resource and latency accounting.
         # Vault-ID: lit-20261124-uav-edge-resource-survey; Analytical/Engineering Scope:
@@ -359,14 +444,21 @@ def simulate(traces: TraceInputs, config: SimulationConfig) -> SimulationResult:
                    mean_energy_mj=math.fsum(r['energy_mj']/len(rows) for r in rows))
     accuracy = evaluate(selected, traces.references, config.evaluation)
     caveats = list(CAVEATS)
-    if config.policy == 'cgao' and config.alpha_roi != 1:
+    if gated and config.alpha_roi != 1:
         accuracy = replace(accuracy, available=False, map50=None, map50_95=None,
                            per_class_recall=dict.fromkeys(config.evaluation.classes, None),
                            reason='ROI byte-scaling only; no matching ROI prediction/timing traces')
         caveats.append('ROI is communication sensitivity only; full-frame predictions retained, not ROI accuracy.')
     fingerprint = hashlib.sha256(json.dumps(asdict(traces), sort_keys=True,
                                              allow_nan=False).encode()).hexdigest()
-    return SimulationResult(asdict(config), rows, summary, accuracy,
+    # Never deepcopy/serialize an injected object (it may hold a model or lock).
+    if gated:
+        recorded = replace(config, policy='cgao', tau_low=strategy.tau_low, tau=strategy.tau)
+    else:
+        name = ('all_cloud' if direct else 'all_edge' if isinstance(strategy, AllEdgePolicy)
+                else f'{type(strategy).__module__}.{type(strategy).__qualname__}')
+        recorded = replace(config, policy=name)
+    return SimulationResult(asdict(recorded), rows, summary, accuracy,
                             dict(host_type='development-host', trace_kind=traces.trace_kind,
                                  output_kind='analytical_simulation', input_sha256=fingerprint,
                                  units={'latency': 'ms', 'energy': 'mJ', 'payload': 'Bytes',
