@@ -21,3 +21,12 @@ Run pytest within each B0 track directory. Build and test the C++ controller
 using its CMake presets. Export requirements using
 `strictdoc export requirements --output-dir build/strictdoc-check`.
 Report actual host, commands and raw results for measurements.
+
+For Python access from outside the checkout, install the checkout-backed B0
+namespace with `python -m pip install -e . --no-build-isolation --no-deps`
+in an environment with NumPy. Import from `uav_b0.simulation`,
+`uav_b0.estimation.estimator`, `uav_b0.control.controller`, or
+`uav_b0.integration.validate_config`. The simulation alias retains the
+original `b0.contract` message types. Per-track pytest also works without
+installation; control tests require the matching native Python extension
+from the Debug preset or an explicit `B0_CONTROLLER_MODULE_DIR`.

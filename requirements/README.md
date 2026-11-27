@@ -7,13 +7,14 @@ used for requirements, status and traceability.
 | File | Content |
 |---|---|
 | [b0.sdoc](b0.sdoc) | B0-REQ-0001 to B0-REQ-0030: attitude estimation and cascaded control |
-| [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to 0012 deprecated; EDG-REQ-0034 to 0041 proposed for bridge-inspection model compression |
+| [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to 0012 deprecated; EDG-REQ-0034 to 0041 approved for bridge-inspection model compression |
 
 ## Field definitions
 
 - `STATUS` is the lifecycle state of the statement. `frozen` means the text is
   fixed at the tag `req-freeze-*` created after review. `proposed` means the text
-  is not yet frozen.
+  is not yet frozen. `approved` records approval of the statement, not a
+  freeze tag, board-level result or flight acceptance.
 - `STATE` is the implementation state, assessed from repository content.
   `implemented` means code and a unit test are present in the active tree; it is
   not closed-loop verification. `partial` means some but not all acceptance

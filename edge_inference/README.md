@@ -3,8 +3,8 @@
 The Day 1–4 pipeline covers CODEBRIM data preparation, YOLOv8n training,
 compression, development-host profiling and cached-trace replay. The
 [technical note](docs/technical_note_uav_edge_offloading.md) reports the four
-variants and the limits of the comparison. EDG-REQ-0034–0041 remain proposed
-requirements; the results are not board or flight measurements.
+variants and the limits of the comparison. EDG-REQ-0034–0041 are approved
+prototype requirements; the results are not board or flight measurements.
 
 - configs/baseline.yaml: CLI defaults for image size, warmup, runs and CPU threads.
 - src/detector.py: ONNX raw YOLOv8 detection-head adapter and Ultralytics adapter.

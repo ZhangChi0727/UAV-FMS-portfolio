@@ -263,7 +263,7 @@ RELATIONS:
 [REQUIREMENT]
 UID: EDG-REQ-0034
 TITLE: Standardized detector interface
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The detector shall expose an infer(frame) interface independent of ROS 2 and flight-control middleware.
@@ -279,7 +279,7 @@ EVIDENCE: edge_inference/src/detector.py; edge_inference/tests/test_detector_sca
 [REQUIREMENT]
 UID: EDG-REQ-0035
 TITLE: Lightweight detector baseline
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The system shall establish a lightweight bridge-defect detector baseline using YOLOv8n or YOLO11n and an appropriately licensed public concrete-defect dataset.
@@ -295,7 +295,7 @@ EVIDENCE: edge_inference/scripts/train_baseline.py; edge_inference/scripts/prepa
 [REQUIREMENT]
 UID: EDG-REQ-0036
 TITLE: Structured pruning
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The system shall provide a structured channel pruning pipeline with configurable sparsity ratios.
@@ -311,7 +311,7 @@ EVIDENCE: edge_inference/scripts/compress_pruning.py exposes train --width-ratio
 [REQUIREMENT]
 UID: EDG-REQ-0037
 TITLE: ONNX and static INT8 quantization
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The system shall export supported models to ONNX and support static INT8 post-training quantization using a declared calibration set.
@@ -327,7 +327,7 @@ EVIDENCE: edge_inference/scripts/export_fp32_trace.py; edge_inference/scripts/qu
 [REQUIREMENT]
 UID: EDG-REQ-0038
 TITLE: Stage latency profiling
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The profiling pipeline shall measure preprocessing, inference and postprocessing latency, and report mean, P95 and P99.
@@ -343,7 +343,7 @@ EVIDENCE: edge_inference/src/benchmark.py; edge_inference/tests/test_detector_sc
 [REQUIREMENT]
 UID: EDG-REQ-0039
 TITLE: Resource footprint
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The pipeline shall report peak RSS, parameter count, GFLOPs and serialized model size where available.
@@ -359,7 +359,7 @@ EVIDENCE: edge_inference/src/benchmark.py and edge_inference/scripts/eval_compre
 [REQUIREMENT]
 UID: EDG-REQ-0040
 TITLE: Thread-constrained CPU profile
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The pipeline shall support a declared thread-constrained CPU profile alongside GPU benchmarking.
@@ -375,7 +375,7 @@ EVIDENCE: edge_inference/src/detector.py and edge_inference/scripts/eval_compres
 [REQUIREMENT]
 UID: EDG-REQ-0041
 TITLE: Accuracy and cost frontier
-STATUS: proposed
+STATUS: approved
 STATE: implemented
 STATEMENT: >>>
 The pipeline shall generate Pareto comparisons of mAP, P95 latency and model size.
