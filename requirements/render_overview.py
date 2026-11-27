@@ -35,7 +35,7 @@ def section(path):
 
 
 def render():
-    readme = MarkdownIt("commonmark", {"html": False}).render((ROOT / "README.md").read_text(encoding="utf-8"))
+    readme = MarkdownIt("commonmark", {"html": False}).enable("table").render((ROOT / "README.md").read_text(encoding="utf-8"))
     docs = sorted(HERE.glob("*.sdoc"), key=lambda p: (p.name != "edge.sdoc", p.name))
     return ('''<!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">

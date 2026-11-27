@@ -109,6 +109,10 @@ setting was checked with synthetic tensors only and is not a fifth measured vari
 
 *Annotation-relative descriptive metrics on the 104 admitted test images (864 XML reference rows); not exhaustive whole-image ground-truth coverage (`complete=false`).* Replay uses per-frame timings, not the repeated validation-frame timings in §3.1.
 
+![Accuracy vs. Latency Frontiers](figures/01-accuracy-latency-frontiers.svg)
+
+![Energy and Byte Savings](figures/02-energy-and-byte-savings.svg)
+
 **Key Systems Insights (see Figures `01-accuracy-latency-frontiers.pdf` and `02-energy-and-byte-savings.pdf`):**
 1. **Why Full-Image Binary Offloading Bottlenecks on High-Resolution Inspection:** Although `CGAO (τ=0.35)` restores `crack` recall from `0.0902` back to the `0.1373` cloud baseline, the admitted test images average 5.31 MB of encoded payload and 8.3 XML class-box rows per image (not necessarily distinct or overlapping defects). Across the four variants, 81.7%–88.5% of frames contain at least one uncertain candidate in $[0.15, 0.35)$, causing full-payload serialization to dominate latency (mean end-to-end latency of 1.84–2.03 s across the four variants at 20 Mbps; Pruned-FP32 alone takes 1,998.8 ms versus 81.2 ms locally).
 2. **ROI Cropping Sensitivity ($\alpha_{\text{roi}} = 0.35$):** Scaling the modeled payload to 35%, without encoding or scoring crops, increases byte-weighted bandwidth savings for `Pruned-FP32` ($\tau = 0.35$) from **11.0% to 68.8%**, saving **319.75 MB across the 92 offloaded frames**. The modeled TX energy saving averaged across **all 104 frames** is **3.69 J** at 20 Mbps and **73.79 J** at 1 Mbps (or **4.17 J** and **83.41 J per offloaded frame**, respectively).

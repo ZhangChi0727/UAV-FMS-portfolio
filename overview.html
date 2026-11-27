@@ -7,34 +7,85 @@ a{color:#075781}table{width:100%;border-collapse:collapse}th,td{text-align:left;
 padding:.45rem;border-bottom:1px solid #ccd5db}summary{cursor:pointer}section>details{margin:1rem 0;overflow:auto}
 </style><main>
 <h1>UAV FMS Portfolio</h1>
-<p>Two independent tracks are maintained:</p>
+<p><strong>What does compressing a bridge-defect detector buy, and when does transmitting the image cost more than running the detector locally?</strong> The EDGE track answers that question for one development host and a fixed set of CODEBRIM images. The independent B0 track provides a deterministic attitude-estimation and C++17 control baseline. Neither track makes a flight-performance claim.</p>
+<p><strong>Start with the <a href="edge_inference/docs/technical_note_uav_edge_offloading.md">illustrated technical note</a></strong> for the results, figures and limits. The <a href="edge_inference/docs/offload_sim_spec.md">offloading specification</a> defines what a policy can observe and how bytes, latency and energy are counted.</p>
+<h2>Results: four detector variants on CPU4</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">ONNX variant</th>
+<th style="text-align:right">Size (MB)</th>
+<th style="text-align:right">CPU4 mean (ms)</th>
+<th style="text-align:right">CPU4 P95 (ms)</th>
+<th style="text-align:right">Descriptive mAP@50</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">FP32 baseline</td>
+<td style="text-align:right">12.78</td>
+<td style="text-align:right">60.76</td>
+<td style="text-align:right">94.46</td>
+<td style="text-align:right">0.2997</td>
+</tr>
+<tr>
+<td style="text-align:left">Pruned-FP32</td>
+<td style="text-align:right">8.48</td>
+<td style="text-align:right">45.16</td>
+<td style="text-align:right">66.01</td>
+<td style="text-align:right">0.2982</td>
+</tr>
+<tr>
+<td style="text-align:left">Static INT8</td>
+<td style="text-align:right">3.59</td>
+<td style="text-align:right">60.86</td>
+<td style="text-align:right">78.26</td>
+<td style="text-align:right">0.2813</td>
+</tr>
+<tr>
+<td style="text-align:left">Pruned-INT8</td>
+<td style="text-align:right">2.50</td>
+<td style="text-align:right">58.83</td>
+<td style="text-align:right">88.58</td>
+<td style="text-align:right">0.2805</td>
+</tr>
+</tbody>
+</table>
+<p>Pruned-FP32 had the lowest P95; Pruned-INT8 was the smallest. All four observed variants are non-dominated when <strong>maximizing mAP@50 and minimizing P95 and ONNX size</strong> together. This is not a significance test or a universal ranking.</p>
+<p><strong>Measurement:</strong> CPU4 is a four-thread <strong>development-host</strong> profile (20 warm-ups, 100 calls on one fixed validation image); the RTX 4060 CUDA profile supplies a remote-compute reference, not an onboard or cloud-service measurement.
+<strong>Accuracy:</strong> the 104 test images contain 864 annotated class-box rows. With <code>complete=false</code>, mAP is descriptive and relative to those annotations, not a measure of field reliability.</p>
+<p><strong>Offloading:</strong> Pruned-FP32 with the confidence gate [0.15, 0.35) offloaded 92 of 104 frames. Relative to sending every full frame, full-payload gating saved <strong>11.0%</strong> of bytes. Keeping the same decisions but modeling each transmitted payload at 35% of its size (<code>alpha_roi=0.35</code>) raised savings to <strong>68.8%</strong>. No crop was encoded or scored. Network delay and energy are modeled, not measured.</p>
+<h2>Two tracks, separate evidence</h2>
 <ul>
-<li>B0: historical component-level dynamics, estimator and C++17 controller evidence.
-Component acceptance is not whole-system or flight acceptance. Historical
-closed-loop material is retained in tag pre-surgery-2026-11-22.</li>
-<li>EDGE: the Day 1–4 pipeline trained a CODEBRIM detector, pruned and quantized it,
-profiled four variants on the development host, and replayed cached predictions.
-The <a href="edge_inference/docs/technical_note_uav_edge_offloading.md">technical note</a>
-separates annotation-relative scores and measured host latency from modeled
-network latency and energy. See the <a href="edge_inference/README.md">EDGE README</a>
-for the modules supporting EDG-REQ-0034-0041.</li>
+<li><strong>B0:</strong> simulation, attitude estimation and cascaded control share explicit message contracts: NED/body frames, SI units and scalar-first Hamilton quaternions. Estimator and controller inputs exclude truth except explicit initialization. Component acceptance is not closed-loop validation; historical integration material is retained at tag <code>pre-surgery-2026-11-22</code>.</li>
+<li><strong>EDGE:</strong> <a href="edge_inference/README.md">module guide and environment setup</a> for data preparation, pruning, static INT8 quantization, profiling and cached-trace replay. Dataset images, trained weights and raw runtime JSONs are not distributed in Git. The figures and reported tables can be read without them.</li>
+<li><strong>Traceability:</strong> <a href="requirements/README.md">StrictDoc requirements index</a> · <a href="overview.html#requirements">offline requirements view</a>. The eight EDGE prototype requirements (EDG-REQ-0034–0041) are approved and implemented; the StrictDoc files remain authoritative.</li>
 </ul>
-<p>Systems-engineering source is <a href="requirements/README.md">requirements</a>.
-The <a href="overview.html#requirements">compact requirements view</a> can be opened offline.
-Maintain NED/body conventions, SI units and scalar-first Hamilton quaternions;
-truth is excluded from controller and estimator inputs except initialization.</p>
-<p>Run pytest within each B0 track directory. Build and test the C++ controller
-using its CMake presets. Export requirements using
-<code>strictdoc export requirements --output-dir build/strictdoc-check</code>.
-Report actual host, commands and raw results for measurements.</p>
-<p>For Python access from outside the checkout, install the checkout-backed B0
-namespace with <code>python -m pip install -e . --no-build-isolation --no-deps</code>
-in an environment with NumPy. Import from <code>uav_b0.simulation</code>,
-<code>uav_b0.estimation.estimator</code>, <code>uav_b0.control.controller</code>, or
-<code>uav_b0.integration.validate_config</code>. The simulation alias retains the
-original <code>b0.contract</code> message types. Per-track pytest also works without
-installation; control tests require the matching native Python extension
-from the Debug preset or an explicit <code>B0_CONTROLLER_MODULE_DIR</code>.</p>
+<h2>Verification and reproduction</h2>
+<p>Verified baseline at <code>1baf1e4</code>: <strong>440 pytest cases passed</strong> (simulation 25, estimation 52, control 79, integration 165, EDGE 119). <strong>25 CTest entries passed</strong>, including four C++ mutation tests and the Python binding/adapter suite. The latter overlaps the 440; these are not 465 distinct tests.</p>
+<p>From the repository root, in Bash with Python 3.11 and the project dependencies active:</p>
+<pre><code class="language-bash"># C++17 compiler and Ninja required. Use the binding built for this Python.
+cmake --preset b0-controller-debug -DPython3_EXECUTABLE=&quot;$(python -c 'import sys; print(sys.executable)')&quot;
+cmake --build --preset b0-controller-debug
+ctest --preset b0-controller-debug --output-on-failure
+
+# Each pytest invocation runs in its own track, not at the repository root.
+(cd 01_simulation/b0 &amp;&amp; python -m pytest -q)
+(cd 02_estimation/b0 &amp;&amp; python -m pytest -q)
+(cd 03_control/b0 &amp;&amp; python -m pytest -q)
+(cd 05_integration/b0 &amp;&amp; python -m pytest -q)
+(cd edge_inference &amp;&amp; python -m pytest -q)
+
+# Check the committed offline view without rewriting it.
+python requirements/render_overview.py --check
+</code></pre>
+<p>To verify the three-objective frontier <strong>with the retained hash-matched JSONs</strong> (four CPU4 profiles and the replay result), run:</p>
+<pre><code class="language-bash">python -m edge_inference.scripts.plot_offloading_results pareto
+</code></pre>
+<p>This reads cached results; it neither trains a model nor runs inference.
+See the <a href="edge_inference/logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md">Day 3–4 experiment log</a> for the provenance of the replay and figures.</p>
+<p>For B0 imports outside the checkout, run <code>python -m pip install -e . --no-build-isolation --no-deps</code> in an environment with NumPy, setuptools and wheel.
+The <code>uav_b0</code> namespace preserves the original <code>b0.contract</code> message identities.</p>
 <section id="requirements"><h2>Requirements</h2><p>Open a title to read its evidence. Implementation state is not system verification. <a href="requirements/README.md">Field definitions and full export instructions</a>.</p>
 <details open><summary>edge.sdoc · 20 requirements</summary><p><a href="requirements/edge.sdoc">StrictDoc source</a></p><table><thead><tr><th>ID</th><th>Title / evidence</th><th>Lifecycle</th><th>Implementation</th></tr></thead><tbody>
 <tr id="EDG-REQ-0001"><th scope="row">EDG-REQ-0001</th><td><details><summary>Instruction to structured task</summary><p>none yet</p></details></td><td>deprecated</td><td>planned</td></tr>

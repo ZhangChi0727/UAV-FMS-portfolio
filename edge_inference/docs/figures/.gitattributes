@@ -1,0 +1,2 @@
+# Keep the exact bytes of the hash-registered, published artwork on all hosts.
+*.svg binary
