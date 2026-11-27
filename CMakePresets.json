@@ -7,7 +7,7 @@
   },
   "configurePresets": [
     {
-      "name": "b0-controller-base",
+      "name": "gnc-controller-base",
       "hidden": true,
       "generator": "Ninja",
       "cacheVariables": {
@@ -16,39 +16,39 @@
       }
     },
     {
-      "name": "b0-controller-debug",
-      "displayName": "B0 controller (Debug)",
-      "inherits": "b0-controller-base",
-      "binaryDir": "${sourceDir}/build/b0-controller/debug",
+      "name": "gnc-controller-debug",
+      "displayName": "GNC controller (Debug)",
+      "inherits": "gnc-controller-base",
+      "binaryDir": "${sourceDir}/build/gnc-controller/debug",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
-      "name": "b0-controller-release",
-      "displayName": "B0 controller (Release)",
-      "inherits": "b0-controller-base",
-      "binaryDir": "${sourceDir}/build/b0-controller/release",
+      "name": "gnc-controller-release",
+      "displayName": "GNC controller (Release)",
+      "inherits": "gnc-controller-base",
+      "binaryDir": "${sourceDir}/build/gnc-controller/release",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],
   "buildPresets": [
     {
-      "name": "b0-controller-debug",
-      "configurePreset": "b0-controller-debug"
+      "name": "gnc-controller-debug",
+      "configurePreset": "gnc-controller-debug"
     },
     {
-      "name": "b0-controller-release",
-      "configurePreset": "b0-controller-release"
+      "name": "gnc-controller-release",
+      "configurePreset": "gnc-controller-release"
     }
   ],
   "testPresets": [
     {
-      "name": "b0-controller-debug",
-      "configurePreset": "b0-controller-debug",
+      "name": "gnc-controller-debug",
+      "configurePreset": "gnc-controller-debug",
       "output": { "outputOnFailure": true }
     },
     {
-      "name": "b0-controller-release",
-      "configurePreset": "b0-controller-release",
+      "name": "gnc-controller-release",
+      "configurePreset": "gnc-controller-release",
       "output": { "outputOnFailure": true }
     }
   ]

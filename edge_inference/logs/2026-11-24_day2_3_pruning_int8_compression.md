@@ -73,9 +73,9 @@ From each track's own directory, using the project virtual environment:
 | Directory | Actual command | Result |
 |---|---|---|
 | `edge_inference` | `python -m pytest tests -q` | 98 passed |
-| `01_simulation/b0` | `python -m pytest -q` | 25 passed |
-| `02_estimation/b0` | `python -m pytest -q` | 52 passed |
-| `05_integration/b0` | `python -m pytest -q` | 165 passed |
+| `simulation track` | `python -m pytest -q` | 25 passed |
+| `estimation track` | `python -m pytest -q` | 52 passed |
+| `integration track` | `python -m pytest -q` | 165 passed |
 
 The compression tests exercise real channel removal and gradients in a synthetic
 C2f, CPU execution of a quantized synthetic Conv, reproducible train-only

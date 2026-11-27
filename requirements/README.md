@@ -6,7 +6,7 @@ used for requirements, status and traceability.
 
 | File | Content |
 |---|---|
-| [b0.sdoc](b0.sdoc) | B0-REQ-0001 to B0-REQ-0030: attitude estimation and cascaded control |
+| [gnc.sdoc](gnc.sdoc) | GNC-REQ-0001 to GNC-REQ-0030: attitude estimation and cascaded control |
 | [edge.sdoc](edge.sdoc) | EDG-REQ-0001 to 0012 deprecated; EDG-REQ-0034 to 0041 approved for bridge-inspection model compression |
 
 ## Field definitions
@@ -22,11 +22,15 @@ used for requirements, status and traceability.
   No requirement is marked as verified by a system-level test.
 - `EVIDENCE` lists file paths or states that none exists yet.
 
-The B0 StrictDoc statements in this migration are `proposed` and await review
+The GNC StrictDoc statements in this migration are `proposed` and await review
 and a future freeze; no `req-freeze-*` tag is asserted here. This lifecycle
 status does not revoke historical G0 or component approvals.
 
-Requirement IDs are never renumbered. Retired text is kept in git history at the
+The Owner authorized GNC-REQ-0001 through GNC-REQ-0030 as new identities on
+2026-11-27. Each succeeds the requirement with the same numeric suffix in
+parent revision `15651ebfc87da6b671c17618f5d9aaf50f660322`; the retired IDs
+are not reused. This migration does not change requirement states or freeze them.
+Earlier retired text is kept in git history at the
 tag `pre-surgery-2026-11-22` (history rewritten to remove application material).
 
 ## Scope notes

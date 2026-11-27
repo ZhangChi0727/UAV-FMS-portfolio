@@ -1,0 +1,12 @@
+{
+  "schema_version": "gnc-g2-estimator-approval/v1",
+  "status": "namespace_migrated",
+  "predecessor_overlay_blob": "a73b576cdce8e91698b626afe303bac67911e600",
+  "approved_config_git_blob": "3d572726a18fb47fe836787b8d7a7a85e8d081eb",
+  "approved_config_canonical_lf_sha256": "a6bfe277f84b25f7c64997b9658382b717c9de1d9a5a2ec960cdc21ccef95c6b",
+  "decision": "NAMESPACE_MIGRATION",
+  "decision_date": "2026-11-27",
+  "decision_source": "Owner authorization for the GNC namespace",
+  "scope": "naming and provenance only; estimator design unchanged",
+  "not_a_result": true
+}

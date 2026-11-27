@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "component": "gnc_g2_cascaded_controller",
+  "decision": "NAMESPACE_MIGRATION",
+  "predecessor_overlay_blob": "8a6ba613d26c7679a1ed76ace209e419ef9ba93d",
+  "approved_config_path": "gnc_baseline/control/configs/gnc_g2_controller.v1.json",
+  "approved_config_git_blob": "0184a7d24456f669d337e1cc0c7e8de84ceb84a2",
+  "approved_config_canonical_lf_sha256": "8dfecc396c708ad95552a7fda3016ddd1fbab6f8f27b12216e88af082fbf09ee",
+  "decision_source": "Owner authorization for the GNC namespace",
+  "decision_date": "2026-11-27",
+  "scope": "naming and provenance only; controller design unchanged",
+  "exclusions": ["merge authorization", "G3 start", "closed-loop performance acceptance"]
+}

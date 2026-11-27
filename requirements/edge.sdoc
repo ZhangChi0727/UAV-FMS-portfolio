@@ -185,7 +185,7 @@ Each result record in the repository contains every listed field; records missin
 EVIDENCE: none yet
 RELATIONS:
 - TYPE: Parent
-  VALUE: B0-REQ-0024
+  VALUE: GNC-REQ-0024
 
 [REQUIREMENT]
 UID: EDG-REQ-0009
@@ -228,18 +228,18 @@ TITLE: Model execution and profiling scope
 STATUS: deprecated
 STATE: planned
 STATEMENT: >>>
-The model execution and profiling capability shall be treated as an optional extension of the platform and shall not depend on B0 control results for its own acceptance.
+The model execution and profiling capability shall be treated as an optional extension of the platform and shall not depend on GNC control results for its own acceptance.
 <<<
 RATIONALE: >>>
 Keeps the edge-inference track independent of the attitude-control baseline, which is frozen at component level.
 <<<
 ACCEPTANCE: >>>
-The model and profiling tests run without the B0 control modules installed.
+The model and profiling tests run without the GNC control modules installed.
 <<<
 EVIDENCE: none yet
 RELATIONS:
 - TYPE: Parent
-  VALUE: B0-REQ-0030
+  VALUE: GNC-REQ-0030
 
 [REQUIREMENT]
 UID: EDG-REQ-0012
@@ -258,7 +258,7 @@ Inspection of result documents finds only replay-scope claims.
 EVIDENCE: none yet
 RELATIONS:
 - TYPE: Parent
-  VALUE: B0-REQ-0030
+  VALUE: GNC-REQ-0030
 
 [REQUIREMENT]
 UID: EDG-REQ-0034

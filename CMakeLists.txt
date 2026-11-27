@@ -7,6 +7,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CTest)
 
-# The only C++ target in the active tree is the B0 cascaded controller core,
-# its pybind11 binding and its component tests. See 03_control/b0/CMakeLists.txt.
-add_subdirectory(03_control/b0)
+# The only C++ target in the active tree is the GNC cascaded controller core,
+# its pybind11 binding and its component tests. See gnc_baseline/control/CMakeLists.txt.
+add_subdirectory(gnc_baseline/control)

@@ -246,9 +246,9 @@ each indicated module directory, not from the repository root.
   console `build/day1-test-trace-console.txt`.
 - `python build/day1_artifact_audit.py`: **exit 0**; audit described above.
 - From `edge_inference`: `python -m pytest tests -q`: **94 passed**.
-- From `01_simulation/b0`: `python -m pytest -q`: **25 passed**.
-- From `02_estimation/b0`: `python -m pytest -q`: **52 passed**.
-- From `05_integration/b0`: `python -m pytest -q`: **165 passed**.
+- From `simulation track`: `python -m pytest -q`: **25 passed**.
+- From `estimation track`: `python -m pytest -q`: **52 passed**.
+- From `integration track`: `python -m pytest -q`: **165 passed**.
 - `python -m pip check`: **No broken requirements found** after restoring
   `sympy==1.13.1` and installing `onnxslim==0.1.82`. The attempted latest
   onnxslim install and an overlapping corrective install failed; both ended

@@ -12,7 +12,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 .venv/
-.venv-b0/
+.venv-*/
 venv/
 env/
 *.egg-info/
@@ -58,11 +58,11 @@ slprj/
 codegen/
 
 # === Data (generated — not stored in git) ===
-01_simulation/scenario_generator/data/
+gnc_baseline/simulation/scenario_generator/data/
 04_fault_detection/data/*.h5
 04_fault_detection/data/*.csv
 04_fault_detection/data/*.hdf5
-05_integration/monte_carlo/results/
+gnc_baseline/integration/monte_carlo/results/
 
 # === Experiment tracking ===
 wandb/

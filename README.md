@@ -1,6 +1,6 @@
 # UAV FMS Portfolio
 
-**What does compressing a bridge-defect detector buy, and when does transmitting the image cost more than running the detector locally?** The EDGE track answers that question for one development host and a fixed set of CODEBRIM images. The independent B0 track provides a deterministic attitude-estimation and C++17 control baseline. Neither track makes a flight-performance claim.
+**What does compressing a bridge-defect detector buy, and when does transmitting the image cost more than running the detector locally?** The EDGE track answers that question for one development host and a fixed set of CODEBRIM images. The independent GNC track provides a deterministic attitude-estimation and C++17 control baseline. Neither track makes a flight-performance claim.
 
 **Start with the [illustrated technical note](edge_inference/docs/technical_note_uav_edge_offloading.md)** for the results, figures and limits. The [offloading specification](edge_inference/docs/offload_sim_spec.md) defines what a policy can observe and how bytes, latency and energy are counted.
 
@@ -22,7 +22,7 @@ Pruned-FP32 had the lowest P95; Pruned-INT8 was the smallest. All four observed 
 
 ## Two tracks, separate evidence
 
-- **B0:** simulation, attitude estimation and cascaded control share explicit message contracts: NED/body frames, SI units and scalar-first Hamilton quaternions. Estimator and controller inputs exclude truth except explicit initialization. Component acceptance is not closed-loop validation; historical integration material is retained at tag `pre-surgery-2026-11-22`.
+- **GNC:** simulation, attitude estimation and cascaded control share explicit message contracts: NED/body frames, SI units and scalar-first Hamilton quaternions. Estimator and controller inputs exclude truth except explicit initialization. Component acceptance is not closed-loop validation; historical integration material is retained at tag `pre-surgery-2026-11-22`.
 - **EDGE:** [module guide and environment setup](edge_inference/README.md) for data preparation, pruning, static INT8 quantization, profiling and cached-trace replay. Dataset images, trained weights and raw runtime JSONs are not distributed in Git. The figures and reported tables can be read without them.
 - **Traceability:** [StrictDoc requirements index](requirements/README.md) · [offline requirements view](overview.html#requirements). The eight EDGE prototype requirements (EDG-REQ-0034–0041) are approved and implemented; the StrictDoc files remain authoritative.
 
@@ -34,15 +34,15 @@ From the repository root, in Bash with Python 3.11 and the project dependencies 
 
 ```bash
 # C++17 compiler and Ninja required. Use the binding built for this Python.
-cmake --preset b0-controller-debug -DPython3_EXECUTABLE="$(python -c 'import sys; print(sys.executable)')"
-cmake --build --preset b0-controller-debug
-ctest --preset b0-controller-debug --output-on-failure
+cmake --preset gnc-controller-debug -DPython3_EXECUTABLE="$(python -c 'import sys; print(sys.executable)')"
+cmake --build --preset gnc-controller-debug
+ctest --preset gnc-controller-debug --output-on-failure
 
 # Each pytest invocation runs in its own track, not at the repository root.
-(cd 01_simulation/b0 && python -m pytest -q)
-(cd 02_estimation/b0 && python -m pytest -q)
-(cd 03_control/b0 && python -m pytest -q)
-(cd 05_integration/b0 && python -m pytest -q)
+(cd gnc_baseline/simulation && python -m pytest -q)
+(cd gnc_baseline/estimation && python -m pytest -q)
+(cd gnc_baseline/control && python -m pytest -q)
+(cd gnc_baseline/integration && python -m pytest -q)
 (cd edge_inference && python -m pytest -q)
 
 # Check the committed offline view without rewriting it.
@@ -58,5 +58,6 @@ python -m edge_inference.scripts.plot_offloading_results pareto
 This reads cached results; it neither trains a model nor runs inference.
 See the [Day 3–4 experiment log](edge_inference/logs/2026-11-24_day3_4_offloading_simulation_and_traceability.md) for the provenance of the replay and figures.
 
-For B0 imports outside the checkout, run `python -m pip install -e . --no-build-isolation --no-deps` in an environment with NumPy, setuptools and wheel.
-The `uav_b0` namespace preserves the original `b0.contract` message identities.
+For GNC imports outside the checkout, run `python -m pip install -e . --no-build-isolation --no-deps` in an environment with NumPy, setuptools and wheel.
+Import from `gnc_baseline.simulation`, `gnc_baseline.estimation`, `gnc_baseline.control` or
+`gnc_baseline.integration`. The native binding is `gnc_controller`; there are no legacy import aliases.

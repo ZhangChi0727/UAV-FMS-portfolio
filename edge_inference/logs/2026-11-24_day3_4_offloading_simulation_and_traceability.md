@@ -118,7 +118,7 @@ From repository root using the project virtual environment: `python -u -m edge_i
 
 Figure source preflight: 13 pass, 1 warning (PNG preview rather than TIFF), 0 failures after explicit vector exports; both rendered layouts visually checked. No TIFF was requested. For the five existing sources named in the work order, Python ASTs before/after matched exactly; traceability anchors are comments only. The vault IDs are contextual pointers supplied by the Owner, not a claim that a paper established these numerical defaults. No private vault access.
 
-Regression: project Python `-m pytest tests -q` in EDGE: 100 passed; `-m pytest -q` in B0 simulation / estimation / integration: 25 / 52 / 165 passed, respectively. Synthetic tests cover the separate scoring contract, absence of ground-truth mutation and Pareto ties. No runtime data staged.
+Regression: project Python `-m pytest tests -q` in EDGE: 100 passed; `-m pytest -q` in GNC simulation / estimation / integration: 25 / 52 / 165 passed, respectively. Synthetic tests cover the separate scoring contract, absence of ground-truth mutation and Pareto ties. No runtime data staged.
 
 ## Correction Addendum — 2026-11-24
 

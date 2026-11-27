@@ -63,7 +63,7 @@ freeze real evaluation settings on training/calibration data before test use.
 ## Isolated Windows environment
 
 From the repository root (Python 3.11), create `.venv`; do not install into the
-global interpreter or the preserved B0 environment:
+global interpreter or the preserved GNC environment:
 
 ```powershell
 python -m venv .venv
