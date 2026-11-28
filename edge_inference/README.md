@@ -17,6 +17,16 @@ prototype requirements; the results are not board or flight measurements.
 - logs/TEMPLATE.md: experiment record template.
 - data/ and models/: local artifacts, not committed.
 
+### Build and experiment outputs
+
+The training and pruning scripts put Ultralytics settings in
+`edge_inference/build/ultralytics-settings/` and the recovery training copy in
+`edge_inference/build/day23-recovery-data/` (created fresh, never reused).
+These are scratch paths, not evidence. Keep datasets in `data/`, weights in
+`weights/` and retained experiments in `runs/` or their documented output paths.
+No GNC build is needed. Historical console paths are unchanged in the
+[published records](logs/evidence/2026-11-24/README.md).
+
 From edge_inference/, run `python -m src.benchmark --synthetic` for a dummy
 workload, or add `--model path/to/model.onnx --provider cpu --threads 4` for
 an actual model. CUDA requires an available CUDAExecutionProvider; there is no

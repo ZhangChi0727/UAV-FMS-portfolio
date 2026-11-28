@@ -62,7 +62,12 @@ padding:.45rem;border-bottom:1px solid #ccd5db}summary{cursor:pointer}section>de
 <li><strong>Traceability:</strong> <a href="requirements/README.md">StrictDoc requirements index</a> · <a href="overview.html#requirements">offline requirements view</a>. The eight EDGE prototype requirements (EDG-REQ-0034–0041) are approved and implemented; the StrictDoc files remain authoritative.</li>
 </ul>
 <h2>Verification and reproduction</h2>
-<p>Verified baseline at <code>1baf1e4</code>: <strong>440 pytest cases passed</strong> (simulation 25, estimation 52, control 79, integration 165, EDGE 119). <strong>25 CTest entries passed</strong>, including four C++ mutation tests and the Python binding/adapter suite. The latter overlaps the 440; these are not 465 distinct tests.</p>
+<p>Build each track independently. The root CMake presets build only GNC, under
+<code>gnc_baseline/build/{debug,release}/</code>. EDGE temporary work goes under
+<code>edge_inference/build/</code>; its datasets, model weights and retained runs stay separate.
+Reserve root <code>build/integration/&lt;experiment&gt;/&lt;run-id&gt;/</code> for future experiments
+that actually combine tracks. Running both test suites does not require an integration build.</p>
+<p>Track-local build verification: <strong>442 pytest cases passed</strong> (simulation 25, estimation 52, control 79, integration 165, EDGE 121). <strong>25/25 CTest entries passed in both Debug and Release</strong>, including four C++ mutation tests and the Python binding/adapter suite. The configurations repeat the same tests, and the binding suite overlaps the pytest count.</p>
 <p>From the repository root, in Bash with Python 3.11 and the project dependencies active:</p>
 <pre><code class="language-bash"># C++17 compiler and Ninja required. Use the binding built for this Python.
 cmake --preset gnc-controller-debug -DPython3_EXECUTABLE=&quot;$(python -c 'import sys; print(sys.executable)')&quot;

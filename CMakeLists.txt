@@ -9,4 +9,4 @@ include(CTest)
 
 # The only C++ target in the active tree is the GNC cascaded controller core,
 # its pybind11 binding and its component tests. See gnc_baseline/control/CMakeLists.txt.
-add_subdirectory(gnc_baseline/control)
+add_subdirectory(gnc_baseline/control control)

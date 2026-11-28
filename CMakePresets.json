@@ -19,14 +19,14 @@
       "name": "gnc-controller-debug",
       "displayName": "GNC controller (Debug)",
       "inherits": "gnc-controller-base",
-      "binaryDir": "${sourceDir}/build/gnc-controller/debug",
+      "binaryDir": "${sourceDir}/gnc_baseline/build/debug",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
     },
     {
       "name": "gnc-controller-release",
       "displayName": "GNC controller (Release)",
       "inherits": "gnc-controller-base",
-      "binaryDir": "${sourceDir}/build/gnc-controller/release",
+      "binaryDir": "${sourceDir}/gnc_baseline/build/release",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
     }
   ],

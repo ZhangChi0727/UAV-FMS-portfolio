@@ -17,4 +17,6 @@ cd edge_inference/logs/evidence/2026-11-24
 sha256sum -c SHA256SUMS.txt
 ```
 
-All 18 entries must report `OK`. This verifies the published files against the manifest. It does not rerun training or prove the scoring logic correct. To audit the historical command lines, read the consoles directly. To execute the Day 1 audit **with the original local inputs**, copy its script back to `build/day1_artifact_audit.py` first: it locates the repository relative to that path. Images, weights, per-call timing JSONs and prediction traces are not included in this evidence set. Descriptive scores remain annotation-relative (`complete=false`); these are development-host records, not flight results.
+All 18 entries must report `OK`. This verifies the published files against the manifest. It does not rerun training or prove the scoring logic correct. To audit the historical command lines, read the consoles directly.
+
+To execute the archived Day 1 audit, use a separate reproduction checkout with the original local inputs and its historical script path, `build/day1_artifact_audit.py`. The script resolves the repo relative to its own location; do not use that historical layout for new EDGE runs. Images, weights, per-call timing JSONs and prediction traces are not included in this evidence set. Descriptive scores remain annotation-relative (`complete=false`); these are development-host records, not flight results.

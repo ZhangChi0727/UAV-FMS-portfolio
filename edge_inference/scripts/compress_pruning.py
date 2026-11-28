@@ -2,7 +2,6 @@
 import argparse
 from collections import Counter
 import json
-import os
 from pathlib import Path
 import shutil
 
@@ -10,6 +9,7 @@ import torch
 from torch import nn
 import yaml
 
+from edge_inference.scripts.build_paths import BUILD_DIR, configure_ultralytics
 from edge_inference.scripts.prepare_codebrim import EDGE, digest, write_json
 
 DATA = EDGE / 'data/codebrim_yolo'
@@ -18,7 +18,7 @@ BEST = EDGE / 'runs/yolov8n_fp32_baseline/weights/best.pt'
 MANIFEST = '7321eaef3d7cd3526e7489e4c3872554f6f8741a2030e5ff45dcb5bf461adf84'
 BASE_PT = 'ffd8228000e0c5ca385b58389d212aba7a19a5b14a6a4f4e3b36209005e6f255'
 BASE_ONNX = '9ee091bd2a70a5b99ea3f93712d9f6774f02c65d1576f0e444d9b7f31d8fbc3e'
-SCRATCH = EDGE.parent / 'build/day23-recovery-data'
+SCRATCH = BUILD_DIR / 'day23-recovery-data'
 DEFAULT_WIDTH_RATIO = 2 / 3
 
 
@@ -171,8 +171,7 @@ if __name__ == '__main__':
         help='fraction of internal channels to retain before rounding (default: 2/3)')
     stages.add_parser('export')
     args = parser.parse_args()
-    os.environ['YOLO_CONFIG_DIR'] = str(EDGE.parent/'build/ultralytics-settings')
-    os.environ['YOLO_AUTOINSTALL'] = 'false'
+    configure_ultralytics()
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     if args.stage == 'train':
         train(args.width_ratio)

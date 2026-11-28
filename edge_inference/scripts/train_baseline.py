@@ -6,7 +6,6 @@ The test set must not be used for model selection or tuning after this run.
 import argparse
 import hashlib
 import importlib.metadata
-import os
 from pathlib import Path
 import platform
 import shutil
@@ -14,8 +13,10 @@ import sys
 import time
 
 if __package__:
+    from .build_paths import configure_ultralytics
     from .prepare_codebrim import CLASSES, EDGE, digest, write_json
 else:
+    from build_paths import configure_ultralytics
     from prepare_codebrim import CLASSES, EDGE, digest, write_json
 
 RUN = EDGE / 'runs/yolov8n_fp32_baseline'
@@ -65,9 +66,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('stage', choices=('train', 'evaluate', 'export'))
     args = parser.parse_args()
-    os.environ.setdefault('YOLO_CONFIG_DIR', str(EDGE.parent / 'build/ultralytics-settings'))
-    # Disable silent package installation inside export; resolve dependencies explicitly.
-    os.environ['YOLO_AUTOINSTALL'] = 'false'
+    configure_ultralytics()
     import torch
     from ultralytics import YOLO
     if not torch.cuda.is_available():

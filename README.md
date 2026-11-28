@@ -28,7 +28,13 @@ Pruned-FP32 had the lowest P95; Pruned-INT8 was the smallest. All four observed 
 
 ## Verification and reproduction
 
-Verified baseline at `1baf1e4`: **440 pytest cases passed** (simulation 25, estimation 52, control 79, integration 165, EDGE 119). **25 CTest entries passed**, including four C++ mutation tests and the Python binding/adapter suite. The latter overlaps the 440; these are not 465 distinct tests.
+Build each track independently. The root CMake presets build only GNC, under
+`gnc_baseline/build/{debug,release}/`. EDGE temporary work goes under
+`edge_inference/build/`; its datasets, model weights and retained runs stay separate.
+Reserve root `build/integration/<experiment>/<run-id>/` for future experiments
+that actually combine tracks. Running both test suites does not require an integration build.
+
+Track-local build verification: **442 pytest cases passed** (simulation 25, estimation 52, control 79, integration 165, EDGE 121). **25/25 CTest entries passed in both Debug and Release**, including four C++ mutation tests and the Python binding/adapter suite. The configurations repeat the same tests, and the binding suite overlaps the pytest count.
 
 From the repository root, in Bash with Python 3.11 and the project dependencies active:
 
